@@ -28,6 +28,11 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    // YouTube Data API key for youtube sources (PRD §9.2: the key lives in .env, never in the DB).
+    'youtube' => [
+        'key' => env('YOUTUBE_API_KEY'),
+    ],
+
     'slack' => [
         'notifications' => [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),

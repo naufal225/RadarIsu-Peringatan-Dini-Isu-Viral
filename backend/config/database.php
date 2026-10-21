@@ -97,6 +97,9 @@ return [
             'prefix_indexes' => true,
             'search_path' => 'public',
             'sslmode' => env('DB_SSLMODE', 'prefer'),
+            // Eloquent sends timestamps without an offset; pin the session to the app timezone (UTC)
+            // so timestamptz values are not shifted by the server's default zone.
+            'timezone' => 'UTC',
         ],
 
         'sqlsrv' => [

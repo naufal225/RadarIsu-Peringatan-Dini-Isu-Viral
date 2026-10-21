@@ -20,11 +20,21 @@ const handle = app.getRequestHandler();
 
 await app.prepare();
 
-createServer((req, res) => {
+// WebSocket upgrades (HMR in development) are not part of the request handler; without this the
+// dev client never connects and the page is not hydrated. Only available after prepare().
+const handleUpgrade = app.getUpgradeHandler();
+
+const server = createServer((req, res) => {
   req.headers["x-forwarded-for"] = req.socket.remoteAddress ?? "";
   delete req.headers["forwarded"];
   delete req.headers["x-real-ip"];
   handle(req, res);
-}).listen(port, hostname, () => {
+});
+
+server.on("upgrade", (req, socket, head) => {
+  handleUpgrade(req, socket, head);
+});
+
+server.listen(port, hostname, () => {
   console.log(`> RadarIsu frontend on http://${hostname}:${port} (${dev ? "development" : "production"})`);
 });

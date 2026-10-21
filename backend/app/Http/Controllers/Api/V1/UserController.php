@@ -3,32 +3,54 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\UserResource;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\Audit\AuditLogger;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
 
 class UserController extends Controller
 {
-    // TODO Fase 2: list users.
-    public function index(): JsonResponse
+    public function __construct(private AuditLogger $audit) {}
+
+    public function index(Request $request): AnonymousResourceCollection
     {
-        return $this->pendingPhase(2);
+        $perPage = $request->validate(['per_page' => 'nullable|integer|min:1|max:100'])['per_page'] ?? 50;
+
+        return UserResource::collection(User::with('role')->orderBy('name')->paginate((int) $perPage));
     }
 
-    // TODO Fase 2: create user.
-    public function store(): JsonResponse
+    public function store(Request $request): JsonResponse
     {
-        return $this->pendingPhase(2);
+        $data = $request->validate([
+            'name' => 'required|string|max:120',
+            'email' => 'required|email|max:190|unique:users,email',
+            'password' => ['required', 'string', 'max:255', Password::min(10)], // PRD §13
+            'role' => ['required', Rule::in(array_keys(config('permissions.roles')))],
+        ]);
+
+        $user = User::create([
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'password' => $data['password'],
+            'role_id' => Role::where('slug', $data['role'])->value('id'),
+            'is_active' => true,
+        ]);
+
+        $this->audit->log('user.create', $user, ['email' => $user->email, 'role' => $data['role']]);
+
+        return (new UserResource($user->load('role')))->response()->setStatusCode(201);
     }
 
     /**
-     * Minimal update for Phase 1: name, role and activation, with the self-protection rule (PRD §8.4).
+     * Name, role and activation, with the self-protection rule (PRD §8.4).
      */
-    public function update(Request $request, User $user, AuditLogger $audit): JsonResponse
+    public function update(Request $request, User $user): UserResource
     {
         $data = $request->validate([
             'name' => 'sometimes|string|max:120',
@@ -53,16 +75,8 @@ class UserController extends Controller
         $deactivating = array_key_exists('is_active', $data) && ! $data['is_active'] && $user->is_active;
         $user->update($data);
 
-        $audit->log($deactivating ? 'user.deactivate' : 'user.update', $user, ['changes' => array_keys($user->getChanges())]);
+        $this->audit->log($deactivating ? 'user.deactivate' : 'user.update', $user, ['changes' => array_keys($user->getChanges())]);
 
-        $user->load('role');
-
-        return response()->json(['data' => [
-            'id' => $user->id,
-            'name' => $user->name,
-            'email' => $user->email,
-            'role' => $user->role->slug,
-            'is_active' => $user->is_active,
-        ]]);
+        return new UserResource($user->load('role'));
     }
 }

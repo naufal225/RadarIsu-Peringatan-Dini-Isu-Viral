@@ -1,16 +1,28 @@
 # Pertanyaan terbuka dan konflik PRD
 
-Dicatat sesuai CLAUDE.md: konflik tidak ditebak. Keputusan dicatat di sini dan di PRD (riwayat perubahan v2.1).
+Dicatat sesuai CLAUDE.md: konflik tidak ditebak. Keputusan dicatat di sini dan di PRD (riwayat perubahan).
 
 ## Terbuka
 
-Belum ada.
+1. **Halaman alert:** dipindah dari Fase 8 ke Fase 5? Ini diusulkan agar alur triase bisa diuji lewat UI, tetapi belum diputuskan.
+2. **Uji koneksi RSS tanpa tes otomatis jaringan nyata.** Tes memakai `Http::fake`, sehingga validasi opsi cURL oleh Guzzle tidak ikut teruji. Pada Fase 2 ini sempat lolos tes tetapi gagal 500 di Docker (`CURLOPT_MAXFILESIZE` ditolak Guzzle); sudah diperbaiki dan diverifikasi manual ke feed nyata dan file 10 MB. Perlu diputuskan apakah ingest Fase 3 diberi tes integrasi dengan server HTTP lokal.
+
+## Diputuskan 2026-10-21 (PRD v2.2, Fase 2)
+
+1. **Format CSV** sama dengan `replay_rows` (§11.4). *Selesai.*
+2. **Ingest terjadwal RSS/YouTube** masuk Fase 3. *Dicatat di §18.*
+3. **Halaman admin minimal** dikerjakan di Fase 2. *Selesai*, dan diverifikasi di browser pada stack Docker.
+4. **`GET /system/status`** masuk Fase 2. *Selesai.*
+5. **Temuan saat implementasi:** sesi Postgres lokal memakai `Asia/Bangkok`, sementara aplikasi memakai UTC, sehingga semua timestamp di DB lokal bergeser 7 jam (Docker tidak terdampak). Diperbaiki dengan `timezone => UTC` di `config/database.php`, dan ditambahkan tes regresi.
+   - Data di DB dev lokal yang dibuat sebelum perbaikan masih bergeser. Jalankan `php artisan migrate:fresh --seed` pada DB dev bila datanya penting.
 
 ## Diputuskan 2026-10-21 (PRD v2.1)
 
 1. **Versi stack** — Laravel 13 dan Next 16 (`src/`, `proxy.ts`) diterima, dan PRD diperbarui. *Selesai.*
 2. **Celah Fase 0** — `docker-compose.yml`, `docker/nginx/default.conf`, Dockerfile backend dan frontend, serta root `.env.example` sudah dibuat. Fase 1 dimulai sebelum gerbang Fase 0 lulus, dan ini dicatat di §18.
-   - *Belum terverifikasi:* Docker Desktop belum berjalan saat dikerjakan, jadi baru `docker compose config` yang lulus. DoD Fase 0 ("`docker compose up` menjalankan semua layanan; halaman login tampil") masih harus dicek.
+   - *Terverifikasi 2026-10-21:* `docker compose up -d --build` menjalankan postgres, app, queue, scheduler, nginx, dan frontend (semua sehat), migrasi berjalan otomatis, dan halaman login mengembalikan 200. Login, `/auth/me`, dan 403 pada rute terlarang diuji lewat stack Docker. DoD Fase 0 terpenuhi.
+   - Seeder tidak dijalankan otomatis: `docker compose exec app php artisan db:seed --force`.
+   - Di Docker Desktop (Windows), alamat soket yang dilihat BFF untuk koneksi dari host adalah alamat gateway NAT Docker, bukan IP klien sebenarnya. Throttle login dan audit IP baru akurat bila klien langsung terhubung ke jaringan Docker atau lewat proxy yang dikonfigurasi di Fase 9.
 3. **Stub** — semua stub sekarang 501 `{"message":"Belum diimplementasikan","meta":{"pending_phase":N}}`. Tes matriks memeriksa status ≠ 403 dan ≠ 404 untuk peran yang diizinkan. *Selesai.*
 4. **Urutan pemeriksaan alert** — izin (403) → policy `view` (404) → state machine (422). §19.1 tambahan 1 dan §19.2 butir 3 kini 404. Untuk §19.2 butir 6, leader pada `false_positive`/`closed` juga 404. *Selesai.*
 5. **§19.2 butir 8** tetap *incomplete* dan menjadi kewajiban **Fase 4**.

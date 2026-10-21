@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { Suspense, type ReactNode } from "react";
+import { AppNav } from "@/components/app-nav";
 import { LogoutButton } from "@/components/logout-button";
 import { PermissionsProvider } from "@/components/permissions-provider";
 import { roleLabels, ui } from "@/lib/labels";
@@ -31,6 +32,7 @@ async function AuthenticatedShell({ children }: { children: ReactNode }) {
           <LogoutButton />
         </div>
       </header>
+      <AppNav />
       <main className="flex-1 px-6 py-6">{children}</main>
     </PermissionsProvider>
   );

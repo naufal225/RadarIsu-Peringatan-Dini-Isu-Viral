@@ -1,4 +1,4 @@
-# PRD — RadarIsu (v2.1, siap dieksekusi AI coding agent)
+# PRD — RadarIsu (v2.2, siap dieksekusi AI coding agent)
 
 **Sistem Peringatan Dini Isu, Koordinasi Akun, dan Peniruan Identitas di Ruang Siber Sosial untuk Perlindungan Institusi TNI AD**
 
@@ -10,9 +10,17 @@
 | Backend | Laravel 13 (PHP 8.3), Laravel Sanctum, Laravel Queue (driver database) |
 | Frontend | Next.js 16.4 (App Router, TypeScript, folder `src/`), Tailwind CSS, TanStack Query, Recharts |
 | Database | PostgreSQL 16 + ekstensi `pg_trgm` |
-| Status | Draf 2.1. Juknis teknis lengkap belum dibaca; asumsi ditandai **[ASUMSI]** |
+| Status | Draf 2.2. Juknis teknis lengkap belum dibaca; asumsi ditandai **[ASUMSI]** |
 
 ### Riwayat perubahan
+
+**v2.2 (2026-10-21)** — keputusan untuk Fase 2:
+
+1. **Format CSV impor** ditetapkan sama dengan `replay_rows`, beserta aturan baris, kode galat, dan duplikat (§11.4).
+2. **Penarikan terjadwal RSS/YouTube** dipindah tegas ke Fase 3. Fase 2 hanya mencakup CRUD sumber dan uji koneksi (§11.5, §18).
+3. **Halaman admin minimal** (`/admin/users`, `/admin/sources`, `/admin/audit`, `/admin/status`) dikerjakan di Fase 2. Poles visualnya tetap Fase 8 (§18).
+4. **`GET /system/status`** masuk Fase 2 (§18).
+5. **Keamanan:** proteksi SSRF untuk URL sumber, trigger append-only untuk `audit_logs`/`alert_actions`, dan sesi Postgres dikunci ke UTC (§13).
 
 **v2.1 (2026-10-21)** — keputusan atas `docs/OPEN_QUESTIONS.md` setelah Fase 1:
 
@@ -763,6 +771,43 @@ Untuk `leader`, hanya alert berstatus `escalated`, `approved`, `returned` yang d
 } }
 ```
 
+### 11.4 Format CSV impor (`POST /sources/{id}/import`)
+
+Kolom disamakan dengan `replay_rows` (§9.6) agar normalisasi Fase 3 cukup satu jalur.
+
+| Kolom | Wajib | Aturan |
+|---|:-:|---|
+| `text` | ✔ | tidak kosong, maks 10.000 karakter |
+| `account_handle` | ✔ | tidak kosong, maks 190 |
+| `posted_at` | ✔ | ISO 8601 **dengan** zona waktu (`2026-10-20T08:15:00+07:00` atau `...Z`) |
+| `external_id` | | maks 190 |
+| `account_display_name` | | maks 190 |
+| `account_created_at` | | ISO 8601 dengan zona waktu |
+
+- **Seluruh file ditolak (422, tanpa data tertulis)** bila:
+  - sumber bukan tipe `csv`;
+  - file > 10 MB atau bukan teks/CSV, atau tidak berenkode UTF-8;
+  - kolom wajib hilang, ada kolom tidak dikenal, atau ada nama kolom ganda (BOM UTF-8 dibuang; urutan kolom bebas);
+  - lebih dari 50.000 baris data.
+- **Baris bermasalah** dilewati dan dicatat di `import_batches.errors` sebagai `{row, message}`. `row` adalah nomor baris di file (header = 1; newline di dalam tanda kutip ikut dihitung), dan `message` adalah kode galat:
+  - `missing_text`, `missing_account_handle`;
+  - `invalid_posted_at`, `invalid_account_created_at`;
+  - `field_too_long`, `column_count_mismatch`;
+  - `duplicate_row`.
+
+  Daftar `errors` dibatasi 200 entri, tetapi `failed_rows` tetap menghitung semuanya.
+- **Duplikat:** `content_hash` = sha256 dari JSON kanonik kolom-kolom di atas. Baris yang sama di dalam satu file atau yang sudah ada di sumber yang sama ditandai `duplicate_row`, sehingga mengimpor ulang file yang sama tidak menambah data. Baris yang sama di sumber lain bukan duplikat.
+- Impor berjalan sinkron dalam satu transaksi. Impor ke sumber yang sama diserialkan dengan *row lock*.
+- Kode galat diterjemahkan di `frontend/src/lib/labels.ts` (`errorCodeLabels`).
+
+### 11.5 Uji koneksi sumber (`POST /sources/{id}/test`)
+
+- **Cakupan:** hanya untuk `rss` dan `youtube`. Tipe lain → 422. Mode Offline aktif → 422 tanpa panggilan keluar (§16).
+- **Hasil:** disimpan di `last_status`/`last_error`/`last_fetched_at` dan dicatat sebagai `source.test`. Respons tetap 200 meskipun koneksinya gagal, karena hasil uji adalah data, bukan galat API.
+- **RSS:** proteksi SSRF berlaku (§13). Respons harus berupa XML RSS/Atom yang valid.
+- **YouTube:** `videos?part=id` dengan `YOUTUBE_API_KEY` dari `.env`. Bila kunci API tidak ada → `error` tanpa panggilan keluar.
+- Penarikan terjadwal (`radarisu:ingest`) dikerjakan di Fase 3.
+
 ---
 
 ## 12. Frontend (Next.js App Router)
@@ -833,7 +878,14 @@ Untuk `leader`, hanya alert berstatus `escalated`, `approved`, `returned` yang d
   - `frontend/server.mjs` **menimpa** `X-Forwarded-For` dengan alamat soket koneksi masuk sebelum Next memprosesnya, dan BFF meneruskan nilai itu tanpa menambahkan apa pun. Akibatnya klien tidak bisa memalsukan IP.
   - Laravel tidak dipublikasikan ke host; hanya BFF yang menjangkaunya.
 - **Otorisasi:** middleware `EnsurePermission` membaca izin pengguna (cache 60 detik, di-invalidasi saat peran berubah); policy untuk aturan objek; tes otomatis untuk matriks akses (bagian 19).
-- **Audit:** seluruh aksi pada bagian 9.7 tercatat dengan IP dan user agent. Tabel audit hanya menerima INSERT dari aplikasi.
+- **Audit:** seluruh aksi pada bagian 9.7 tercatat dengan IP dan user agent. `AuditLogger` menolak aksi di luar daftar §9.7.
+  - `audit_logs` dan `alert_actions` bersifat **append-only di tingkat database**: trigger Postgres menolak UPDATE, DELETE, dan TRUNCATE.
+- **SSRF (URL yang dikonfigurasi admin):** sebelum server menghubungi URL sumber, berlaku aturan berikut:
+  - hanya `http`/`https`;
+  - semua alamat hasil DNS harus publik (privat, loopback, link-local/metadata cloud, reserved, dan CGNAT ditolak);
+  - koneksi **dipin** ke IP yang sudah diperiksa (`CURLOPT_RESOLVE`) agar tidak bisa dibelokkan lewat DNS rebinding;
+  - redirect tidak diikuti, timeout 10 detik, dan unduhan dihentikan bila melewati 2 MB.
+- **Zona waktu:** aplikasi dan sesi Postgres dikunci ke UTC (`config/database.php`). Eloquent menulis timestamp tanpa offset, sehingga sesi DB dengan zona lain menggeser semua `timestamptz`.
 - **Kinerja:** halaman dasbor termuat < 3 detik pada ±100 ribu posting. **[ASUMSI]** diverifikasi pada pengujian.
 - **Keandalan:** kegagalan satu sumber tidak menghentikan sumber lain; job gagal dicoba ulang 3 kali lalu dicatat di `failed_jobs` dan tampil di `/admin/status`.
 - **Etika dan hukum:** hanya data publik; mematuhi ketentuan platform; tidak menyimpan data pribadi di luar handle dan nama tampilan publik; sistem melaporkan pola dan tidak menyebut siapa pun "bersalah"; keputusan akhir selalu manusia; data simulasi selalu berlabel.
@@ -899,8 +951,7 @@ Untuk `leader`, hanya alert berstatus `escalated`, `approved`, `returned` yang d
 |---|---|---|
 | 0 | Scaffold Laravel + Sanctum, Next.js, `docker-compose.yml`, migrasi `pg_trgm` | `docker compose up` menjalankan semua layanan; halaman login tampil |
 | 1 | Migrasi + seeder bagian 9, `EnsurePermission`, `AlertPolicy`, `AlertStateMachine`, `AuditLogger` versi minimal (aksi `auth.*` dan `alert.*`), endpoint `/auth/*`, BFF Next.js + `trustProxies`, layout role-aware | **Seluruh tes RBAC bagian 19.1 lulus** |
-| 2 | Users, Sources, impor CSV, perluasan `AuditLogger` (semua aksi §9.7, `GET /audit-logs`) | Admin dapat membuat sumber, mengimpor CSV, dan semua aksi tercatat di audit |
-| 3 | Pipeline: raw → normalize → topic match → aggregate; Topics + akun resmi | Data CSV muncul sebagai metrik per topik di grafik |
+| 2 | Users, Sources (CRUD + uji koneksi), impor CSV (§11.4), perluasan `AuditLogger` (semua aksi §9.7, `GET /audit-logs`, trigger append-only), `GET /system/status`, halaman admin minimal (`/admin/users`, `/admin/sources`, `/admin/audit`, `/admin/status`) | Admin dapat membuat sumber, mengimpor CSV, dan semua aksi tercatat di audit || 3 | Penarikan terjadwal RSS/YouTube (`radarisu:ingest`, `RssIngestor`, `YoutubeIngestor`); pipeline: raw → normalize → topic match → aggregate; Topics + akun resmi | Data CSV muncul sebagai metrik per topik di grafik |
 | 4 | Detektor, `ThreatScorer`, pembuatan/pembaruan alert, `DataClock` | Skenario uji menghasilkan alert dengan skor dan bukti |
 | 5 | Alur alert + komentar + tes transisi | Seluruh tes 19.2 lulus |
 | 6 | Dasbor, briefing PDF | Satu alert dapat berjalan dari `new` sampai briefing terunduh |

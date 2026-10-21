@@ -126,18 +126,18 @@ class AccessMatrixTest extends TestCase
 
     public function test_stub_route_returns_501_with_pending_phase(): void
     {
-        $this->actingAsRole('admin');
+        $this->actingAsRole('analyst');
 
-        $this->getJson('/api/v1/users')
+        $this->getJson('/api/v1/topics')
             ->assertStatus(501)
-            ->assertExactJson(['message' => 'Belum diimplementasikan', 'meta' => ['pending_phase' => 2]]);
+            ->assertExactJson(['message' => 'Belum diimplementasikan', 'meta' => ['pending_phase' => 3]]);
     }
 
     public function test_permission_is_checked_before_stub(): void
     {
-        $this->actingAsRole('analyst');
+        $this->actingAsRole('admin');
 
-        $this->getJson('/api/v1/users')->assertForbidden();
+        $this->getJson('/api/v1/topics')->assertForbidden();
     }
 
     private function fixture(string $fixture): ?int
