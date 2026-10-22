@@ -1,0 +1,174 @@
+# ==============================================================
+# CODEOWNERS RadarIsu
+# Aturan: pola yang paling bawah menang. Urutan umum → khusus.
+# Dua pemilik per domain: penulis PR tidak bisa menyetujui PR-nya sendiri.
+# Lihat docs/OWNERSHIP.md untuk penjelasan.
+# ==============================================================
+
+# --- Default: semua perubahan butuh review salah satu anggota
+*                                              Naufal = @naufal225 Kadavi = @dapzz-id Rekishii = @rekis-0103
+
+# --- Dokumen dan kontrak bersama
+/CLAUDE.md                                     @naufal225 @dapzz-id @rekis-0103
+/docs/PRD.md                                   @dapzz-id @naufal225
+/docs/OWNERSHIP.md                             @naufal225 @dapzz-id @rekis-0103
+/docs/CONTRACTS.md                             @naufal225 @dapzz-id @rekis-0103
+/.github/CODEOWNERS                            @naufal225 @dapzz-id @rekis-0103
+# HANDOFF sengaja tanpa pemilik: boleh diubah siapa saja
+/docs/HANDOFF.md
+
+# --- Infrastruktur (B)
+/docker-compose.yml                            @dapzz-id @naufal225
+/backend/Dockerfile                            @dapzz-id @naufal225
+/frontend/Dockerfile                           @dapzz-id @naufal225
+/.github/workflows/                            @dapzz-id @naufal225
+
+# ======================= BACKEND =======================
+
+# --- Domain A: Data & Deteksi (Naufal, reviewer Rekishi)
+/backend/app/Services/Detection/               @naufal225 @rekis-0103
+/backend/app/Services/Ingest/                  @naufal225 @rekis-0103
+/backend/app/Jobs/*Normalize*                  @naufal225 @rekis-0103
+/backend/app/Jobs/*Match*                      @naufal225 @rekis-0103
+/backend/app/Jobs/*Aggregate*                  @naufal225 @rekis-0103
+/backend/app/Jobs/*Detect*                     @naufal225 @rekis-0103
+/backend/app/Jobs/*Replay*                     @naufal225 @rekis-0103
+/backend/app/Console/Commands/                 @naufal225 @rekis-0103
+/backend/app/Http/Controllers/Api/V1/Source*   @naufal225 @rekis-0103
+/backend/app/Http/Controllers/Api/V1/Import*   @naufal225 @rekis-0103
+/backend/app/Http/Controllers/Api/V1/Topic*    @naufal225 @rekis-0103
+/backend/app/Http/Controllers/Api/V1/OfficialAccount*  @naufal225 @rekis-0103
+/backend/app/Http/Controllers/Api/V1/Replay*   @naufal225 @rekis-0103
+/backend/app/Models/                           @naufal225 @rekis-0103
+/backend/routes/api/sources.php                @naufal225 @rekis-0103
+/backend/routes/api/imports.php                @naufal225 @rekis-0103
+/backend/routes/api/topics.php                 @naufal225 @rekis-0103
+/backend/routes/api/replay.php                 @naufal225 @rekis-0103
+/backend/database/seeders/TopicTemplateSeeder.php  @naufal225 @rekis-0103
+/backend/database/seeders/DemoScenarioSeeder.php   @naufal225 @rekis-0103
+/backend/database/migrations/*_create_sources_table.php          @naufal225 @rekis-0103
+/backend/database/migrations/*_create_import_batches_table.php   @naufal225 @rekis-0103
+/backend/database/migrations/*_create_raw_items_table.php        @naufal225 @rekis-0103
+/backend/database/migrations/*_create_accounts_table.php         @naufal225 @rekis-0103
+/backend/database/migrations/*_create_official_accounts_table.php @naufal225 @rekis-0103
+/backend/database/migrations/*_create_posts_table.php           @naufal225 @rekis-0103
+/backend/database/migrations/*_create_topics_table.php          @naufal225 @rekis-0103
+/backend/database/migrations/*_create_topic_matches_table.php   @naufal225 @rekis-0103
+/backend/database/migrations/*_create_metrics_hourly_table.php  @naufal225 @rekis-0103
+/backend/database/migrations/*_create_replay_*                  @naufal225 @rekis-0103
+/backend/tests/Feature/Ingest/                 @naufal225 @rekis-0103
+/backend/tests/Feature/Detection/              @naufal225 @rekis-0103
+/backend/tests/Feature/Replay/                 @naufal225 @rekis-0103
+/backend/tests/Unit/Detection/                 @naufal225 @rekis-0103
+
+# --- Domain B: Keamanan & Alur (Kadavi, reviewer Naufal)
+/backend/app/Http/Middleware/                  @dapzz-id @naufal225
+/backend/app/Policies/                         @dapzz-id @naufal225
+/backend/app/Services/Alerts/                  @dapzz-id @naufal225
+/backend/app/Services/Audit/                   @dapzz-id @naufal225
+/backend/app/Services/Briefing*                @dapzz-id @naufal225
+/backend/app/Http/Controllers/Api/V1/Auth*     @dapzz-id @naufal225
+/backend/app/Http/Controllers/Api/V1/User*     @dapzz-id @naufal225
+/backend/app/Http/Controllers/Api/V1/Alert*    @dapzz-id @naufal225
+/backend/app/Http/Controllers/Api/V1/Briefing* @dapzz-id @naufal225
+/backend/app/Http/Controllers/Api/V1/AuditLog* @dapzz-id @naufal225
+/backend/app/Models/User.php                   @dapzz-id @naufal225
+/backend/app/Models/Role.php                   @dapzz-id @naufal225
+/backend/app/Models/Permission.php             @dapzz-id @naufal225
+/backend/app/Models/Alert.php                  @dapzz-id @naufal225
+/backend/app/Models/AlertAction.php            @dapzz-id @naufal225
+/backend/app/Models/AlertEvidence.php          @dapzz-id @naufal225
+/backend/app/Models/Briefing.php               @dapzz-id @naufal225
+/backend/app/Models/AuditLog.php               @dapzz-id @naufal225
+/backend/config/permissions.php                @dapzz-id @naufal225
+/backend/routes/api.php                        @dapzz-id @naufal225
+/backend/routes/api/auth.php                   @dapzz-id @naufal225
+/backend/routes/api/users.php                  @dapzz-id @naufal225
+/backend/routes/api/alerts.php                 @dapzz-id @naufal225
+/backend/routes/api/briefings.php              @dapzz-id @naufal225
+/backend/routes/api/audit.php                  @dapzz-id @naufal225
+/backend/database/seeders/DatabaseSeeder.php   @dapzz-id @naufal225
+/backend/database/seeders/RoleSeeder.php       @dapzz-id @naufal225
+/backend/database/seeders/PermissionSeeder.php @dapzz-id @naufal225
+/backend/database/seeders/UserSeeder.php       @dapzz-id @naufal225
+/backend/database/migrations/*_create_users_table.php                @dapzz-id @naufal225
+/backend/database/migrations/*_create_roles_table.php                @dapzz-id @naufal225
+/backend/database/migrations/*_create_permissions_table.php          @dapzz-id @naufal225
+/backend/database/migrations/*_create_permission_role_table.php      @dapzz-id @naufal225
+/backend/database/migrations/*_create_personal_access_tokens_table.php @dapzz-id @naufal225
+/backend/database/migrations/*_create_alerts_table.php               @dapzz-id @naufal225
+/backend/database/migrations/*_create_alert_*                        @dapzz-id @naufal225
+/backend/database/migrations/*_create_briefings_table.php            @dapzz-id @naufal225
+/backend/database/migrations/*_create_audit_logs_table.php           @dapzz-id @naufal225
+/backend/database/migrations/*pg_trgm*                               @dapzz-id @naufal225
+/backend/tests/Feature/Rbac/                   @dapzz-id @naufal225
+/backend/tests/Feature/Alerts/                 @dapzz-id @naufal225
+/backend/tests/Feature/Auth/                   @dapzz-id @naufal225
+
+# --- Domain C: Skor & Produk (Rekishi, reviewer Kadavi)
+/backend/app/Services/Scoring/                 @rekis-0103 @dapzz-id
+/backend/app/Services/Sentiment/               @rekis-0103 @dapzz-id
+/backend/app/Services/Detection/ThreatScorer.php     @rekis-0103 @dapzz-id
+/backend/app/Services/Detection/SentimentAnalyzer.php @rekis-0103 @dapzz-id
+/backend/app/Console/Commands/*Evaluate*       @rekis-0103 @dapzz-id
+/backend/app/Http/Controllers/Api/V1/Dashboard*  @rekis-0103 @dapzz-id
+/backend/app/Http/Controllers/Api/V1/Labeling*   @rekis-0103 @dapzz-id
+/backend/app/Http/Controllers/Api/V1/Evaluation* @rekis-0103 @dapzz-id
+/backend/app/Http/Controllers/Api/V1/Setting*    @rekis-0103 @dapzz-id
+/backend/app/Http/Controllers/Api/V1/SystemStatus* @rekis-0103 @dapzz-id
+/backend/app/Models/Setting.php                @rekis-0103 @dapzz-id
+/backend/app/Models/EvaluationRun.php          @rekis-0103 @dapzz-id
+/backend/routes/api/dashboard.php              @rekis-0103 @dapzz-id
+/backend/routes/api/labeling.php               @rekis-0103 @dapzz-id
+/backend/routes/api/evaluation.php             @rekis-0103 @dapzz-id
+/backend/routes/api/settings.php               @rekis-0103 @dapzz-id
+/backend/routes/api/system.php                 @rekis-0103 @dapzz-id
+/backend/database/seeders/SettingsSeeder.php   @rekis-0103 @dapzz-id
+/backend/database/migrations/*_create_settings_table.php          @rekis-0103 @dapzz-id
+/backend/database/migrations/*_create_evaluation_runs_table.php   @rekis-0103 @dapzz-id
+/backend/resources/lexicon/                    @rekis-0103 @dapzz-id
+/backend/tests/Unit/Scoring/                   @rekis-0103 @dapzz-id
+/backend/tests/Unit/Sentiment/                 @rekis-0103 @dapzz-id
+/backend/tests/Feature/Evaluation/             @rekis-0103 @dapzz-id
+/backend/tests/Feature/Labeling/               @rekis-0103 @dapzz-id
+
+# ======================= FRONTEND =======================
+
+# --- Domain A (Naufal, reviewer Rekishi)
+/frontend/src/app/(app)/admin/sources/        @naufal225 @rekis-0103
+/frontend/src/app/(app)/admin/replay/         @naufal225 @rekis-0103
+/frontend/src/app/(app)/topics/               @naufal225 @rekis-0103
+/frontend/src/lib/labels/sources.ts           @naufal225 @rekis-0103
+/frontend/src/lib/labels/topics.ts            @naufal225 @rekis-0103
+/frontend/src/lib/labels/replay.ts            @naufal225 @rekis-0103
+
+# --- Domain B (Kadavi, reviewer Naufal)
+/frontend/src/app/(auth)/                     @dapzz-id @naufal225
+/frontend/src/app/api/                        @dapzz-id @naufal225
+/frontend/src/proxy.ts                        @dapzz-id @naufal225
+/frontend/src/app/(app)/layout.tsx            @dapzz-id @naufal225
+/frontend/src/app/(app)/alerts/               @dapzz-id @naufal225
+/frontend/src/app/(app)/briefings/            @dapzz-id @naufal225
+/frontend/src/app/(app)/admin/audit/          @dapzz-id @naufal225
+/frontend/src/app/(app)/admin/users/          @dapzz-id @naufal225
+/frontend/src/lib/api.ts                      @dapzz-id @naufal225
+/frontend/src/lib/permissions.ts              @dapzz-id @naufal225
+/frontend/src/lib/labels/alerts.ts            @dapzz-id @naufal225
+/frontend/src/lib/labels/briefings.ts         @dapzz-id @naufal225
+/frontend/src/lib/labels/audit.ts             @dapzz-id @naufal225
+/frontend/src/lib/labels/auth.ts              @dapzz-id @naufal225
+
+# --- Domain C (Rekishi, reviewer Kadavi)
+/frontend/src/app/(app)/dashboard/            @rekis-0103 @dapzz-id
+/frontend/src/app/(app)/labeling/             @rekis-0103 @dapzz-id
+/frontend/src/app/(app)/evaluation/           @rekis-0103 @dapzz-id
+/frontend/src/app/(app)/admin/settings/       @rekis-0103 @dapzz-id
+/frontend/src/app/(app)/admin/status/         @rekis-0103 @dapzz-id
+/frontend/src/lib/labels/dashboard.ts         @rekis-0103 @dapzz-id
+/frontend/src/lib/labels/scoring.ts           @rekis-0103 @dapzz-id
+/frontend/src/lib/labels/labeling.ts          @rekis-0103 @dapzz-id
+/frontend/src/lib/labels/evaluation.ts        @rekis-0103 @dapzz-id
+/frontend/src/lib/labels/settings.ts          @rekis-0103 @dapzz-id
+
+# --- Penggabung label: semua pemilik
+/frontend/src/lib/labels.ts                   @naufal225 @dapzz-id @rekis-0103

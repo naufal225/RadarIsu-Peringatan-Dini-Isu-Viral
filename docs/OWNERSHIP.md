@@ -1,0 +1,73 @@
+# Kepemilikan domain RadarIsu
+
+Dokumen ini adalah sumber kebenaran pembagian kerja. Semua agen dan anggota membacanya sebelum mengubah file.
+Perubahan pembagian dilakukan lewat PR yang mengubah file ini dan `.github/CODEOWNERS` bersamaan.
+
+## Domain
+
+| Domain | Pemilik | Reviewer | Fitur |
+|---|---|---|---|
+| **A: Data & Deteksi** | Naufal | Rekishi | F1, F2, F3, F4, F11, F13 |
+| **B: Keamanan & Alur** | Kadavi | Naufal | F6, F9, F10, F12 |
+| **C: Skor & Produk** | Rekishi | Kadavi | F5, F7, F8, F14 (usulan), F15 |
+
+Setiap domain punya dua pemilik di CODEOWNERS. Penulis PR tidak bisa menyetujui PR-nya sendiri, jadi reviewer selalu orang lain.
+
+## Tabel database
+
+| Tabel | Pemilik |
+|---|---|
+| sources, import_batches, raw_items, accounts, posts | A |
+| official_accounts, topics, topic_matches, metrics_hourly | A |
+| replay_scenarios, replay_rows | A |
+| users, roles, permissions, permission_role, personal_access_tokens | B |
+| alerts, alert_evidence, alert_actions, briefings, audit_logs | B |
+| settings | C |
+| evaluation_runs | C |
+
+Tabel yang dimiliki satu domain boleh dibaca domain lain, tetapi tidak diubah tanpa lewat pemiliknya.
+
+## Endpoint API (per file rute)
+
+| File | Pemilik |
+|---|---|
+| `routes/api/auth.php`, `users.php`, `alerts.php`, `briefings.php`, `audit.php` | B |
+| `routes/api/sources.php`, `imports.php`, `topics.php`, `replay.php` | A |
+| `routes/api/dashboard.php`, `labeling.php`, `evaluation.php`, `settings.php`, `system.php` | C |
+| `routes/api.php` (indeks, hanya memuat file di atas) | B |
+
+## Halaman frontend
+
+| Halaman | Pemilik |
+|---|---|
+| `/login`, BFF (`app/api/`), `proxy.ts`, layout `(app)`, `/alerts`, `/briefings`, `/admin/audit`, `/admin/users` | B |
+| `/admin/sources`, `/admin/replay`, `/topics` | A |
+| `/dashboard`, `/labeling`, `/evaluation`, `/admin/settings`, `/admin/status` | C |
+
+## File bersama
+
+- `CLAUDE.md`, `docs/PRD.md`, `docs/OWNERSHIP.md`, `docs/CONTRACTS.md`, `.github/CODEOWNERS`: review dari semua pemilik.
+- `frontend/src/lib/labels.ts` (penggabung): review dari semua pemilik. Label per domain ada di `lib/labels/{domain}.ts`.
+- `backend/config/permissions.php` dan `frontend/src/lib/permissions.ts`: dimiliki B. Setiap perubahan izin diumumkan di `HANDOFF.md`, karena memengaruhi semua domain.
+- `docker-compose.yml`, Dockerfile, `.github/workflows/`: dimiliki B.
+
+## Kontrak antar-domain
+
+Titik integrasi yang harus disepakati sebelum dipakai. Tulis detailnya di `docs/CONTRACTS.md`.
+
+| Dari → Ke | Kontrak |
+|---|---|
+| B → semua | Middleware `EnsurePermission` dan `AuditLogger` (dibutuhkan sejak Fase 1) |
+| C → A | `ThreatScorer::score(input) → {score, breakdown}` |
+| C → A | `SentimentAnalyzer::classify(text) → {label, score}` |
+| A → B | Service pembuatan alert untuk jenis `issue` dan `impersonation` |
+| C → A | Pembacaan `settings` untuk ambang deteksi (`Setting::detection()`) |
+| A → semua | Replay selalu lewat pipeline yang sama dengan sumber live |
+
+## Aturan
+
+1. Mengubah kepemilikan dilakukan lewat PR dan disetujui semua pemilik.
+2. Jika butuh perubahan di file milik domain lain, tulis di `HANDOFF.md`. Jangan mengedit langsung.
+3. Pemindahan file lintas domain dikerjakan dalam commit terpisah dari fitur.
+4. Migrasi diberi nama `*_create_{table}_table.php` agar pemilik bisa dipetakan per tabel. Migrasi perubahan (`add_*`, `alter_*`) harus menyebut tabelnya di nama file atau dikonfirmasi lewat `HANDOFF.md`.
+5. Pemindahan `ThreatScorer` dan `SentimentAnalyzer` ke `Services/Scoring/` dan `Services/Sentiment/` dilakukan sebagai commit refactor sendiri, lalu PRD §7 diperbarui.
