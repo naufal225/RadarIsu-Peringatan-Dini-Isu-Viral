@@ -129,5 +129,6 @@ export const settingsUi = {
     severity: "Severity",
     effectiveZ: "Ambang z efektif per sensitivitas",
     effectiveZNote: "Ambang z ditambah offset, minimal 2,0.",
+    unavailable: "Pratinjau tersedia setelah semua isian valid.",
   },
 } as const;

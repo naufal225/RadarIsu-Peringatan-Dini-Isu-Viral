@@ -17,7 +17,7 @@ import {
   type PreviewInput,
   type SettingsResponse,
 } from "@/lib/detection-settings";
-import { formatDateTime, invalidFields } from "@/lib/format";
+import { formatDateTime, formatDecimal, invalidFields } from "@/lib/format";
 import { severityLabels, ui } from "@/lib/labels";
 import { useApiData } from "@/lib/use-api-data";
 
@@ -39,6 +39,8 @@ const GROUPS: { title: string; fields: FieldPath[] }[] = [
 
 export function SettingsPanel() {
   const { data, error: loadError, reload } = useApiData<SettingsResponse>("settings/detection");
+  // Kept here: the form below remounts with fresh state after every save.
+  const [saved, setSaved] = useState(false);
 
   return (
     <>
@@ -49,18 +51,36 @@ export function SettingsPanel() {
         <p className="text-sm text-neutral-500">{ui.loading}</p>
       ) : (
         // Remounts with fresh form state after every save or reload.
-        <SettingsForm key={data.data.updated_at ?? "initial"} loaded={data.data} onSaved={reload} />
+        <SettingsForm
+          key={data.data.updated_at ?? "initial"}
+          loaded={data.data}
+          saved={saved}
+          onSaved={() => {
+            setSaved(true);
+            reload();
+          }}
+          onEdit={() => setSaved(false)}
+        />
       )}
     </>
   );
 }
 
-function SettingsForm({ loaded, onSaved }: { loaded: SettingsResponse["data"]; onSaved: () => void }) {
+function SettingsForm({
+  loaded,
+  saved,
+  onSaved,
+  onEdit,
+}: {
+  loaded: SettingsResponse["data"];
+  saved: boolean;
+  onSaved: () => void;
+  onEdit: () => void;
+}) {
   const [draft, setDraft] = useState<DetectionSettings>(loaded.value);
   const [serverFields, setServerFields] = useState<string[]>([]);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [saved, setSaved] = useState(false);
 
   const clientFields = validateDetection(draft);
   const invalid = new Set([...clientFields, ...serverFields]);
@@ -69,7 +89,7 @@ function SettingsForm({ loaded, onSaved }: { loaded: SettingsResponse["data"]; o
   function change(path: string, raw: string) {
     setDraft((current) => setPath(current, path, raw === "" ? Number.NaN : Number(raw)));
     setServerFields([]);
-    setSaved(false);
+    onEdit();
   }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -77,10 +97,9 @@ function SettingsForm({ loaded, onSaved }: { loaded: SettingsResponse["data"]; o
     setPending(true);
     setError(null);
     setServerFields([]);
-    setSaved(false);
+    onEdit();
     try {
       await api("settings/detection", { method: "PUT", body: JSON.stringify(draft) });
-      setSaved(true);
       onSaved();
     } catch (e) {
       if (e instanceof ApiError && e.status === 422) setServerFields(invalidFields(e.body));
@@ -104,7 +123,7 @@ function SettingsForm({ loaded, onSaved }: { loaded: SettingsResponse["data"]; o
                   key={path}
                   path={path}
                   value={getPath(draft, path)}
-                  invalid={invalid.has(path)}
+                  invalid={invalid.has(path) || invalid.has(path.split(".")[0])}
                   onChange={change}
                 />
               ))}
@@ -194,7 +213,7 @@ function FormulaPreview({ settings, usable }: { settings: DetectionSettings; usa
   return (
     <Section title={labels.title}>
       <p className="mb-3 max-w-3xl text-sm text-neutral-600">{labels.intro}</p>
-      <p className="mb-4 max-w-4xl rounded-md bg-neutral-50 p-3 font-mono text-xs">
+      <p className="mb-4 max-w-4xl rounded-md bg-neutral-50 p-3 font-mono text-xs text-neutral-900">
         {Number.isNaN(weightsTotal(settings)) ? "…" : labels.formula(settings.weights)}
       </p>
 
@@ -203,6 +222,7 @@ function FormulaPreview({ settings, usable }: { settings: DetectionSettings; usa
           <Field key={key} label={labels.inputs[key]}>
             <input
               type="number"
+              name={`preview_${key}`}
               min={0}
               step={key === "z" ? 0.1 : 0.01}
               value={input[key]}
@@ -219,9 +239,9 @@ function FormulaPreview({ settings, usable }: { settings: DetectionSettings; usa
             {WEIGHT_KEYS.map((key) => (
               <tr key={key}>
                 <Td>{labels.components[key]}</Td>
-                <Td>{preview.components[key].raw}</Td>
+                <Td>{formatDecimal(preview.components[key].raw)}</Td>
                 <Td>{preview.components[key].weight}</Td>
-                <Td>{preview.components[key].value.toFixed(1)}</Td>
+                <Td>{formatDecimal(preview.components[key].value, 1, 1)}</Td>
               </tr>
             ))}
           </Table>
@@ -236,14 +256,16 @@ function FormulaPreview({ settings, usable }: { settings: DetectionSettings; usa
             <ul className="text-sm text-neutral-700">
               {SENSITIVITIES.map((key) => (
                 <li key={key}>
-                  {copy.fields[`sensitivity_z_offset.${key}`].label}: <strong>{effectiveZ(settings, key).toFixed(1)}</strong>
+                  {copy.fields[`sensitivity_z_offset.${key}`].label}: <strong>{formatDecimal(effectiveZ(settings, key), 1, 2)}</strong>
                 </li>
               ))}
             </ul>
             <p className="mt-1 text-xs text-neutral-500">{labels.effectiveZNote}</p>
           </div>
         </div>
-      ) : null}
+      ) : (
+        <p className="text-sm text-neutral-500">{labels.unavailable}</p>
+      )}
     </Section>
   );
 }
