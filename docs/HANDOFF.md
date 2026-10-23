@@ -4,6 +4,15 @@ Papan pengumuman untuk perubahan yang menyentuh domain lain, perubahan izin, dan
 
 ---
 
+## 2026-10-23: F15 pengaturan deteksi tersedia (branch `feat/c-f15-pengaturan-deteksi`)
+
+- **Untuk domain A (detektor, Fase 4):** baca ambang dan bobot lewat `Setting::detection()`. Jangan hardcode angka. Arti tiap kunci ada di `docs/DETECTION_SETTINGS.md`. Hasilnya tidak di-cache, jadi panggil sekali per eksekusi.
+- **Untuk Rekishi (reviewer F15):** `SettingController` kini nyata (sebelumnya stub 501), `Setting` model mendapat `DETECTION_DEFAULTS`, `detection()`, dan relasi `updatedBy`, dan `SettingsSeeder` memakai konstanta yang sama. Halaman baru `/admin/settings`, label di `lib/labels/settings.ts`, dan tautan nav untuk `settings.manage`.
+- **Untuk semua pemilik:** rentang validasi dan aturan jumlah bobot = 100 adalah keputusan implementasi (PRD tidak merinci). Lihat `docs/OPEN_QUESTIONS.md`.
+- Tidak ada migrasi dan tidak ada izin baru.
+
+---
+
 ## 2026-10-23: Pengalihan F10, F12, F15 ke Naufal
 
 **Dari:** Naufal (@naufal225). **Butuh approval:** Kadavi (@dapzz-id) dan Rekishi (@rekis-0103), karena perubahan kepemilikan harus disetujui semua pemilik (OWNERSHIP aturan 1).
