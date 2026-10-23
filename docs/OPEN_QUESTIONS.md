@@ -6,6 +6,7 @@ Dicatat sesuai CLAUDE.md: konflik tidak ditebak. Keputusan dicatat di sini dan d
 
 1. **Halaman alert:** dipindah dari Fase 8 ke Fase 5? Ini diusulkan agar alur triase bisa diuji lewat UI, tetapi belum diputuskan.
 2. **Uji koneksi RSS tanpa tes otomatis jaringan nyata.** Tes memakai `Http::fake`, sehingga validasi opsi cURL oleh Guzzle tidak ikut teruji. Pada Fase 2 ini sempat lolos tes tetapi gagal 500 di Docker (`CURLOPT_MAXFILESIZE` ditolak Guzzle); sudah diperbaiki dan diverifikasi manual ke feed nyata dan file 10 MB. Perlu diputuskan apakah ingest Fase 3 diberi tes integrasi dengan server HTTP lokal.
+3. **Migrasi gabungan lintas domain.** `*_create_rbac_tables.php` dan `*_create_audit_replay_evaluation_settings_tables.php` membuat tabel milik beberapa pemilik sekaligus. Ini tidak sesuai OWNERSHIP aturan 4 (`*_create_{table}_table.php`). Migrasi tersebut tidak dipecah, karena sudah dijalankan di DB dev dan Docker. Kepemilikannya ditetapkan lewat pola nama file aktual di CODEOWNERS: migrasi audit/replay/evaluasi/settings butuh review ketiga pemilik. Migrasi baru tetap wajib mengikuti aturan 4. Perlu diputuskan apakah migrasi lama dipecah sebelum deploy final.
 
 ## Diputuskan 2026-10-21 (PRD v2.2, Fase 2)
 

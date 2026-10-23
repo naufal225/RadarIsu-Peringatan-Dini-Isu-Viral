@@ -8,10 +8,22 @@ Perubahan pembagian dilakukan lewat PR yang mengubah file ini dan `.github/CODEO
 | Domain | Pemilik | Reviewer | Fitur |
 |---|---|---|---|
 | **A: Data & Deteksi** | Naufal | Rekishi | F1, F2, F3, F4, F11, F13 |
-| **B: Keamanan & Alur** | Kadavi | Naufal | F6, F9, F10, F12 |
-| **C: Skor & Produk** | Rekishi | Kadavi | F5, F7, F8, F14 (usulan), F15 |
+| **B: Keamanan & Alur** | Kadavi | Naufal | F6, F9 (F10, F12 dialihkan, lihat di bawah) |
+| **C: Skor & Produk** | Rekishi | Kadavi | F5, F7, F8, F14 (usulan) (F15 dialihkan, lihat di bawah) |
 
 Setiap domain punya dua pemilik di CODEOWNERS. Penulis PR tidak bisa menyetujui PR-nya sendiri, jadi reviewer selalu orang lain.
+
+## Pengalihan tugas
+
+Fitur yang dipindah ke pemilik lain setelah pembagian awal. Pemilik lama menjadi reviewer, agar pemilik baru tidak menyetujui PR-nya sendiri.
+
+| Fitur | Pemilik lama | Pemilik baru | Reviewer | Tanggal | Branch |
+|---|---|---|---|---|---|
+| F10 Audit log | Kadavi | Naufal | Kadavi | 2026-10-23 | `feat/b-f10-audit-logger`, `feat/b-f10-audit-ui` |
+| F12 Autentikasi dan RBAC | Kadavi | Naufal | Kadavi | 2026-10-23 | `feat/b-f12-auth-rbac` |
+| F15 Pengaturan deteksi | Rekishi | Naufal | Rekishi | 2026-10-23 | `feat/c-f15-pengaturan-deteksi` |
+
+Prefiks domain di nama branch (`b-`, `c-`) tidak diubah. Path CODEOWNERS untuk fitur ini ada di blok "Pengalihan tugas" di bagian bawah `.github/CODEOWNERS`.
 
 ## Tabel database
 
@@ -20,9 +32,10 @@ Setiap domain punya dua pemilik di CODEOWNERS. Penulis PR tidak bisa menyetujui 
 | sources, import_batches, raw_items, accounts, posts | A |
 | official_accounts, topics, topic_matches, metrics_hourly | A |
 | replay_scenarios, replay_rows | A |
-| users, roles, permissions, permission_role, personal_access_tokens | B |
-| alerts, alert_evidence, alert_actions, briefings, audit_logs | B |
-| settings | C |
+| users, roles, permissions, permission_role, personal_access_tokens | Naufal (F12) |
+| alerts, alert_evidence, alert_actions, briefings | B |
+| audit_logs | Naufal (F10) |
+| settings | Naufal (F15) |
 | evaluation_runs | C |
 
 Tabel yang dimiliki satu domain boleh dibaca domain lain, tetapi tidak diubah tanpa lewat pemiliknya.
@@ -31,24 +44,30 @@ Tabel yang dimiliki satu domain boleh dibaca domain lain, tetapi tidak diubah ta
 
 | File | Pemilik |
 |---|---|
-| `routes/api/auth.php`, `users.php`, `alerts.php`, `briefings.php`, `audit.php` | B |
+| `routes/api/auth.php`, `users.php` | Naufal (F12) |
+| `routes/api/audit.php` | Naufal (F10) |
+| `routes/api/alerts.php`, `briefings.php` | B |
 | `routes/api/sources.php`, `imports.php`, `topics.php`, `replay.php` | A |
-| `routes/api/dashboard.php`, `labeling.php`, `evaluation.php`, `settings.php`, `system.php` | C |
+| `routes/api/settings.php` | Naufal (F15) |
+| `routes/api/dashboard.php`, `labeling.php`, `evaluation.php`, `system.php` | C |
 | `routes/api.php` (indeks, hanya memuat file di atas) | B |
 
 ## Halaman frontend
 
 | Halaman | Pemilik |
 |---|---|
-| `/login`, BFF (`app/api/`), `proxy.ts`, layout `(app)`, `/alerts`, `/briefings`, `/admin/audit`, `/admin/users` | B |
+| `/login`, BFF (`app/api/`), `proxy.ts`, layout `(app)`, `/admin/users` | Naufal (F12) |
+| `/admin/audit` | Naufal (F10) |
+| `/alerts`, `/briefings` | B |
 | `/admin/sources`, `/admin/replay`, `/topics` | A |
-| `/dashboard`, `/labeling`, `/evaluation`, `/admin/settings`, `/admin/status` | C |
+| `/admin/settings` | Naufal (F15) |
+| `/dashboard`, `/labeling`, `/evaluation`, `/admin/status` | C |
 
 ## File bersama
 
 - `CLAUDE.md`, `docs/PRD.md`, `docs/OWNERSHIP.md`, `docs/CONTRACTS.md`, `.github/CODEOWNERS`: review dari semua pemilik.
 - `frontend/src/lib/labels.ts` (penggabung): review dari semua pemilik. Label per domain ada di `lib/labels/{domain}.ts`.
-- `backend/config/permissions.php` dan `frontend/src/lib/permissions.ts`: dimiliki B. Setiap perubahan izin diumumkan di `HANDOFF.md`, karena memengaruhi semua domain.
+- `backend/config/permissions.php` dan `frontend/src/lib/permissions.ts`: dimiliki Naufal (F12). Setiap perubahan izin diumumkan di `HANDOFF.md`, karena memengaruhi semua domain.
 - `docker-compose.yml`, Dockerfile, `.github/workflows/`: dimiliki B.
 
 ## Kontrak antar-domain
@@ -57,11 +76,11 @@ Titik integrasi yang harus disepakati sebelum dipakai. Tulis detailnya di `docs/
 
 | Dari → Ke | Kontrak |
 |---|---|
-| B → semua | Middleware `EnsurePermission` dan `AuditLogger` (dibutuhkan sejak Fase 1) |
+| F12, F10 (Naufal) → semua | Middleware `EnsurePermission` dan `AuditLogger` (dibutuhkan sejak Fase 1) |
 | C → A | `ThreatScorer::score(input) → {score, breakdown}` |
 | C → A | `SentimentAnalyzer::classify(text) → {label, score}` |
 | A → B | Service pembuatan alert untuk jenis `issue` dan `impersonation` |
-| C → A | Pembacaan `settings` untuk ambang deteksi (`Setting::detection()`) |
+| F15 (Naufal) → A | Pembacaan `settings` untuk ambang deteksi (`Setting::detection()`) |
 | A → semua | Replay selalu lewat pipeline yang sama dengan sumber live |
 
 ## Aturan
