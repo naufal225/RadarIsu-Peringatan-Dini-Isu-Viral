@@ -66,6 +66,21 @@ class AuthTest extends TestCase
         $this->assertSame(1, AuditLog::where('action', 'auth.logout')->count());
     }
 
+    public function test_token_expires_after_eight_hours(): void
+    {
+        $user = $this->userWithRole('analyst', ['password' => self::PASSWORD]);
+        $token = $this->postJson('/api/v1/auth/login', ['email' => $user->email, 'password' => self::PASSWORD])
+            ->json('data.token');
+
+        // PRD §13: sanctum.expiration = 480 minutes.
+        $this->travel(479)->minutes();
+        $this->withToken($token)->getJson('/api/v1/auth/me')->assertOk();
+
+        $this->resetAuth();
+        $this->travel(2)->minutes();
+        $this->withToken($token)->getJson('/api/v1/auth/me')->assertUnauthorized();
+    }
+
     public function test_inactive_user_cannot_login(): void
     {
         $user = $this->userWithRole('analyst', ['password' => self::PASSWORD, 'is_active' => false]);

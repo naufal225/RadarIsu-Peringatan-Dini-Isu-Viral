@@ -14,7 +14,9 @@ import {
   sourceStatusLabels,
   sourceTypeLabels,
   topicCategoryLabels,
+  ui,
 } from "./labels";
+import { authUi, roleLabels as authRoleLabels } from "./labels/auth";
 import { ROLES } from "./permissions";
 
 const keys = (map: object) => Object.keys(map).sort();
@@ -24,6 +26,14 @@ describe("label map", () => {
   it("covers every role from the generated permissions", () => {
     expect(keys(roleLabels)).toEqual([...ROLES].sort());
     expect(roleLabels).toEqual({ admin: "Admin Sistem", analyst: "Analis", leader: "Pimpinan" });
+  });
+
+  it("merges the F12 label file into the shared map", () => {
+    expect(roleLabels).toBe(authRoleLabels);
+    expect(ui.login).toBe(authUi.login);
+    expect(ui.logout).toBe(authUi.logout);
+    expect(ui.forbidden).toBe(authUi.forbidden);
+    expect(ui.users).toBe(authUi.users);
   });
 
   it("covers every alert status, kind and severity (§9.5)", () => {
