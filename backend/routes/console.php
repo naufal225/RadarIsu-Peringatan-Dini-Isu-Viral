@@ -1,8 +1,10 @@
 <?php
 
+use App\Jobs\NormalizePostsJob;
 use App\Support\PermissionsTypeScript;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Schedule;
 
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
@@ -28,3 +30,9 @@ Artisan::command('permissions:export-ts {--check : Fail if the generated file is
 
     return 0;
 })->purpose('Generate frontend/src/lib/permissions.ts from config/permissions.php');
+
+// PRD §10.2. Imports and ingestors dispatch NormalizePostsJob themselves; the sweep picks up whatever
+// a lost job or a stopped worker left behind. `radarisu:aggregate` is the safety net behind the
+// event-driven AggregateMetricsJob.
+Schedule::job(new NormalizePostsJob)->everyMinute()->withoutOverlapping();
+Schedule::command('radarisu:aggregate')->everyFiveMinutes()->withoutOverlapping();

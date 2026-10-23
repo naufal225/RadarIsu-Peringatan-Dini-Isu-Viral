@@ -128,16 +128,17 @@ class AccessMatrixTest extends TestCase
     {
         $this->actingAsRole('analyst');
 
-        $this->getJson('/api/v1/topics')
+        // The dashboard is still a stub (Phase 6); topics were the example until Phase 3 implemented them.
+        $this->getJson('/api/v1/dashboard/summary')
             ->assertStatus(501)
-            ->assertExactJson(['message' => 'Belum diimplementasikan', 'meta' => ['pending_phase' => 3]]);
+            ->assertExactJson(['message' => 'Belum diimplementasikan', 'meta' => ['pending_phase' => 6]]);
     }
 
     public function test_permission_is_checked_before_stub(): void
     {
         $this->actingAsRole('admin');
 
-        $this->getJson('/api/v1/topics')->assertForbidden();
+        $this->getJson('/api/v1/dashboard/summary')->assertForbidden();
     }
 
     private function fixture(string $fixture): ?int

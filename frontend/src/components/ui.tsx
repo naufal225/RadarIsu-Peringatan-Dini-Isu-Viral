@@ -84,7 +84,12 @@ export function FieldErrors({ fields }: { fields: string[] }) {
   );
 }
 
-export function StatusBadge({ tone, children }: { tone: "ok" | "error" | "muted"; children: ReactNode }) {
-  const style = { ok: "bg-green-100 text-green-800", error: "bg-red-100 text-red-800", muted: "bg-neutral-100 text-neutral-700" }[tone];
+export function StatusBadge({ tone, children }: { tone: "ok" | "error" | "warn" | "muted"; children: ReactNode }) {
+  const style = {
+    ok: "bg-green-100 text-green-800",
+    error: "bg-red-100 text-red-800",
+    warn: "bg-amber-100 text-amber-900",
+    muted: "bg-neutral-100 text-neutral-700",
+  }[tone];
   return <span className={`rounded px-2 py-0.5 text-xs font-medium ${style}`}>{children}</span>;
 }

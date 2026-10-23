@@ -35,3 +35,18 @@ Dicatat sesuai CLAUDE.md: konflik tidak ditebak. Keputusan dicatat di sini dan d
 10. **Dependensi frontend** dipasang saat pertama dipakai.
 11. **Topik dari templat** — ditolak bila keyword masih mengandung `[`/`]`, dan aktif setelah lolos. Aturan ini dicatat di PRD §9.8/§11 dan di stub `TopicController`. Implementasinya di **Fase 3**, karena `POST /topics` masih stub.
 12. **CLAUDE.md** — aturan root menang. `laravel/boost` tidak dipasang. *Selesai.*
+
+## Menunggu persetujuan: pipeline dan F2 (Fase 3), keputusan implementasi
+
+PRD tidak merinci hal-hal berikut. Diterapkan sebagai keputusan implementasi (dasarnya di `docs/PIPELINE.md`) dan menunggu persetujuan semua pemilik. Bila disetujui, masukkan ke PRD §9.3-§9.4, §10.1, §11.
+
+1. **Pencocokan kata kunci:** kata atau frasa utuh pada `text_norm`, tidak peka huruf besar-kecil (PRD hanya menulis "case-insensitive"). Akibatnya `"korupsi"` tidak cocok dengan `"korupsinya"`, dan mention tidak bisa dicocokkan karena §10.4 membuangnya dari `text_norm`. Alternatif yang ditimbang: awalan kata (menerima akhiran, tetapi kata kunci pendek seperti `ad` ikut cocok dengan `adalah`) dan substring bebas (recall tertinggi, paling berisik).
+2. **`accounts.first_seen_at`** adalah `posted_at` paling awal yang pernah terlihat untuk akun itu, bukan waktu server. §9.3 tidak mendefinisikannya, sedangkan §10.7 membandingkannya dengan waktu data.
+3. **`metrics_hourly.anomalous_accounts`** hanya diisi detektor koordinasi (§10.6 langkah 4). Agregator mengisi 0 pada baris baru dan tidak pernah menimpanya.
+4. **`neutral_count = volume − positive − negative`** (posting tanpa sentimen dihitung netral).
+5. **Rentang bawaan `GET /topics/{id}/metrics`**: 7 hari yang berakhir pada hari metrik terakhir topik itu, bukan relatif terhadap "sekarang", agar data historis (CSV) tidak tampil kosong. `from`/`to` berupa tanggal UTC, maksimum 31 hari. §11 hanya menulis `?from&to`.
+6. **Item mentah yang rusak dilewati** (ditandai terproses, dicatat di log) agar tidak memblokir antrean. `raw_items` tidak punya kolom galat; menambahkannya butuh migrasi baru.
+7. **Baris templat tidak bisa diubah** (`PATCH` → 422). Topik dibuat dengan `POST` dari isian templat, dan `POST` dengan kata kunci berisi `[` atau `]` ditolak sesuai §9.8.
+8. **Menonaktifkan topik** menghentikan pencocokan baru tetapi mempertahankan riwayat kecocokan dan metrik. Mengaktifkan kembali atau mengubah kata kunci mencocokkan ulang semua posting tersimpan.
+9. **Batas kata kunci:** 1-50 per topik, 1-100 karakter per kata kunci, minimal satu yang memuat huruf atau angka.
+10. **Pengecualian Fase 3:** `radarisu:ingest`, `RssIngestor`, dan `YoutubeIngestor` belum dikerjakan. Pipeline sudah menerima payload kanonik dari mereka (`docs/CONTRACTS.md` §2.3).

@@ -2,12 +2,14 @@
 
 namespace Tests\Feature\Sources;
 
+use App\Jobs\NormalizePostsJob;
 use App\Models\AuditLog;
 use App\Models\ImportBatch;
 use App\Models\RawItem;
 use App\Models\Source;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
@@ -27,6 +29,8 @@ class CsvImportTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        // These tests are about the import itself; the pipeline behind it is covered in tests/Feature/Ingest.
+        Queue::fake();
         $this->source = Source::factory()->create(['type' => 'csv']);
         $this->actingAsRole('admin');
     }
@@ -42,6 +46,22 @@ class CsvImportTest extends TestCase
     private function row(string $text, string $handle = '@akun_a', string $postedAt = '2026-10-20T08:15:00+07:00', string $rest = ',,,'): string
     {
         return '"'.str_replace('"', '""', $text).'",'.$handle.','.$postedAt.$rest;
+    }
+
+    public function test_import_queues_normalization_only_when_rows_were_saved(): void
+    {
+        $csv = self::HEADER."\n".$this->row('Satu');
+
+        $this->import($csv)->assertCreated();
+        Queue::assertPushed(NormalizePostsJob::class, 1);
+
+        // The same file again: every row is a duplicate, nothing new to process.
+        $this->import($csv)->assertCreated()->assertJsonPath('data.success_rows', 0);
+        Queue::assertPushed(NormalizePostsJob::class, 1);
+
+        // A rejected file writes nothing.
+        $this->import("text,account_handle\nx,@a")->assertUnprocessable();
+        Queue::assertPushed(NormalizePostsJob::class, 1);
     }
 
     public function test_valid_file_creates_raw_items_and_batch(): void
