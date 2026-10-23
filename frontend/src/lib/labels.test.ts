@@ -9,6 +9,7 @@ import {
   evidenceReasonLabels,
   manualLabelLabels,
   roleLabels,
+  sensitivityLabels,
   sentimentLabels,
   severityLabels,
   sourceStatusLabels,
@@ -20,6 +21,7 @@ import { FIELD_RANGES } from "./detection-settings";
 import { authUi, roleLabels as authRoleLabels } from "./labels/auth";
 import { settingsUi } from "./labels/settings";
 import { ROLES } from "./permissions";
+import { CATEGORIES, SENSITIVITIES } from "./topics";
 
 const keys = (map: object) => Object.keys(map).sort();
 
@@ -46,6 +48,12 @@ describe("label map", () => {
       expect(field.label.trim()).not.toBe("");
       expect(field.hint.trim()).not.toBe("");
     }
+  it("labels every topic category and sensitivity, and the API error codes of topics", () => {
+    expect(keys(topicCategoryLabels)).toEqual([...CATEGORIES].sort());
+    expect(keys(sensitivityLabels)).toEqual([...SENSITIVITIES].sort());
+    // Codes TopicController returns as validation messages.
+    expect(keys(ui.topics.errors)).toEqual(["keyword_has_placeholder", "keywords_unmatchable", "range_too_long", "template_readonly"]);
+    for (const message of Object.values(ui.topics.errors)) expect(message.trim()).not.toBe("");
   });
 
   it("covers every alert status, kind and severity (§9.5)", () => {

@@ -60,6 +60,10 @@
 /backend/tests/Feature/Detection/              @naufal225 @rekis-0103
 /backend/tests/Feature/Replay/                 @naufal225 @rekis-0103
 /backend/tests/Unit/Detection/                 @naufal225 @rekis-0103
+/backend/tests/Feature/Topics/                 @naufal225 @rekis-0103
+/backend/app/Http/Resources/TopicResource.php            @naufal225 @rekis-0103
+/backend/app/Http/Resources/OfficialAccountResource.php  @naufal225 @rekis-0103
+/backend/routes/console.php                    @naufal225 @rekis-0103
 
 # --- Domain B: Keamanan & Alur (Kadavi, reviewer Naufal). F10 dan F12 dialihkan, lihat blok bawah
 /backend/app/Policies/                         @dapzz-id @naufal225
@@ -111,6 +115,8 @@
 /frontend/src/app/(app)/topics/               @naufal225 @rekis-0103
 /frontend/src/lib/labels/sources.ts           @naufal225 @rekis-0103
 /frontend/src/lib/labels/topics.ts            @naufal225 @rekis-0103
+/frontend/src/lib/topics.ts                    @naufal225 @rekis-0103
+/frontend/src/lib/topics.test.ts               @naufal225 @rekis-0103
 /frontend/src/lib/labels/replay.ts            @naufal225 @rekis-0103
 
 # --- Domain B (Kadavi, reviewer Naufal)

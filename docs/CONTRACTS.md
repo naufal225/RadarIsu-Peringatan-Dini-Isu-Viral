@@ -73,13 +73,21 @@ Notasi izin mengikuti `config/permissions.php`. "Policy" berarti selain izin, be
 
 | Rute | Izin | Catatan |
 |---|---|---|
-| `GET /topics` | `topics.view` | |
-| `POST /topics` | `topics.manage` | Templat UC1–UC3 ditolak bila kata kuncinya masih mengandung `[` atau `]` |
-| `PATCH /topics/{id}` | `topics.manage` | Termasuk menonaktifkan |
-| `GET /topics/{id}/metrics?from&to` | `topics.view` | Deret dari `metrics_hourly` |
-| `GET /official-accounts` | `topics.view` | |
-| `POST /official-accounts` | `topics.manage` | |
-| `DELETE /official-accounts/{id}` | `topics.manage` | |
+| `GET /topics` | `topics.view` | Semua topik; templat (`is_template`) di urutan terakhir |
+| `POST /topics` | `topics.manage` | Kata kunci berisi `[` atau `]` ditolak 422 (PRD §9.8), kata kunci tanpa huruf atau angka ditolak. Memicu pencocokan ulang topik. Audit `topic.create` |
+| `PATCH /topics/{id}` | `topics.manage` | Termasuk menonaktifkan. Templat tidak bisa diubah (422 `template_readonly`). Kata kunci atau status aktif yang berubah memicu pencocokan ulang. Audit `topic.update` |
+| `GET /topics/{id}/metrics?from&to` | `topics.view` | Deret `metrics_hourly`. `from`/`to` `Y-m-d` UTC, `to` mencakup harinya, maksimum 31 hari. Bawaan: 7 hari yang berakhir pada hari metrik terakhir. `meta`: `from`, `to` (tidak ikut dihitung), `total`, `has_simulated_data` |
+| `GET /official-accounts` | `topics.view` | Urut `handle` |
+| `POST /official-accounts` | `topics.manage` | `handle` unik. Audit `official_account.create` |
+| `DELETE /official-accounts/{id}` | `topics.manage` | 204. Audit `official_account.delete` |
+
+Perilaku rinci, bentuk respons metrik, dan aturan validasi: `docs/PIPELINE.md`.
+
+**Kontrak pipeline untuk penulis `raw_items`** (impor CSV, `RssIngestor`, `YoutubeIngestor`, `ReplayRunner`):
+
+- `payload` berbentuk kanonik: `text`, `account_handle`, `posted_at` wajib; `external_id`, `account_display_name`, `account_created_at` opsional. Waktu dalam ISO 8601 dengan zona waktu.
+- Setelah menulis, panggil `NormalizePostsJob::dispatch()`.
+- `sources.type` dan `sources.is_simulated` menentukan `accounts.source_type` dan `posts.is_simulated`.
 
 ### 2.4 Dasbor (C)
 

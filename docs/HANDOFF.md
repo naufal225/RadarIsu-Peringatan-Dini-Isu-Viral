@@ -4,12 +4,20 @@ Papan pengumuman untuk perubahan yang menyentuh domain lain, perubahan izin, dan
 
 ---
 
-## 2026-10-23: F15 pengaturan deteksi tersedia (branch `feat/c-f15-pengaturan-deteksi`)
+## 2026-10-23: Pipeline normalisasi → topic match → agregasi, dan F2 (branch `feat/a-f2-topik-pantauan`)
 
-- **Untuk domain A (detektor, Fase 4):** baca ambang dan bobot lewat `Setting::detection()`. Jangan hardcode angka. Arti tiap kunci ada di `docs/DETECTION_SETTINGS.md`. Hasilnya tidak di-cache, jadi panggil sekali per eksekusi.
-- **Untuk Rekishi (reviewer F15):** `SettingController` kini nyata (sebelumnya stub 501), `Setting` model mendapat `DETECTION_DEFAULTS`, `detection()`, dan relasi `updatedBy`, dan `SettingsSeeder` memakai konstanta yang sama. Halaman baru `/admin/settings`, label di `lib/labels/settings.ts`, dan tautan nav untuk `settings.manage`.
-- **Untuk semua pemilik:** rentang validasi dan aturan jumlah bobot = 100 adalah keputusan implementasi (PRD tidak merinci). Lihat `docs/OPEN_QUESTIONS.md`.
-- Tidak ada migrasi dan tidak ada izin baru.
+Detail lengkap di `docs/PIPELINE.md`.
+
+- **Untuk penulis `raw_items` (ingestor RSS/YouTube, `ReplayRunner`):** tulis `payload` berbentuk kanonik (sama dengan CSV dan `replay_rows`) lalu panggil `NormalizePostsJob::dispatch()`. Tanpa itu data baru menunggu sapuan tiap menit.
+- **Untuk Fase 4 (detektor, domain A):**
+  - `metrics_hourly` diisi pipeline per (topik, jam UTC). Kolom `anomalous_accounts` **milik CoordinationDetector**: agregator tidak pernah menimpanya.
+  - `accounts.first_seen_at` berada di sumbu waktu data (`posted_at` paling awal), cocok dengan `DataClock` pada §10.7.
+  - `MetricsAggregator` menerima awal jendela sebagai argumen; suntikkan `DataClock::now()` di sana.
+  - Hanya topik aktif yang dicocokkan; `TopicMatcher` memakai `SentimentAnalyzer::normalizeText()` sebagai satu-satunya normalisasi.
+- **Untuk Rekishi (reviewer):** `Services/Ingest/PostNormalizer` memanggil `SentimentAnalyzer::normalizeText()` dan `classify()` (file domain C), tanpa mengubahnya. Pipeline menyimpan label dan skor persis seperti yang dikembalikan.
+- **Untuk semua pemilik:** menjalankan pipeline secara lokal butuh `php artisan queue:work --tries=3` (Docker tidak wajib). Perubahan di `app-nav.tsx` (tautan Topik) dan `labels.ts` bisa bentrok dengan F15; keduanya hanya menambah baris.
+- **Perubahan di file bersama:** `StatusBadge` di `components/ui.tsx` mendapat nada `warn`. `routes/console.php` mendapat dua entri jadwal. `CsvImportTest` memakai `Queue::fake()`, dan contoh stub di `AccessMatrixTest` pindah dari `/topics` ke `/dashboard/summary`.
+- Dependensi baru: `recharts` (frontend).
 
 ---
 

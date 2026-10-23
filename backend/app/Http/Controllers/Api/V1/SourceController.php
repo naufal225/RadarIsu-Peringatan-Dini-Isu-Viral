@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ImportBatchResource;
 use App\Http\Resources\SourceResource;
+use App\Jobs\NormalizePostsJob;
 use App\Models\Setting;
 use App\Models\Source;
 use App\Services\Audit\AuditLogger;
@@ -118,6 +119,11 @@ class SourceController extends Controller
         $file = $request->file('file');
         $filename = Str::limit(basename($file->getClientOriginalName()), 190, '');
         $batch = $importer->import($source, $file->getRealPath(), $filename, $request->user());
+
+        // The raw items are saved; turning them into posts, topic matches and metrics happens on the queue.
+        if ($batch->success_rows > 0) {
+            NormalizePostsJob::dispatch();
+        }
 
         $this->audit->log('source.import', $source, [
             'import_batch_id' => $batch->id,

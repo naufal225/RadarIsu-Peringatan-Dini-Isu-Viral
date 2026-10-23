@@ -2,10 +2,12 @@
 
 import { authUi } from "./labels/auth";
 import { settingsUi } from "./labels/settings";
+import { topicsUi } from "./labels/topics";
 import { bUi } from "./labels/b";
 
 // Per-owner label files (docs/OWNERSHIP.md) are merged here so callers keep one import path.
 export { roleLabels } from "./labels/auth";
+export { sensitivityLabels, topicCategoryLabels } from "./labels/topics";
 
 export const alertStatusLabels = {
   new: "Baru",
@@ -31,13 +33,6 @@ export const evidenceReasonLabels = {
   synchronized_posting: "Posting serentak",
   name_similarity: "Nama mirip akun resmi",
   spike_sample: "Contoh posting saat lonjakan",
-} as const;
-
-export const topicCategoryLabels = {
-  institution: "Institusi",
-  impersonation: "Peniruan",
-  opsec: "OPSEC",
-  general: "Umum",
 } as const;
 
 export const alertActionLabels = {
@@ -138,6 +133,9 @@ export const ui = {
     settings: settingsUi.title,
   },
   settings: settingsUi,
+    topics: "Topik",
+  },
+  topics: topicsUi,
   alerts: bUi.alerts,
   briefings: bUi.briefings,
   common: {
