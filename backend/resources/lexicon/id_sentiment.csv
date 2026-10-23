@@ -1,0 +1,2577 @@
+term,polarity
+bagus,1
+baik,1
+hebat,1
+mantap,1
+unggul,1
+juara,1
+prestasi,1
+aman,1
+damai,1
+tertib,1
+tenteram,1
+sejahtera,1
+sukses,1
+berhasil,1
+kemenangan,1
+menang,1
+maju,1
+positif,1
+jujur,1
+integritas,1
+setia,1
+loyal,1
+patriot,1
+pahlawan,1
+berani,1
+tangguh,1
+solid,1
+kompak,1
+bersatu,1
+gotong royong,1
+peduli,1
+mengayomi,1
+melindungi,1
+perlindungan,1
+pertahanan,1
+menjaga,1
+amanah,1
+berbakti,1
+pengabdian,1
+ikhlas,1
+terpuji,1
+teladan,1
+panutan,1
+profesional,1
+disiplin,1
+bijaksana,1
+bijak,1
+cerdas,1
+terpercaya,1
+andal,1
+apresiasi,1
+pujian,1
+kagum,1
+bangga,1
+membanggakan,1
+mendukung,1
+dukungan,1
+hormat,1
+menghormati,1
+senang,1
+bahagia,1
+gembira,1
+puas,1
+ramah,1
+santun,1
+teratur,1
+stabil,1
+harmonis,1
+rukun,1
+toleran,1
+suka,1
+cinta,1
+kasih,1
+sayang,1
+optimis,1
+harapan,1
+berkualitas,1
+terbaik,1
+efektif,1
+efisien,1
+produktif,1
+kreatif,1
+inovasi,1
+inovatif,1
+berdaya,1
+tegak,1
+adil,1
+keadilan,1
+kebenaran,1
+benar,1
+sah,1
+legal,1
+solidaritas,1
+akur,1
+kolaborasi,1
+sinergi,1
+kondusif,1
+berprestasi,1
+bersih,1
+terbuka,1
+transparan,1
+akuntabel,1
+akurat,1
+tepat,1
+sigap,1
+waspada,1
+patuh,1
+taat,1
+berkembang,1
+tumbuh,1
+terjamin,1
+selamat,1
+terlindungi,1
+terbantu,1
+membantu,1
+menolong,1
+solusi,1
+berkarya,1
+karya,1
+bermanfaat,1
+faedah,1
+faedah,1
+faedah,1
+teratur,1
+rapi,1
+bermoral,1
+beretika,1
+terdidik,1
+terampil,1
+ahli,1
+cakap,1
+mumpuni,1
+kredibel,1
+bermartabat,1
+martabat,1
+kehormatan,1
+mulia,1
+terhormat,1
+berwibawa,1
+wibawa,1
+pemberani,1
+kesatria,1
+ksatria,1
+berwawasan,1
+nasionalis,1
+patriotik,1
+persatuan,1
+kesatuan,1
+kedaulatan,1
+berdaulat,1
+buruk,-1
+jelek,-1
+parah,-1
+hancur,-1
+rusak,-1
+gagal,-1
+kacau,-1
+ricuh,-1
+rusuh,-1
+kerusuhan,-1
+anarkis,-1
+anarki,-1
+kekerasan,-1
+bentrok,-1
+konflik,-1
+pertikaian,-1
+perpecahan,-1
+pecah,-1
+benci,-1
+kebencian,-1
+dendam,-1
+hasut,-1
+hasutan,-1
+provokasi,-1
+memprovokasi,-1
+provokator,-1
+hoaks,-1
+hoax,-1
+bohong,-1
+kebohongan,-1
+pembohong,-1
+fitnah,-1
+memfitnah,-1
+palsu,-1
+menipu,-1
+penipu,-1
+penipuan,-1
+manipulasi,-1
+curang,-1
+kecurangan,-1
+korupsi,-1
+koruptor,-1
+suap,-1
+menyuap,-1
+penyuapan,-1
+pungli,-1
+kolusi,-1
+nepotisme,-1
+zalim,-1
+menzalimi,-1
+tindas,-1
+menindas,-1
+penindasan,-1
+kejam,-1
+brutal,-1
+sadis,-1
+teror,-1
+teroris,-1
+terorisme,-1
+ancaman,-1
+mengancam,-1
+terancam,-1
+sabotase,-1
+makar,-1
+separatis,-1
+separatisme,-1
+radikal,-1
+radikalisme,-1
+ekstremis,-1
+khianat,-1
+pengkhianat,-1
+pemberontak,-1
+pemberontakan,-1
+musuh,-1
+lawan,-1
+menyerang,-1
+serangan,-1
+agresi,-1
+bocor,-1
+kebocoran,-1
+pembocoran,-1
+mata-mata,-1
+spionase,-1
+menjual,-1
+kejahatan,-1
+kriminal,-1
+kriminalitas,-1
+pelanggaran,-1
+melanggar,-1
+pelecehan,-1
+melecehkan,-1
+hina,-1
+menghina,-1
+penghinaan,-1
+cemarkan,-1
+mencemarkan,-1
+pencemaran,-1
+jatuhkan,-1
+menjatuhkan,-1
+merusak,-1
+menghancurkan,-1
+membunuh,-1
+pembunuhan,-1
+aniaya,-1
+menganiaya,-1
+penganiayaan,-1
+korban,-1
+kerugian,-1
+merugikan,-1
+rugi,-1
+celaka,-1
+bahaya,-1
+berbahaya,-1
+kritis,-1
+darurat,-1
+malapetaka,-1
+bencana,-1
+aib,-1
+memalukan,-1
+aib,-1
+cela,-1
+tercela,-1
+cacat,-1
+lemah,-1
+loyo,-1
+mundur,-1
+ketinggalan,-1
+kalah,-1
+kekalahan,-1
+kecewa,-1
+mengecewakan,-1
+frustrasi,-1
+putus asa,-1
+marah,-1
+kemarahan,-1
+murka,-1
+kesal,-1
+jengkel,-1
+resah,-1
+keresahan,-1
+cemas,-1
+kekhawatiran,-1
+khawatir,-1
+takut,-1
+ketakutan,-1
+panik,-1
+kepanikan,-1
+gugup,-1
+tegang,-1
+ketegangan,-1
+bubar,-1
+bubarkan,-1
+gulingkan,-1
+turunkan,-1
+bodoh,-1
+tolol,-1
+bebal,-1
+jahat,-1
+culas,-1
+licik,-1
+culas,-1
+arogan,-1
+sombong,-1
+angkuh,-1
+sewenang-wenang,-1
+otoriter,-1
+diktator,-1
+ilegal,-1
+haram,-1
+dosa,-1
+terlarang,-1
+skandal,-1
+isu miring,-1
+rekayasa,-1
+sesat,-1
+menyesatkan,-1
+pembodohan,-1
+disinformasi,-1
+misinformasi,-1
+malinformasi,-1
+propaganda,-1
+ujaran kebencian,-1
+sara,-1
+rasis,-1
+diskriminasi,-1
+intoleran,-1
+intoleransi,-1
+informasi,0
+berita,0
+data,0
+laporan,0
+peristiwa,0
+kejadian,0
+publik,0
+warga,0
+masyarakat,0
+pemerintah,0
+institusi,0
+lembaga,0
+satuan,0
+wilayah,0
+daerah,0
+umum,0
+netral,0
+kegiatan,0
+agenda,0
+jadwal,0
+proses,0
+tahap,0
+tahapan,0
+dokumen,0
+catatan,0
+surat,0
+pernyataan,0
+keterangan,0
+rilis,0
+siaran,0
+media,0
+komentar,0
+postingan,0
+unggahan,0
+akun,0
+pengguna,0
+anggota,0
+personel,0
+pejabat,0
+petugas,0
+aparat,0
+kebijakan,0
+aturan,0
+regulasi,0
+ketentuan,0
+program,0
+rencana,0
+sistem,0
+teknologi,0
+jaringan,0
+aplikasi,0
+situs,0
+saluran,0
+kanal,0
+waktu,0
+tanggal,0
+hari,0
+jam,0
+tempat,0
+lokasi,0
+titik,0
+jarak,0
+jumlah,0
+angka,0
+total,0
+rata-rata,0
+persen,0
+level,0
+kategori,0
+tipe,0
+jenis,0
+model,0
+status,0
+kondisi,0
+situasi,0
+hal,0
+faktor,0
+unsur,0
+elemen,0
+bagian,0
+bidang,0
+aspek,0
+topik,0
+tema,0
+isu,0
+perkara,0
+kasus,0
+urusan,0
+masalah,0
+soal,0
+terkait,0
+mengenai,0
+tentang,0
+seputar,0
+dalam rangka,0
+berdasarkan,0
+menurut,0
+sesuai,0
+mengikuti,0
+menjalankan,0
+melakukan,0
+mengadakan,0
+menyelenggarakan,0
+menghadiri,0
+mengikuti,0
+berada,0
+terdapat,0
+ada,0
+terjadi,0
+berlangsung,0
+berjalan,0
+meliputi,0
+mencakup,0
+terdiri,0
+antara lain,0
+yaitu,0
+yakni,0
+seperti,0
+misalnya,0
+contohnya,0
+dapat,0
+bisa,0
+mampu,0
+perlu,0
+harus,0
+wajib,0
+hendak,0
+akan,0
+sedang,0
+telah,0
+sudah,0
+pernah,0
+belum,0
+masih,0
+kembali,0
+lagi,0
+pula,0
+juga,0
+serta,0
+dan,0
+atau,0
+tetapi,0
+namun,0
+walaupun,0
+meskipun,0
+karena,0
+sebab,0
+sehingga,0
+maka,0
+akibat,0
+dampak,0
+tujuan,0
+arah,0
+maksud,0
+hasil,0
+capaian,0
+evaluasi,0
+pantauan,0
+tinjauan,0
+ringkasan,0
+ikhtisar,0
+pemeriksaan,0
+analisis,0
+kajian,0
+riset,0
+studi,0
+survei,0
+observasi,0
+pengamatan,0
+temuan,0
+fakta,0
+bukti,0
+sampel,0
+contoh,0
+referensi,0
+sumber,0
+kutipan,0
+rujukan,0
+pedoman,0
+panduan,0
+petunjuk,0
+arahan,0
+instruksi,0
+perintah,0
+mandat,0
+tugas,0
+fungsi,0
+peran,0
+kewenangan,0
+tanggung jawab,0
+koordinasi,0
+rapat,0
+pertemuan,0
+sidang,0
+diskusi,0
+musyawarah,0
+konsolidasi,0
+sosialisasi,0
+edukasi,0
+pelatihan,0
+bimbingan,0
+pengarahan,0
+pemberitahuan,0
+pengumuman,0
+klarifikasi,0
+penjelasan,0
+tanggapan,0
+respon,0
+jawaban,0
+konfirmasi,0
+verifikasi,0
+validasi,0
+revisi,0
+koreksi,0
+pembaruan,0
+update,0
+arsip,0
+riwayat,0
+rekam jejak,0
+jejak,0
+catatan kaki,0
+lampiran,0
+berkas,0
+file,0
+folder,0
+data base,0
+basis data,0
+basis,0
+landasan,0
+dasar,0
+prinsip,0
+norma,0
+standar,0
+kriteria,0
+tolok ukur,0
+parameter,0
+indikator,0
+matriks,0
+tabel,0
+grafik,0
+diagram,0
+skema,0
+bagan,0
+peta,0
+denah,0
+alur,0
+tahapan kerja,0
+prosedur,0
+mekanisme,0
+tata kelola,0
+manajemen,0
+administrasi,0
+operasional,0
+logistik,0
+fasilitas,0
+sarana,0
+prasarana,0
+infrastruktur,0
+perangkat,0
+alat,0
+instrumen,0
+kendaraan,0
+peralatan,0
+perlengkapan,0
+posko,0
+markas,0
+kantor,0
+gedung,0
+ruang,0
+aula,0
+lapangan,0
+area,0
+zona,0
+sektor,0
+lingkungan,0
+kawasan,0
+pos,0
+titik kumpul,0
+titik temu,0
+perbatasan,0
+pesisir,0
+pedalaman,0
+ibu kota,0
+kota,0
+kabupaten,0
+kecamatan,0
+kelurahan,0
+desa,0
+dusun,0
+kampung,0
+rukun warga,0
+rukun tetangga,0
+kompleks,0
+perumahan,0
+permukiman,0
+pulau,0
+laut,0
+darat,0
+udara,0
+ruang siber,0
+ruang publik,0
+media sosial,0
+jejaring,0
+komunikasi,0
+informasi publik,0
+opini publik,0
+suara masyarakat,0
+aspirasi,0
+masukan,0
+saran,0
+pertanyaan,0
+permohonan,0
+pengajuan,0
+usulan,0
+tuntutan,0
+harapan,0
+keinginan,0
+pandangan,0
+pendapat,0
+pemikiran,0
+gagasan,0
+konsep,0
+wacana,0
+naratif,0
+narasi,0
+percakapan,0
+diskursus,0
+pemberitaan,0
+ulasan,0
+liputan,0
+wawancara,0
+siaran pers,0
+jumpa pers,0
+konferensi pers,0
+keterangan pers,0
+pernyataan resmi,0
+klarifikasi resmi,0
+komunike,0
+maklumat,0
+pengumuman resmi,0
+edaran,0
+surat edaran,0
+instruksi dinas,0
+perintah dinas,0
+nota dinas,0
+telaahan staf,0
+laporan harian,0
+laporan mingguan,0
+laporan bulanan,0
+laporan tahunan,0
+laporan khusus,0
+laporan atensi,0
+laporan kilat,0
+laporan perkembangan,0
+laporan situasi,0
+lapsit,0
+lapsat,0
+briefing,0
+paparan,0
+presentasi,0
+pembekalan,0
+pengantar,0
+pendahuluan,0
+latar belakang,0
+tinjauan pustaka,0
+metodologi,0
+pembahasan,0
+simpulan,0
+kesimpulan,0
+rekomendasi,0
+saran tindak,0
+tindak lanjut,0
+penutup,0
+catatan penutup,0
+lembar pengesahan,0
+tanda tangan,0
+paraf,0
+stempel,0
+cap dinas,0
+nomor surat,0
+klasifikasi,0
+rahasia,0
+terbatas,0
+biasa,0
+terbuka,0
+kilat,0
+segera,0
+sangat segera,0
+penting,0
+perhatian,0
+tembusan,0
+arsiparis,0
+pengirim,0
+penerima,0
+tujuan surat,0
+alamat tujuan,0
+perihal,0
+pokok masalah,0
+isi surat,0
+rujukan surat,0
+dasar surat,0
+konsideran,0
+diktum,0
+memutuskan,0
+menetapkan,0
+menimbang,0
+mengingat,0
+memperhatikan,0
+menugaskan,0
+memerintahkan,0
+menginstruksikan,0
+mengimbau,0
+mengajak,0
+menyerukan,0
+mengingatkan,0
+mengumumkan,0
+menyampaikan,0
+melaporkan,0
+mengonfirmasi,0
+menerangkan,0
+menjelaskan,0
+menyatakan,0
+mengutarakan,0
+mengemukakan,0
+menginformasikan,0
+memberitahukan,0
+mengirimkan,0
+menyampaikan,0
+menerima,0
+menampung,0
+memproses,0
+menindaklanjuti,0
+mempelajari,0
+menelaah,0
+mengkaji,0
+menganalisis,0
+mengevaluasi,0
+mengawasi,0
+memantau,0
+memonitor,0
+mencatat,0
+merekam,0
+mendokumentasikan,0
+mengarsipkan,0
+menyimpan,0
+mengamankan,0
+menjaga,0
+memelihara,0
+merawat,0
+mengelola,0
+menata,0
+mengatur,0
+menertibkan,0
+merapikan,0
+menyusun,0
+merumuskan,0
+merancang,0
+mendesain,0
+mengembangkan,0
+membangun,0
+memperkuat,0
+meningkatkan,0
+mengoptimalkan,0
+memaksimalkan,0
+menyesuaikan,0
+menyelaraskan,0
+mengintegrasikan,0
+mengonsolidasikan,0
+mensinergikan,0
+menghubungkan,0
+menjembatani,0
+memfasilitasi,0
+mendampingi,0
+membina,0
+mengarahkan,0
+membimbing,0
+mengawal,0
+memimpin,0
+mengetuai,0
+mengkoordinir,0
+menggerakkan,0
+mendorong,0
+memotivasi,0
+mengajak serta,0
+melibatkan,0
+mengikutsertakan,0
+menggandeng,0
+merangkul,0
+bekerja sama,0
+bermitra,0
+berkoordinasi,0
+berkonsultasi,0
+berkomunikasi,0
+berdialog,0
+berinteraksi,0
+berdiskusi,0
+bertukar pikiran,0
+berbagi informasi,0
+sharing data,0
+sinkronisasi,0
+harmonisasi,0
+validasi data,0
+verifikasi lapangan,0
+uji petik,0
+sampling,0
+pengecekan langsung,0
+peninjauan lokasi,0
+kunjungan kerja,0
+inspeksi,0
+sidak,0
+pemeriksaan berkala,0
+audit internal,0
+audit eksternal,0
+pengawasan melekat,0
+waskat,0
+pengawasan fungsional,0
+wasfung,0
+pengendalian,0
+kontrol,0
+evaluasi berkala,0
+monitoring rutin,0
+laporan rutin,0
+rekapitulasi,0
+rekap data,0
+kompilasi,0
+agregasi,0
+sintesis,0
+abstraksi,0
+ikhtisar eksekutif,0
+executive summary,0
+lembar fakta,0
+fact sheet,0
+infografis,0
+grafik batang,0
+grafik garis,0
+diagram lingkaran,0
+sebaran data,0
+tren data,0
+pola data,0
+anomali data,0
+titik lonjakan,0
+baseline data,0
+ambang batas,0
+threshold,0
+skor metrik,0
+skala nilai,0
+rentang nilai,0
+bobot penilaian,0
+kalkulasi,0
+perhitungan,0
+rumus,0
+formula,0
+algoritma,0
+metode,0
+pendekatan,0
+kerangka kerja,0
+framework,0
+arsitektur sistem,0
+spesifikasi teknis,0
+kebutuhan sistem,0
+persyaratan fungsional,0
+persyaratan nonfungsional,0
+lingkup kerja,0
+scope,0
+batasan masalah,0
+asumsi,0
+prasyarat,0
+kondisi awal,0
+kondisi akhir,0
+target capaian,0
+indikator kinerja,0
+output,0
+outcome,0
+benefit,0
+impact,0
+dampak positif,0
+dampak lanjutan,0
+tindak mitigasi,0
+langkah antisipasi,0
+rencana kontinjensi,0
+skenario cadangan,0
+protokol,0
+sop,0
+prosedur standar,0
+petunjuk teknis,0
+juknis,0
+petunjuk pelaksanaan,0
+juklak,0
+surat keputusan,0
+skep,0
+surat perintah,0
+sprin,0
+surat tugas,0
+sprintug,0
+surat dinas,0
+radiogram,0
+telegram,0
+str,0
+kawat dinas,0
+berita dinas,0
+nota dinas,0
+lembar disposisi,0
+disposisi pimpinan,0
+arahan pimpinan,0
+petunjuk komandan,0
+kebijakan komando,0
+perintah harian,0
+amanat,0
+pesan,0
+himbauan,0
+maklumat bersama,0
+kesepakatan bersama,0
+mou,0
+perjanjian kerja sama,0
+pks,0
+dokumen kerja,0
+kertas kerja,0
+working paper,0
+draft,0
+draf awal,0
+konsep final,0
+naskah dinas,0
+tata naskah,0
+kearsipan,0
+registrasi,0
+penomoran,0
+agenda surat,0
+buku ekspedisi,0
+tanda terima,0
+bukti penyerahan,0
+serah terima,0
+bast,0
+berita acara,0
+notulen rapat,0
+risalah sidang,0
+catatan rapat,0
+daftar hadir,0
+absensi,0
+dokumentasi foto,0
+dokumentasi video,0
+rekaman audio,0
+transkrip,0
+salinan,0
+petikan,0
+ekstrak,0
+ringkasan isi,0
+lampiran surat,0
+aneks,0
+apendiks,0
+indeks,0
+glosarium,0
+daftar istilah,0
+daftar singkatan,0
+daftar pustaka,0
+bibliografi,0
+catatan akhir,0
+endnote,0
+footnote,0
+penomoran halaman,0
+tata letak,0
+format baku,0
+standar penulisan,0
+kaidah bahasa,0
+ejaan yang disempurnakan,0
+eyd,0
+tata bahasa baku,0
+bahasa indonesia resmi,0
+istilah resmi,0
+nomenklatur,0
+struktur organisasi,0
+bagan organisasi,0
+rantai komando,0
+tata hubungan kerja,0
+tahubker,0
+jalur koordinasi,0
+jalur komando,0
+hierarki,0
+tingkat kepangkatan,0
+korps,0
+kecabangan,0
+kesatuan,0
+batalyon,0
+kodim,0
+korem,0
+kodam,0
+kostrad,0
+kopassus,0
+mabesad,0
+tni,0
+tni ad,0
+angkatan darat,0
+matra darat,0
+militer,0
+prajurit,0
+perwira,0
+bintara,0
+tamtama,0
+pns tni,0
+aparatur sipil negara,0
+asn,0
+komponen utama,0
+komponen cadangan,0
+komcad,0
+komponen pendukung,0
+komduk,0
+bela negara,0
+ketahanan nasional,0
+keamanan nasional,0
+pertahanan negara,0
+operasi militer perang,0
+omp,0
+operasi militer selain perang,0
+omsp,0
+bantuan kemanusiaan,0
+penanggulangan bencana,0
+pengamanan perbatasan,0
+pamtas,0
+pengamanan pulau terluar,0
+pamputer,0
+pengamanan objek vital,0
+pamobvit,0
+pengamanan vvip,0
+satgas,0
+satuan tugas,0
+komando tugas gabungan,0
+kogabwilhan,0
+pos komando,0
+posko taktis,0
+pusat komando,0
+puskodal,0
+pusdalops,0
+pusat informasi,0
+dispenad,0
+penerangan tni ad,0
+siber,0
+ruang siber sosial,0
+siber sosial,0
+opsec,0
+keamanan operasi,0
+keamanan informasi,0
+perlindungan data,0
+klasifikasi informasi,0
+rahasia jabatan,0
+rahasia militer,0
+disiplin prajurit,0
+sumpah prajurit,0
+sapta marga,0
+delapan wajib tni,0
+panca prasetya korpri,0
+kode etik,0
+pedoman perilaku,0
+kepatuhan hukum,0
+hukum militer,0
+peradilan militer,0
+pomdam,0
+polisi militer,0
+provos,0
+penegakan hukum,0
+ketertiban,0
+kamtibmas,0
+kondusivitas,0
+stabilitas,0
+ketahanan,0
+ketertiban umum,0
+ketentraman,0
+kenyamanan,0
+kehidupan berbangsa,0
+kehidupan bernegara,0
+pancasila,0
+uud 1945,0
+nkri,0
+bhinneka tunggal ika,0
+wawasan nusantara,0
+ketahanan daerah,0
+geopolitik,0
+geostrategis,0
+kondisi sosial,0
+demografi,0
+geografi,0
+ipoleksosbudhankam,0
+dinamika masyarakat,0
+perkembangan situasi,0
+bangsit,0
+perkiraan keadaan,0
+kirka,0
+deteksi dini,0
+peringatan dini,0
+early warning,0
+cegah dini,0
+tanggap dini,0
+kesiapsiagaan,0
+kewaspadaan,0
+kewaspadaan nasional,0
+kepekaan,0
+kepedulian,0
+responsivitas,0
+kesiapan personel,0
+kesiapan materiel,0
+kesiapan operasional,0
+pembinaan satuan,0
+binsat,0
+pembinaan teritorial,0
+binter,0
+babinsa,0
+danramil,0
+dandim,0
+danrem,0
+pangdam,0
+pimpinan tni ad,0
+kepala staf angkatan darat,0
+kasad,0
+wakasad,0
+itjenad,0
+staf umum ad,0
+badan pelaksana pusat,0
+balakpus,0
+komando utama,0
+kotama,0
+dinas penerangan,0
+dinas psikologi,0
+dinas sejarah,0
+dinas jasmani,0
+dinas bintal,0
+pusat perhubungan,0
+pushubad,0
+pusat zeni,0
+pusziad,0
+pusat peralatan,0
+puspalad,0
+pusat pembekalan angkutan,0
+pusbekangad,0
+pusat kesehatan,0
+puskesad,0
+pusat intelijen,0
+pusintelad,0
+pusat teritorial,0
+pusterad,0
+pusat penerbangan,0
+puspenerbad,0
+polisi militer ad,0
+puspomad,0
+akademi militer,0
+akmil,0
+sekolah staf dan komando ad,0
+seskoad,0
+sekolah calon perwira,0
+secapa,0
+pusat latihan tempur,0
+puslatpur,0
+pusat pendidikan,0
+pusdik,0
+resimen induk,0
+rindam,0
+batalyon infanteri,0
+yonif,0
+batalyon kavaleri,0
+yonkav,0
+batalyon armed,0
+yonarmed,0
+batalyon arhanud,0
+yonarhanud,0
+batalyon zeni,0
+yonzipur,0
+kompi,0
+peleton,0
+regu,0
+tim,0
+pos pantau,0
+gardu pantau,0
+titik pantau,0
+stasiun pengamat,0
+radar,0
+sensor,0
+alat pantau,0
+kamera pengawas,0
+cctv,0
+drone,0
+uav,0
+satelit,0
+citra satelit,0
+pemetaan,0
+gis,0
+sistem informasi geografis,0
+peta situasi,0
+overlay,0
+koordinat,0
+bujur,0
+lintang,0
+elevasi,0
+kontur,0
+cuaca,0
+iklim,0
+musim,0
+angin,0
+hujan,0
+suhu,0
+kondisi medan,0
+topografi,0
+hidrologi,0
+vegetasi,0
+infrastruktur jalan,0
+jembatan,0
+pelabuhan,0
+bandara,0
+landasan pacu,0
+helipad,0
+dermaga,0
+aksesibilitas,0
+mobilitas,0
+transportasi,0
+rute,0
+jalur,0
+koridor,0
+jarak tempuh,0
+waktu tempuh,0
+kecepatan,0
+kapasitas angkut,0
+daya dukung,0
+daya tampung,0
+volume lalu lintas,0
+arus informasi,0
+distribusi,0
+alokasi,0
+penyebaran,0
+jangkauan,0
+cakupan,0
+radius,0
+skala,0
+frekuensi,0
+intensitas,0
+durasi,0
+tempo,0
+ritme,0
+siklus,0
+fase waktu,0
+jam operasional,0
+shift,0
+giliran,0
+penugasan,0
+rotasi,0
+pemberangkatan,0
+kepulangan,0
+konsolidasi pasukan,0
+apel,0
+apel pagi,0
+apel malam,0
+apel kesiapan,0
+upacara,0
+parade,0
+defile,0
+gladi,0
+gladi bersih,0
+gladi posko,0
+latihan,0
+simulasi,0
+uji coba,0
+dril,0
+uji fungsi,0
+uji kemampuan,0
+sertifikasi,0
+akreditasi,0
+standarisasi,0
+kelayakan,0
+kelaikan,0
+kesiapan,0
+kebugaran,0
+kesehatan,0
+keselamatan,0
+keamanan,0
+ketahanan fisik,0
+daya tahan,0
+moril,0
+semangat,0
+motivasi,0
+kepercayaan diri,0
+kebersamaan,0
+jiwa korsa,0
+soliditas,0
+esprit de corps,0
+keteladanan,0
+kepemimpinan,0
+manajerial,0
+supervisi,0
+inspektorat,0
+wasrik,0
+audit kepatuhan,0
+audit kinerja,0
+reviu laporan,0
+laporan keuangan,0
+anggaran,0
+dipa,0
+pagu,0
+realisasi,0
+penyerapan anggaran,0
+pertanggungjawaban keuangan,0
+wabku,0
+pengadaan,0
+lelang,0
+kontrak kerja,0
+rekanan,0
+vendor,0
+mitra kerja,0
+spesifikasi teknis,0
+komoditas,0
+logistik umum,0
+bekal kelas satu,0
+bekal kelas dua,0
+bekal kelas tiga,0
+bekal kelas empat,0
+bekal kelas lima,0
+ransum,0
+pangan,0
+air bersih,0
+bbm,0
+minyak pelumas,0
+amunisi,0
+munisi,0
+senjata,0
+alutsista,0
+alat utama sistem senjata,0
+optik,0
+komunikasi taktis,0
+radio hf,0
+radio vhf,0
+radio uhf,0
+repeater,0
+antena,0
+sinyal,0
+bandwidth,0
+konektivitas,0
+server,0
+workstation,0
+laptop,0
+komputer,0
+jaringan lokal,0
+lan,0
+wan,0
+vpn,0
+firewall,0
+antivirus,0
+enkripsi,0
+kriptografi,0
+sandi dinas,0
+persandian,0
+sinyalemen,0
+indikasi,0
+gejala,0
+petunjuk awal,0
+tanda-tanda,0
+potensi,0
+kerentanan,0
+vulnerability,0
+ancaman siber,0
+serangan siber,0
+phishing,0
+malware,0
+ransomware,0
+ddos,0
+social engineering,0
+rekayasa sosial,0
+peniruan identitas,0
+impersonation,0
+akun palsu,0
+bot,0
+troll,0
+buzzer,0
+amplifikasi,0
+koordinasi akun,0
+narasi terkoordinasi,0
+isu viral,0
+lonjakan isu,0
+tren percakapan,0
+topik hangat,0
+trending topic,0
+tagar,0
+hashtag,0
+keyword,0
+kata kunci,0
+istilah sensitif,0
+istilah khusus,0
+kata sandi,0
+password,0
+kredensial,0
+autentikasi,0
+otorisasi,0
+hak akses,0
+izin akses,0
+role,0
+peran pengguna,0
+admin sistem,0
+analis,0
+pimpinan,0
+user,0
+pengguna sistem,0
+audit log,0
+jejak audit,0
+riwayat aktivitas,0
+waktu akses,0
+ip address,0
+user agent,0
+alamat ip,0
+sesi,0
+token,0
+cookie,0
+bearer token,0
+header,0
+payload,0
+respons,0
+status code,0
+kode status,0
+galat,0
+pesan galat,0
+peringatan,0
+notifikasi,0
+alert,0
+daftar alert,0
+detail alert,0
+bukti alert,0
+tindakan alert,0
+riwayat alert,0
+catatan analis,0
+rekomendasi analis,0
+arahan pimpinan,0
+keputusan pimpinan,0
+persetujuan,0
+pengembalian,0
+penolakan,0
+penutupan,0
+false positive,0
+tutup alert,0
+ambil alert,0
+eskalasi alert,0
+briefing pdf,0
+unduh briefing,0
+pratinjau briefing,0
+ringkasan eksekutif,0
+dasbor,0
+dashboard situasi,0
+rekapitulasi isu,0
+isu aktif,0
+isu tereskalasi,0
+isu disetujui,0
+isu dikembalikan,0
+isu selesai,0
+tingkat keparahan,0
+severity,0
+rendah,0
+sedang,0
+tinggi,0
+low,0
+medium,0
+high,0
+skor ancaman,0
+skor total,0
+skor komponen,0
+komponen spike,0
+komponen anomaly,0
+komponen sentiment,0
+komponen reach,0
+bobot spike,0
+bobot anomaly,0
+bobot sentiment,0
+bobot reach,0
+nilai mentah,0
+raw value,0
+nilai terbobot,0
+weighted value,0
+ambang batas z,0
+z-score,0
+standar deviasi,0
+mean,0
+rata-rata volume,0
+volume per jam,0
+metrics hourly,0
+agregasi jam,0
+pencocokan topik,0
+topic matching,0
+sumber data,0
+source,0
+tipe sumber,0
+rss feed,0
+youtube video,0
+csv file,0
+replay scenario,0
+batch import,0
+impor csv,0
+baris sukses,0
+baris gagal,0
+duplikat baris,0
+content hash,0
+sha256,0
+raw item,0
+post mentah,0
+post normal,0
+akun sumber,0
+handle akun,0
+nama tampilan,0
+display name,0
+tanggal posting,0
+posted at,0
+tanggal buat akun,0
+created at,0
+usia akun,0
+young account,0
+kesamaan teks,0
+text similarity,0
+trigram similarity,0
+pg_trgm,0
+kesamaan nama,0
+name similarity,0
+keserentakan waktu,0
+synchronized posting,0
+jendela waktu,0
+time window,0
+klaster akun,0
+account cluster,0
+ukuran klaster,0
+cluster size,0
+akun resmi,0
+official account,0
+topik pantauan,0
+monitored topic,0
+kategori topik,0
+institusi,0
+peniruan,0
+umum,0
+templat topik,0
+topic template,0
+uc1,0
+uc2,0
+uc3,0
+mode replay,0
+replay runner,0
+jam virtual,0
+virtual clock,0
+data clock,0
+kecepatan replay,0
+speed factor,0
+skenario uji,0
+test scenario,0
+data simulasi,0
+simulated data,0
+lencana data simulasi,0
+pelabelan manual,0
+manual labeling,0
+label organik,0
+label anomali,0
+organic,0
+anomalous,0
+evaluasi deteksi,0
+evaluation run,0
+true positive,0
+false positive,0
+false negative,0
+presisi,0
+recall,0
+f1-score,0
+f1,0
+latensi deteksi,0
+detection latency,0
+waktu respon,0
+response time,0
+kalibrasi deteksi,0
+detection calibration,0
+pengaturan deteksi,0
+detection settings,0
+mode offline,0
+offline mode,0
+kebijakan privasi,0
+ketentuan layanan,0
+data publik,0
+etika siber,0
+perlindungan privasi,0
+tanggung jawab hukum,0
+legalitas,0
+kedaulatan data,0
+on premise,0
+lokal,0
+server lokal,0
+in-house,0
+mandiri,0
+swasembada teknologi,0
+kemandirian siber,0
+ketahanan siber,0
+pertahanan siber sosial,0
+ruang informasi,0
+kondisi mental,0
+ketenteraman batin,0
+kesadaran situasi,0
+situational awareness,0
+peta situasi ruang siber,0
+analisis sentimen,0
+sentiment analysis,0
+kamus leksikon,0
+lexicon,0
+polaritas,0
+polarity,0
+positif,0
+negatif,0
+netral,0
+positive,0
+negative,0
+neutral,0
+skor sentimen,0
+sentiment score,0
+rata-rata polaritas,0
+kata cocok,0
+matched term,0
+tokenisasi,0
+stemming,0
+lemmatisasi,0
+pembersihan teks,0
+text cleaning,0
+normalisasi teks,0
+text normalization,0
+lowercase,0
+strip url,0
+strip mention,0
+strip punctuation,0
+strip whitespace,0
+collapse spaces,0
+pure function,0
+fungsi murni,0
+stateless,0
+deterministic,0
+unit test,0
+feature test,0
+integration test,0
+test suite,0
+assertions,0
+coverage,0
+lulus tes,0
+pass,0
+fail,0
+complete,0
+incomplete,0
+warning,0
+error,0
+info,0
+debug,0
+log,0
+pipeline data,0
+job antrean,0
+queue worker,0
+database queue,0
+scheduler,0
+cron,0
+artisan command,0
+rest api,0
+json api,0
+endpoint,0
+route handler,0
+proxy,0
+bff,0
+backend for frontend,0
+nextjs,0
+laravel,0
+postgresql,0
+nginx,0
+docker,0
+docker compose,0
+container,0
+image,0
+volume,0
+network,0
+environment,0
+env,0
+git,0
+branch,0
+pull request,0
+merge,0
+commit,0
+code review,0
+codeowners,0
+domain,0
+kontrak,0
+contracts,0
+ownership,0
+handoff,0
+prd,0
+spesifikasi produk,0
+definition of done,0
+dod,0
+milestone,0
+gerbang,0
+gate,0
+hackathon,0
+kartika cyber hackathon 2026,0
+kategori 04 siber sosial,0
+tni angkatan darat,0
+institusi pertahanan,0
+keselamatan bangsa,0
+kedaulatan siber,0
+keberhasilan tim,0
+target juara,0
+siap dieksekusi,0
+selesai,0
+tuntas,0
+teruji,0
+terverifikasi,0
+terbukti,0
+andal,0
+prima,0
+sempurna,0
+sukses besar,1
+keberhasilan mutlak,1
+pencapaian gemilang,1
+kemenangan telak,1
+prestasi membanggakan,1
+sangat baik,1
+sangat bagus,1
+sangat hebat,1
+amat baik,1
+amat memuaskan,1
+amat membanggakan,1
+luar biasa,1
+istimewa,1
+terpuji sekali,1
+kebanggaan bersama,1
+penghormatan tinggi,1
+sangat aman,1
+sangat kondusif,1
+sangat solid,1
+sangat kompak,1
+sangat profesional,1
+sangat disiplin,1
+sangat tangguh,1
+sangat adil,1
+sangat jujur,1
+sangat setia,1
+amat berjasa,1
+berjasa besar,1
+jasa pahlawan,1
+teladan utama,1
+panutan rakyat,1
+dicintai rakyat,1
+bersama rakyat,1
+rakyat bangga,1
+mengabdi tulus,1
+kemajuan pesat,1
+sukses operasi,1
+operasi berhasil,1
+tugas tuntas,1
+misi berhasil,1
+aman terkendali,1
+kondisi kondusif,1
+situasi kondusif,1
+damai sentosa,1
+amat parah,-1
+sangat parah,-1
+amat buruk,-1
+sangat buruk,-1
+hancur total,-1
+rusak parah,-1
+gagal total,-1
+kacau balau,-1
+sangat ricuh,-1
+sangat rusuh,-1
+kerusuhan massal,-1
+anarki total,-1
+kekerasan brutal,-1
+pertikaian berdarah,-1
+kebencian mendalam,-1
+hasutan keji,-1
+provokasi berbahaya,-1
+hoaks jahat,-1
+kebohongan publik,-1
+fitnah keji,-1
+palsu total,-1
+penipuan massal,-1
+manipulasi opini,-1
+kecurangan terstruktur,-1
+korupsi masif,-1
+suap menyuap,-1
+pungli liar,-1
+sangat zalim,-1
+penindasan kejam,-1
+teror berdarah,-1
+ancaman serius,-1
+ancaman maut,-1
+sabotase fatal,-1
+makar berbahaya,-1
+pemberontakan bersenjata,-1
+serangan mematikan,-1
+kebocoran rahasia,-1
+bocor fatal,-1
+penghinaan keji,-1
+pencemaran nama baik,-1
+menjatuhkan martabat,-1
+pembunuhan berencana,-1
+bahaya laten,-1
+krisis parah,-1
+darurat militer,-1
+bencana dahsyat,-1
+aib besar,-1
+sangat memalukan,-1
+aib memalukan,-1
+sangat kecewa,-1
+kemarahan meluap,-1
+resah gelisah,-1
+sangat cemas,-1
+ketakutan massal,-1
+panik melanda,-1
+sangat tegang,-1
+gulingkan kekuasaan,-1
+sangat sombong,-1
+arogan sekali,-1
+sewenang wenang,-1
+sangat jahat,-1
+rekayasa jahat,-1
+pembodohan publik,-1
+disinformasi masif,-1
+ujaran rasis,-1
+intoleransi akut,-1
+kriminalitas tinggi,-1
+gangguan keamanan,-1
+sabotase siber,-1
+kebocoran data,-1
+bocor data,-1
+pencurian data,-1
+serangan siber berbahaya,-1
+peretasan sistem,-1
+diretas musuh,-1
+pembobolan sistem,-1
+kerentanan fatal,-1
+kebocoran informasi,-1
+bocor rahasia negara,-1
+penghianat bangsa,-1
+separatis bersenjata,-1
+teroris berbahaya,-1
+penyebaran hoaks,-1
+isu provokatif,-1
+berita palsu,-1
+opini sesat,-1
+kampanye hitam,-1
+black campaign,-1
+pembunuhan karakter,-1
+character assassination,-1
+fitnah murahan,-1
+adu domba,-1
+pecah belah,-1
+merongrong wibawa,-1
+menyerang institusi,-1
+mencoreng nama baik,-1
+merusak citra,-1
+penghinaan aparat,-1
+penyerangan markas,-1
+sabotase jalur,-1
+penyusupan musuh,-1
+mata mata asing,-1
+spionase siber,-1
+ancaman kedaulatan,-1
+ancaman keamanan,-1
+ancaman teror,-1
+ancaman kekerasan,-1
+perlawanan anarkis,-1
+kericuhan massal,-1
+kekacauan sosial,-1
+disintegrasi bangsa,-1
+konflik horizontal,-1
+konflik komunal,-1
+isu sara berbahaya,-1
+propaganda musuh,-1
+cuci otak,-1
+infiltrasi lawan,-1
+pembangkangan dinas,-1
+pelanggaran disiplin berat,-1
+pencemaran korps,-1
+merusak kehormatan,-1
+tidak amanah,-1
+ingkar janji,-1
+khianati sumpah,-1
+pembelotan,-1
+desersi,-1
+pelanggaran ham berat,-1
+penindasan rakyat,-1
+menyakiti rakyat,-1
+menindas masyarakat,-1
+arogansi aparat,-1
+kekerasan aparat,-1
+tindakan brutal,-1
+aksi anarkis,-1
+demonstrasi anarkis,-1
+unjuk rasa ricuh,-1
+amuk massa,-1
+pembakaran markas,-1
+perusakan fasilitas,-1
+penjarahan masif,-1
+teror psikologis,-1
+perang urat syaraf,-1
+psywar jahat,-1
+operasi psikologis lawan,-1
+opini permusuhan,-1
+pembentukan opini busuk,-1
+isu miring satuan,-1
+pemberitaan fitnah,-1
+viral negatif,-1
+sentimen negatif tinggi,-1
+narasi penyerangan,-1
+narasi permusuhan,-1
+narasi kebencian,-1
+narasi terkoordinasi,-1
+buzzer provokatif,-1
+akun bayaran jahat,-1
+infiltrasi siber,-1
+serangan siber terkoordinasi,-1
+peniruan akun satuan,-1
+akun palsu tni,-1
+penipuan berkedok pejabat,-1
+rekayasa identitas,-1
+pemalsuan dokumen dinas,-1
+surat perintah palsu,-1
+sprin palsu,-1
+skep palsu,-1
+berita bohong viral,-1
+disinformasi viral,-1
+hoaks meresahkan,-1
+fitnah kejam,-1
+fitnah terstruktur,-1
+hoaks sistematis,-1
+pencemaran institusi,-1
+pelecehan martabat,-1
+kebohongan terang terangan,-1
+informasi palsu,-1
+isu murahan,-1
+penyesatan publik,-1
+narasi fitnah,-1
+narasi bohong,-1
+narasi palsu,-1
+ancaman siber sosial,-1
+kampanye opini busuk,-1
+upaya makar,-1
+upaya kudeta,-1
+pemberontak keji,-1
+kelompok radikal berbahaya,-1
+ekstremis kekerasan,-1
+jaringan teror,-1
+sel tidur teror,-1
+penyelundupan senjata,-1
+sabotase fasilitas,-1
+kebocoran opsec,-1
+bocor opsec,-1
+pelanggaran opsec,-1
+penyebaran istilah sensitif,-1
+pembocoran dokumen rahasia,-1
+dokumen rahasia bocor,-1
+data intelijen bocor,-1
+rahasia operasi bocor,-1
+bocor informasi pasukan,-1
+kebocoran disposisi,-1
+pelanggaran kerahasiaan,-1
+kebocoran fatal,-1
+kerugian negara,-1
+kerugian personel,-1
+jatuh korban jiwa,-1
+korban luka,-1
+kematian sia-sia,-1
+tewas mengenaskan,-1
+tragedi berdarah,-1
+insiden maut,-1
+kegagalan fatal,-1
+misi gagal total,-1
+operasi gagal,-1
+kalah telak,-1
+disiplin bobrok,-1
+moral hancur,-1
+tercoreng aib,-1
+skandal memalukan,-1
+skandal besar,-1
+kasus suap memalukan,-1
+tertangkap basah,-1
+operasi tangkap tangan,-1
+ott suap,-1
+pelanggaran hukum berat,-1
+hukum rimba,-1
+anarkisme jalanan,-1
+blokade anarkis,-1
+pemerasan keji,-1
+pungutan liar meresahkan,-1
+teror mental,-1
+penekanan psikis,-1
+penindasan brutal,-1
+intimidasi massal,-1
+mengintimidasi saksi,-1
+teror fisik,-1
+ancaman bom,-1
+ledakan mematikan,-1
+sabotase komunikasi,-1
+pemutusan sinyal,-1
+gangguan jaringan disengaja,-1
+pembajakan kanal,-1
+pembajakan akun,-1
+akun diretas,-1
+deface situs dinas,-1
+kebobolan sistem pertahanan,-1
+kebobolan siber,-1
+lumpuh total,-1
+sistem mati total,-1
+kerusakan parah sistem,-1
+hilang kendali,-1
+kehilangan kontrol,-1
+disorientasi,-1
+kacau balau,-1
+salah sasaran,-1
+salah instruksi,-1
+salah komando,-1
+kekacauan koordinasi,-1
+miskomunikasi parah,-1
+kegagalan komunikasi,-1
+penyimpangan fatal,-1
+penyelewengan jabatan,-1
+penyalahgunaan wewenang,-1
+arogansi kekuasaan,-1
+tindakan tercela,-1
+kejahatan jabatan,-1
+pelanggaran sumpah jabatan,-1
+ingkar janji prajurit,-1
+pengkhianatan negara,-1
+menghianati bangsa,-1
+berkhianat pada nkri,-1
+merusak persatuan,-1
+perusak toleransi,-1
+pemicu kerusuhan,-1
+biang keributan,-1
+dalang kerusuhan,-1
+aktor intelektual kejahatan,-1
+otak kejahatan,-1
+dalang kericuhan,-1
+dalang hoaks,-1
+sumber disinformasi,-1
+pabrik hoaks,-1
+penyebar fitnah,-1
+biang fitnah,-1
+biang keladi kerusuhan,-1
+aktor perusak,-1
+provokator licik,-1
+antek musuh,-1
+antek asing,-1
+kaki tangan perusak,-1
+penghasut masyarakat,-1
+penghasut rakyat,-1
+pemicu bentrokan,-1
+pembuat gaduh,-1
+membuat gaduh,-1
+kegaduhan sosial,-1
+kegaduhan publik,-1
+kekacauan opini,-1
+pembelokan fakta,-1
+pemutarbalikan fakta,-1
+manipulasi kebenaran,-1
+penutupan fakta keji,-1
+pembodohan massal,-1
+penyesatan opini,-1
+opini menyimpang,-1
+narasi beracun,-1
+narasi destruktif,-1
+isu liar,-1
+kabar burung menyesatkan,-1
+desas desus fitnah,-1
+rumor jahat,-1
+gosip merusak,-1
+isu miring provokatif,-1
+viral menyesatkan,-1
+disinformasi sistematis,-1
+kampanye kebencian,-1
+ujaran permusuhan,-1
+ajakan makar,-1
+seruan provokasi,-1
+ajakan kekerasan,-1
+seruan anarki,-1
+ajakan bentrok,-1
+ajakan membangkang,-1
+pemberontakan sipil,-1
+pembangkangan massal,-1
+kekacauan sipil,-1
+kerawanan sosial,-1
+titik rawan konflik,-1
+eskalasi konflik,-1
+eskalasi ketegangan,-1
+ketegangan memuncak,-1
+situasi genting,-1
+keadaan gawat,-1
+kondisi darurat parah,-1
+ancaman nyata,-1
+bahaya mengancam,-1
+krisis berkepanjangan,-1
+kebuntuan total,-1
+kerugian tak terkira,-1
+kehancuran besar,-1
+dampak sangat buruk,-1
+bencana sosial,-1
+malapetaka bangsa,-1
+tragedi kemanusiaan,-1
+keprihatinan mendalam,-1
+kekhawatiran meluas,-1
+ketakutan rakyat,-1
+rakyat menderita,-1
+penderitaan rakyat,-1
+kesengsaraan masyarakat,-1
+penindasan rakyat jelata,-1
+kebiadaban teror,-1
+kekejaman luar biasa,-1
+kebrutalan sadis,-1
+perbuatan bejat,-1
+tindakan biadab,-1
+kejahatan kemanusiaan,-1
+perilaku memalukan,-1
+aib institusi,-1
+mencemarkan korps tni,-1
+merusak wibawa tni ad,-1
+menjatuhkan kehormatan satuan,-1
+menghancurkan reputasi bangsa,-1
+merusak kedaulatan negara,-1
+kejahatan terhadap kedaulatan,-1
+sabotase pertahanan,-1
+pelecehan lambang negara,-1
+penghinaan prajurit,-1
+menghina seragam tni,-1
+melecehkan korps,-1
+menyerang kehormatan tni,-1
+memfitnah panglima,-1
+memfitnah pimpinan,-1
+menjatuhkan moril prajurit,-1
+merusak jiwa korsa,-1
+memecah belah persatuan,-1
+merusak soliditas tni,-1
+mengadu domba tni polri,-1
+adu domba aparat,-1
+perpecahan aparat,-1
+keretakan hubungan,-1
+ketidakharmonisan,-1
+ketidakpuasan meluas,-1
+kekecewaan berat,-1
+protes keras,-1
+penolakan massal,-1
+penentangan sengit,-1
+pemberontakan opini,-1
+kudeta narasi,-1
+pembajakan narasi publik,-1
+narasi subversive,-1
+subversi politik,-1
+subversi siber,-1
+subversi ideologi,-1
+perang kognitif,-1
+cognitive warfare,-1
+perang informasi agresif,-1
+information warfare,-1
+serangan kognitif,-1
+pelemahan mental rakyat,-1
+demoralisasi,-1
+demoralisasi prajurit,-1
+kejatuhan mental,-1
+keruntuhan moral,-1
+keterpurukan mental,-1
+sikap pesimis akut,-1
+putus harapan,-1
+hilang kepercayaan publik,-1
+krisis kepercayaan publik,-1
+kehilangan legitimasi,-1
+delegitimasi institusi,-1
+delegitimasi tni ad,-1
+upaya delegitimasi,-1
+merusak legitimasi negara,-1
+penolakan otoritas resmi,-1
+pembangkangan komando,-1
+pemberontakan terhadap komando,-1
+insubordinasi,-1
+pelanggaran hierarki,-1
+perusakan tatanan dinas,-1
+kehancuran tatanan hukum,-1
+kekacauan hukum,-1
+hukum tidak ditegakkan,-1
+ketidakadilan mencolok,-1
+keberpihakan sepihak,-1
+diskriminasi terang terangan,-1
+ketidaknetralan aparat,-1
+pelanggaran netralitas,-1
+merusak netralitas tni,-1
+pelanggaran kode etik berat,-1
+sanksi pemecatan,-1
+pemecatan tidak terhormat,-1
+ptdh,-1
+hukuman disiplin berat,-1
+penjara militer,-1
+tahanan militer,-1
+pengadilan militer,-1
+sidang mahkamah militer,-1
+vonis bersalah,-1
+terbukti berkhianat,-1
+terbukti korupsi,-1
+terbukti menyuap,-1
+terbukti memfitnah,-1
+terbukti membocorkan rahasia,-1
+terbukti menyebarkan hoaks,-1
+terbukti makar,-1
+terbukti separatis,-1
+terpidana kejahatan,-1
+hukuman mati,-1
+penjara seumur hidup,-1
+ancaman pidana maksimal,-1
+pidana berat,-1
+ganjaran setimpal,-1
+tindakan tegas,-1
+hukuman keras,-1
+penindakan hukum tanpa pandang bulu,-1
+pemberantasan tuntas,-1
+pembersihan unsur perusak,-1
+penumpasan separatis,-1
+penumpasan terorisme,-1
+pemberantasan hoaks,-1
+penangkalan propaganda,-1
+klarifikasi tuntas,1
+bantahan telak,1
+fakta terbukti benar,1
+kebenaran terungkap,1
+informasi valid,1
+data akurat terpercaya,1
+laporan sahih,1
+bukti otentik,1
+kebenaran menang,1
+terbukti tidak bersalah,1
+reputasi pulih,1
+nama baik dipulihkan,1
+kepercayaan masyarakat kembali,1
+rakyat semakin percaya tni,1
+tni selalu di hati rakyat,1
+kemanggulan tni rakyat,1
+kemanunggalan tni rakyat,1
+rakyat dan tni bersatu,1
+pertahanan semesta tangguh,1
+sishankamrata kuat,1
+stabilitas nasional terjaga,1
+kedaulatan nkri utuh,1
+wilayah perbatasan aman,1
+kondisi bangsa kondusif,1
+persatuan bangsa kokoh,1
+toleransi terjaga,1
+kerukunan abadi,1
+kehidupan damai sejahtera,1
+masa depan cerah,1
+kejayaan indonesia,1
+indonesia maju,1
+generasi unggul,1
+prestasi dunia,1
+harum nama bangsa,1
+karya anak bangsa,1
+kebanggaan tanah air,1
+cinta tanah air membara,1
+semangat bela negara tinggi,1
+prajurit teladan berprestasi,1
+komandan berwibawa bijak,1
+pimpinan amanah adil,1
+satuan tangguh berprestasi,1
+sukses gemilang,1
+operasi berhasil sempurna,1
+misi tuntas dengan mulia,1
+pengabdian tanpa pamrih,1
+bakti tiada henti,1
+setia sampai mati,1
+jiwa raga untuk nkri,1
+pancasila abadi,1
+uud 1945 tegak,1
+merah putih berkibar gagah,1
+indonesia berdaulat,1
+kehormatan tni terjaga,1
+citra positif tni meningkat,1
+tni institusi paling dipercaya,1
+kepercayaan publik nomor satu,1
+prestasi puncak,1
+keberhasilan sejati,1
+integritas tanpa kompromi,1
+profesionalisme sejati,1
+modernisasi alutsista berhasil,1
+kesiapan tempur maksimal,1
+kesiapan operasi optimal,1
+respons cepat sigap,1
+tindakan tepat terukur,1
+keputusan bijak cermat,1
+briefing akurat tajam,1
+analisis situasi mendalam,1
+deteksi dini berhasil,1
+cegah dini sukses,1
+antisipasi sempurna,1
+ancaman berhasil diredam,1
+isu provokasi dinetralisir,1
+hoaks berhasil dibongkar,1
+fitnah berhasil ditangkal,1
+peniruan akun dihentikan,1
+akun palsu ditindak,1
+kebocoran opsec dicegah,1
+opsec satuan terjaga ketat,1
+rahasia dinas aman terlindungi,1
+ruang siber sosial kondusif,1
+keamanan ruang siber tangguh,1
+ketahanan informasi kokoh,1
+opini publik positif,1
+keamanan nasional terjamin,1
+kejayaan tni ad,1
+kartika eka paksi,1
+jaya di darat,1
+jaya di udara,1
+jaya di laut,1
+tni kuat bersama rakyat,1
+jaya selalu tni ad,1
+jaya nkri,1
+merdeka,1
+menang mutlak,1
+sukses besar,1
+tuntas paripurna,1
+selesai sempurna,1
+lulus dengan pujian,1
+terbaik di kelasnya,1
+kualitas nomor satu,1
+keunggulan strategis,1
+kemenangan gemilang,1
+prestasi emas,1
+juara pertama,1
+target juara tercapai,1
+terbaik,1
+mantap jiwa,1
+hebat luar biasa,1
+sangat membanggakan,1
+sangat memuaskan,1
+amat berhasil,1
+amat gemilang,1
+amat membahagiakan,1
+penuh keberkahan,1
+penuh prestasi,1
+harapan nyata,1
+langkah pasti,1
+kemenangan hakiki,1
+kebaikan melimpah,1
+keadilan ditegakkan,1
+kebenaran berdiri tegak,1
+kedaulatan abadi,1
+kehormatan sejati,1
+kemuliaan bangsa,1
+kedamaian abadi,1
+kesejahteraan rakyat,1
+kemakmuran bersama,1
+kekuatan tak tertandingi,1
+ketangguhan hakiki,1
+keteguhan hati,1
+kesetiaan abadi,1
+loyalitas mutlak,1
+prajurit sejati,1
+kesatria bangsa,1
+pembela tanah air,1
+benteng negara,1
+pelindung rakyat,1
+penjaga kedaulatan,1
+pengawal merah putih,1
+pilar nkri,1
+kebanggaan bangsa indonesia,1
+salam tangguh,1
+salam persatuan,1
+tetap semangat,1
+pantang menyerah,1
+maju terus,1
+terus berkarya,1
+pantang mundur,1
+berani membela kebenaran,1
+adil dan bijaksana,1
+jujur dan ksatria,1
+siap berkorban,1
+ikhlas mengabdi,1
+tulus ikhlas,1
+bakti mulia,1
+tugas suci,1
+panggilan pertiwi,1
+ibu pertiwi bangga,1
+generasi penerus tangguh,1
+harapan bangsa,1
+cahaya masa depan,1
+langkah terukur,1
+strategi jitu,1
+solusi cerdas,1
+inovasi cemerlang,1
+teknologi tepat guna,1
+sistem andal,1
+kinerja prima,1
+keberhasilan terbukti,1
+kemenangan pasti,1
+sukses selalu,1
+radarisu andal,1
+sistem peringatan dini handal,1
+deteksi presisi,1
+perlindungan institusi prima,1
+tni ad jaya,1
+nkri harga mati,1
+selesai dengan hasil terbaik,1
+tuntas terpercaya,1
+teruji di lapangan,1
+terbukti efektif,1
+kinerja unggul,1
+hasil memuaskan,1
+kebanggaan bersama tni rakyat,1
+prestasi tanpa henti,1
+kemenangan bertubi tubi,1
+kejayaan sepanjang masa,1
+abadi selamanya,1
+kebaikan abadi,1
+kebahagiaan bersama,1
+keharmonisan sejati,1
+kedamaian hakiki,1
+keberhasilan gemilang,1
+sukses paripurna,1
+selesai dengan sempurna,1
+hasil sempurna,1
+terbaik dari yang terbaik,1
+karya emas,1
+juara sejati,1
+pemenang sesungguhnya,1
+kebanggaan tni ad,1
+kebanggaan korps,1
+kehormatan prajurit,1
+kesatria tni ad,1
+pantang tumbang,1
+selalu unggul,1
+selalu menang,1
+selalu terdepan,1
+terdepan dalam inovasi,1
+radarisu juara,1
+kch 2026 juara,1
+siap tempur,1
+siap operasi,1
+siap mengabdi,1
+siap sedia,1
+siap menjaga kedaulatan,1
+aman tenteram,1
+sejahtera lahir batin,1
+berkah berlimpah,1
+kemenangan hakiki abadi,1
+damai sejati,1
+merdeka sejati,1
+jaya,1
+sukses,1
+terpuji,1
+mulia,1
+unggul,1
+hebat,1
+tangguh,1
+abadi,1
+bersatu,1
+solid,1
+jaya selalu,1
+hidup tni ad,1
+hidup nkri,1
+merah putih berkibar selamanya,1
+tni ad kebanggaan kita,1
+semangat juara,1
+juara 1,1
+emas,1
+terunggul,1
+terdepan,1
+paling andal,1
+paling akurat,1
+akurasi tinggi,1
+presisi tinggi,1
+kinerja sempurna,1
+teruji handal,1
+bebas hoaks,1
+bebas fitnah,1
+aman dari teror,1
+terbebas dari ancaman,1
+situasi terkendali penuh,1
+terkendali aman,1
+aman dan damai,1
+damai sejahtera,1
+rukun santosa,1
+adil makmur,1
+gemah ripah loh jinawi,1
+toto tentrem kerto raharjo,1
+kebaikan paripurna,1
+kemuliaan abadi,1
+berkah tak terhingga,1
+kebanggaan kita bersama,1
+selesai dengan sukses,1
+sukses besar bersama,1
+keberhasilan tim solid,1
+sinergi emas,1
+kolaborasi unggul,1
+kerjasama luar biasa,1
+tim tangguh berprestasi,1
+juara bersama,1
+tni ad jaya jaya jaya,1
+prajurit juara,1
+kartika siber tangguh,1
+siber sosial aman,1
+perlindungan institusi tni ad berhasil,1
+tuntas teruji,1
+lulus sempurna,1
+ok,1
+berhasil sempurna,1
+puas,1
+senang,1
+mantap,1
+prima,1
+top,1
+luar biasa hebat,1
+amat sangat baik,1
+unggul tak tertandingi,1
+karya terbaik anak bangsa,1
+persembahan untuk bangsa,1
+demi tni ad dan nkri,1
+selalu di hati rakyat,1
+rakyat cinta tni,1
+tni manunggal dengan rakyat,1
+kemesraan tni dan rakyat,1
+tni pelindung tumpah darah indonesia,1
+garda terdepan bangsa,1
+benteng kokoh kedaulatan,1
+prajurit sejati satria bangsa,1
+kemenangan mutlak abadi,1
+kejayaan abadi nkri,1
+pancasila sakti,1
+nkri tetap berdiri kokoh,1
+berdaulat adil dan makmur,1
+indonesia emas,1
+generasi emas indonesia,1
+prestasi membahana,1
+selesai dengan sangat memuaskan,1
+sempurna tanpa cela,1
+tuntas tanpa sisa,1
+sukses tanpa batas,1
+hasil luar biasa,1
+amat terpuji,1
+terima kasih,1
+syukur,1
+alhamdulillah,1
+puji syukur,1
+berkah melimpah,1
+selamat dan sukses,1
+prestasi luar biasa,1
+kemenangan tuntas,1
+jaya jaya jaya,1
+merdeka merdeka merdeka,1
+tni ad jaya selalu,1
+selesai,1
