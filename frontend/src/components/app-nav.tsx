@@ -9,6 +9,8 @@ import { useCan } from "./permissions-provider";
 const LINKS: { href: string; label: string; permission: Permission }[] = [
   { href: "/dashboard", label: ui.nav.dashboard, permission: "dashboard.view" },
   { href: "/topics", label: ui.nav.topics, permission: "topics.view" },
+  { href: "/alerts", label: ui.nav.alerts, permission: "alerts.view" },
+  { href: "/briefings", label: ui.nav.briefings, permission: "briefings.view" },
   { href: "/admin/status", label: ui.nav.status, permission: "system.status" },
   { href: "/admin/users", label: ui.nav.users, permission: "users.view" },
   { href: "/admin/sources", label: ui.nav.sources, permission: "sources.view" },

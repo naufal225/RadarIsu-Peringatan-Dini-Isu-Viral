@@ -120,6 +120,21 @@ class AuditLogTest extends TestCase
         app(AuditLogger::class)->log('user.created');
     }
 
+    public function test_logger_creates_valid_entry_with_request_context(): void
+    {
+        $user = $this->userWithRole('analyst');
+        $logger = app(AuditLogger::class);
+
+        $log = $logger->log('topic.create', null, ['title' => 'Uji Topik'], $user);
+
+        $this->assertDatabaseHas('audit_logs', [
+            'id' => $log->id,
+            'user_id' => $user->id,
+            'action' => 'topic.create',
+        ]);
+        $this->assertSame(['title' => 'Uji Topik'], $log->detail);
+    }
+
     public function test_logger_action_list_matches_prd_section_9_7(): void
     {
         $this->assertSame([

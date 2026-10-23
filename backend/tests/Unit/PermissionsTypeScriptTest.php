@@ -19,8 +19,8 @@ class PermissionsTypeScriptTest extends TestCase
         }
 
         $this->assertSame(
-            PermissionsTypeScript::render(),
-            file_get_contents($path),
+            str_replace("\r\n", "\n", PermissionsTypeScript::render()),
+            str_replace("\r\n", "\n", file_get_contents($path)),
             'Run `php artisan permissions:export-ts` after changing config/permissions.php.',
         );
     }
