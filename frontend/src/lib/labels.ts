@@ -2,6 +2,7 @@
 
 import { authUi } from "./labels/auth";
 import { settingsUi } from "./labels/settings";
+import { bUi } from "./labels/b";
 
 // Per-owner label files (docs/OWNERSHIP.md) are merged here so callers keep one import path.
 export { roleLabels } from "./labels/auth";
@@ -128,6 +129,8 @@ export const ui = {
   },
   nav: {
     dashboard: "Dasbor",
+    alerts: bUi.nav.alerts,
+    briefings: bUi.nav.briefings,
     status: "Status sistem",
     users: "Pengguna",
     sources: "Sumber data",
@@ -135,6 +138,8 @@ export const ui = {
     settings: settingsUi.title,
   },
   settings: settingsUi,
+  alerts: bUi.alerts,
+  briefings: bUi.briefings,
   common: {
     save: "Simpan",
     saving: "Menyimpan…",

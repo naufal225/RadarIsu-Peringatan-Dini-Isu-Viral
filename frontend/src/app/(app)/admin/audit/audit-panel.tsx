@@ -52,7 +52,7 @@ export function AuditPanel() {
     <>
       <PageTitle>{ui.audit.title}</PageTitle>
 
-      <form onSubmit={applyFilters} className="mb-4 grid gap-3 sm:grid-cols-5 sm:items-end">
+      <form onSubmit={applyFilters} aria-label="Filter Audit Log" className="mb-4 grid gap-3 sm:grid-cols-5 sm:items-end">
         <Field label={ui.audit.user}>
           <select name="user_id" defaultValue="" className={inputClass}>
             <option value="">{ui.audit.allUsers}</option>
