@@ -16,7 +16,9 @@ import {
   topicCategoryLabels,
   ui,
 } from "./labels";
+import { FIELD_RANGES } from "./detection-settings";
 import { authUi, roleLabels as authRoleLabels } from "./labels/auth";
+import { settingsUi } from "./labels/settings";
 import { ROLES } from "./permissions";
 
 const keys = (map: object) => Object.keys(map).sort();
@@ -34,6 +36,16 @@ describe("label map", () => {
     expect(ui.logout).toBe(authUi.logout);
     expect(ui.forbidden).toBe(authUi.forbidden);
     expect(ui.users).toBe(authUi.users);
+  });
+
+  it("merges the F15 label file and labels every settings field", () => {
+    expect(ui.settings).toBe(settingsUi);
+    expect(ui.nav.settings).toBe(settingsUi.title);
+    expect(keys(settingsUi.fields)).toEqual([...Object.keys(FIELD_RANGES)].sort());
+    for (const field of Object.values(settingsUi.fields)) {
+      expect(field.label.trim()).not.toBe("");
+      expect(field.hint.trim()).not.toBe("");
+    }
   });
 
   it("covers every alert status, kind and severity (§9.5)", () => {

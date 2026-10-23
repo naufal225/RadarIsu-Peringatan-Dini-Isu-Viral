@@ -12,6 +12,7 @@ const LINKS: { href: string; label: string; permission: Permission }[] = [
   { href: "/admin/users", label: ui.nav.users, permission: "users.view" },
   { href: "/admin/sources", label: ui.nav.sources, permission: "sources.view" },
   { href: "/admin/audit", label: ui.nav.audit, permission: "audit.view" },
+  { href: "/admin/settings", label: ui.nav.settings, permission: "settings.manage" },
 ];
 
 export function AppNav() {

@@ -1,6 +1,7 @@
 // UI label map (PRD §14). Code identifiers stay English; every user-facing string comes from here.
 
 import { authUi } from "./labels/auth";
+import { settingsUi } from "./labels/settings";
 
 // Per-owner label files (docs/OWNERSHIP.md) are merged here so callers keep one import path.
 export { roleLabels } from "./labels/auth";
@@ -131,7 +132,9 @@ export const ui = {
     users: "Pengguna",
     sources: "Sumber data",
     audit: "Audit log",
+    settings: settingsUi.title,
   },
+  settings: settingsUi,
   common: {
     save: "Simpan",
     saving: "Menyimpan…",
