@@ -1,9 +1,11 @@
 // UI label map (PRD §14). Code identifiers stay English; every user-facing string comes from here.
 
 import { authUi } from "./labels/auth";
+import { topicsUi } from "./labels/topics";
 
 // Per-owner label files (docs/OWNERSHIP.md) are merged here so callers keep one import path.
 export { roleLabels } from "./labels/auth";
+export { sensitivityLabels, topicCategoryLabels } from "./labels/topics";
 
 export const alertStatusLabels = {
   new: "Baru",
@@ -29,13 +31,6 @@ export const evidenceReasonLabels = {
   synchronized_posting: "Posting serentak",
   name_similarity: "Nama mirip akun resmi",
   spike_sample: "Contoh posting saat lonjakan",
-} as const;
-
-export const topicCategoryLabels = {
-  institution: "Institusi",
-  impersonation: "Peniruan",
-  opsec: "OPSEC",
-  general: "Umum",
 } as const;
 
 export const alertActionLabels = {
@@ -131,7 +126,9 @@ export const ui = {
     users: "Pengguna",
     sources: "Sumber data",
     audit: "Audit log",
+    topics: "Topik",
   },
+  topics: topicsUi,
   common: {
     save: "Simpan",
     saving: "Menyimpan…",
