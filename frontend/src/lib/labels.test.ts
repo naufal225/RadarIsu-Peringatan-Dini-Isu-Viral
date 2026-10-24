@@ -17,7 +17,9 @@ import {
   topicCategoryLabels,
   ui,
 } from "./labels";
+import { FIELD_RANGES } from "./detection-settings";
 import { authUi, roleLabels as authRoleLabels } from "./labels/auth";
+import { settingsUi } from "./labels/settings";
 import { ROLES } from "./permissions";
 import { CATEGORIES, SENSITIVITIES } from "./topics";
 
@@ -38,6 +40,14 @@ describe("label map", () => {
     expect(ui.users).toBe(authUi.users);
   });
 
+  it("merges the F15 label file and labels every settings field", () => {
+    expect(ui.settings).toBe(settingsUi);
+    expect(ui.nav.settings).toBe(settingsUi.title);
+    expect(keys(settingsUi.fields)).toEqual([...Object.keys(FIELD_RANGES)].sort());
+    for (const field of Object.values(settingsUi.fields)) {
+      expect(field.label.trim()).not.toBe("");
+      expect(field.hint.trim()).not.toBe("");
+    }
   it("labels every topic category and sensitivity, and the API error codes of topics", () => {
     expect(keys(topicCategoryLabels)).toEqual([...CATEGORIES].sort());
     expect(keys(sensitivityLabels)).toEqual([...SENSITIVITIES].sort());

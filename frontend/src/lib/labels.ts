@@ -1,6 +1,7 @@
 // UI label map (PRD §14). Code identifiers stay English; every user-facing string comes from here.
 
 import { authUi } from "./labels/auth";
+import { settingsUi } from "./labels/settings";
 import { topicsUi } from "./labels/topics";
 import { bUi } from "./labels/b";
 
@@ -129,6 +130,9 @@ export const ui = {
     users: "Pengguna",
     sources: "Sumber data",
     audit: "Audit log",
+    settings: settingsUi.title,
+  },
+  settings: settingsUi,
     topics: "Topik",
   },
   topics: topicsUi,

@@ -10,6 +10,7 @@
 
 import { createServer } from "node:http";
 import next from "next";
+import { watchBuildId } from "./src/server/build-guard.mjs";
 
 const port = Number.parseInt(process.env.PORT ?? "3000", 10);
 const hostname = process.env.BIND_HOST ?? "0.0.0.0";
@@ -38,3 +39,15 @@ server.on("upgrade", (req, socket, head) => {
 server.listen(port, hostname, () => {
   console.log(`> RadarIsu frontend on http://${hostname}:${port} (${dev ? "development" : "production"})`);
 });
+
+// `npm run build` replaces .next under a running production server, whose pages then reference chunks
+// that no longer exist. Exit so it is noticed; Docker restarts the container (restart: unless-stopped).
+if (!dev) {
+  watchBuildId({
+    file: new URL("./.next/BUILD_ID", import.meta.url),
+    onChange: (previous, current) => {
+      console.error(`> .next was rebuilt (${previous} -> ${current}) while this server was running; exiting. Start it again with: npm start`);
+      process.exit(1);
+    },
+  });
+}

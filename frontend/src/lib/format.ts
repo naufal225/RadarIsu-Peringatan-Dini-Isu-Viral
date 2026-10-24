@@ -9,6 +9,11 @@ export function formatDateTime(value: string | null | undefined): string {
   return Number.isNaN(date.getTime()) ? value : dateTime.format(date);
 }
 
+/** Number with the Indonesian decimal comma, e.g. 5.1 -> "5,1". */
+export function formatDecimal(value: number, minDigits = 0, maxDigits = 2): string {
+  return value.toLocaleString("id-ID", { minimumFractionDigits: minDigits, maximumFractionDigits: maxDigits });
+}
+
 /** Validation error map from a Laravel 422 body, flattened to field names. */
 export function invalidFields(body: { errors?: Record<string, string[]> } | null): string[] {
   return Object.keys(body?.errors ?? {});

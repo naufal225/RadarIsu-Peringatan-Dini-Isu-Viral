@@ -134,8 +134,8 @@ Aturan transisi dan kode status ada di PRD §8.5. Setiap aksi menulis tepat satu
 
 | Rute | Izin | Catatan |
 |---|---|---|
-| `GET /settings/detection` | `settings.manage` | |
-| `PUT /settings/detection` | `settings.manage` | Validasi rentang nilai. Mencatat `settings.update` |
+| `GET /settings/detection` | `settings.manage` | Bentuk di 3.4 |
+| `PUT /settings/detection` | `settings.manage` | Mengganti seluruh nilai, semua kunci wajib. Validasi rentang dan aturan antar-field di `docs/DETECTION_SETTINGS.md`. Mencatat `settings.update` hanya bila ada nilai yang berubah |
 | `GET /labeling/posts` | `labels.manage` | Paginasi, filter `unlabeled` |
 | `PUT /labeling/posts/{id}` | `labels.manage` | Body `{label_manual: "organic" \| "anomalous" \| null}` |
 | `GET /evaluation/runs` | `evaluation.view` | |
@@ -196,8 +196,34 @@ Contoh di bawah sudah dikoreksi. Di PRD sebelumnya tertulis skor 82, padahal jum
 } }
 ```
 
+### 3.4 `GET /settings/detection` dan `PUT /settings/detection`
+
+`PUT` menerima isi `data.value` apa adanya dan mengembalikan bentuk yang sama dengan `GET`. Arti tiap kunci ada di `docs/DETECTION_SETTINGS.md`.
+
+```json
+{ "data": {
+    "key": "detection",
+    "value": {
+      "coordination_window_minutes": 15, "z_threshold": 3.0, "min_volume": 20,
+      "baseline_hours": 168, "min_baseline_hours": 24,
+      "similarity_threshold": 0.8, "min_accounts_cluster": 5, "young_account_days": 30,
+      "impersonation_threshold": 0.6,
+      "weights": { "spike": 40, "anomaly": 30, "sentiment": 20, "reach": 10 },
+      "severity_cutoffs": { "medium": 40, "high": 70 },
+      "sensitivity_z_offset": { "low": 1.0, "medium": 0.0, "high": -0.5 }
+    },
+    "updated_at": "2026-10-23T09:00:00Z",
+    "updated_by": { "id": 1, "name": "Admin Demo" }
+} }
+```
+
+`updated_at` dan `updated_by` bernilai `null` sebelum pernah diubah. Galat validasi memakai bentuk 422 biasa, dengan nama field bertitik (`weights`, `weights.spike`, `severity_cutoffs.medium`).
+
 ---
 
 ## 4. Kontrak service (antarmuka kode)
+
+`Setting::detection(): array` mengembalikan ambang dan bobot terkini (kontrak F15 → domain A). Detektor memanggilnya sekali per eksekusi dan meneruskan nilainya sebagai argumen ke fungsi murni di bawah, bukan membaca konstanta sendiri. Tidak di-cache.
+
 
 Semua fungsi penilaian dibuat sebagai fungsi murni: tanpa akses database, tanpa `now()`, dan threshold dari argumen. Dengan begitu bisa diuji tanpa database dan bisa dipakai sebelum

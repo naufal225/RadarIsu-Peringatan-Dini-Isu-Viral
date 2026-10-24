@@ -1,5 +1,13 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Menjalankan lokal (RadarIsu)
+
+- Untuk bekerja sehari-hari pakai `npm run dev`. Server dev memakai folder terpisah dari hasil build, jadi aman bila `npm run build` dijalankan di sela-selanya.
+- `npm start` (`node server.mjs`) menjalankan hasil `npm run build`. **Jangan menjalankan `npm run build` selagi `npm start` aktif.** Build mengganti isi `.next`, sehingga server yang berjalan masih menyebut file JS/CSS lama yang sudah hilang (500), halaman tidak ter-hydrate, dan tombol serta form tidak berfungsi.
+- Sejak ada penjaga di `server.mjs`, server produksi keluar sendiri dengan pesan `.next was rebuilt ... exiting` begitu build berganti. Jalankan `npm start` lagi setelah build selesai.
+- Di Docker hal ini tidak terjadi: build terjadi saat image dibuat, bukan saat kontainer berjalan.
+- Form login memakai `method="post"` dan baru aktif setelah halaman ter-hydrate. Kalau form tampak nonaktif terus, JavaScript halaman gagal dimuat: periksa tab Network untuk respons 4xx/5xx pada `/_next/static/...`.
+
 ## Getting Started
 
 First, run the development server:
