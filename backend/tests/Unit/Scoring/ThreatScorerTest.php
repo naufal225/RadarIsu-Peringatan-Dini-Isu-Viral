@@ -249,4 +249,114 @@ class ThreatScorerTest extends TestCase
 
         $this->assertSame($res1, $res2);
     }
+
+    public function test_supports_metric_hourly_column_names_aliases(): void
+    {
+        // Directly using database column names from metrics_hourly
+        $metricArray = [
+            'z' => 5.1,
+            'anomalous_accounts' => 8,
+            'unique_accounts' => 20,
+            'negative_count' => 62, // instead of negative_posts
+            'volume' => 100,        // instead of total_posts
+            'source_count' => 2,
+            'active_sources' => 3,
+        ];
+
+        $result = ThreatScorer::score($metricArray);
+
+        $this->assertSame(65, $result['score']);
+        $this->assertSame('medium', $result['severity']);
+        $this->assertEquals(12.4, $result['score_breakdown']['sentiment']['value']);
+    }
+
+    public function test_score_from_metric_helper(): void
+    {
+        $metricData = [
+            'anomalous_accounts' => 8,
+            'unique_accounts' => 20,
+            'negative_count' => 62,
+            'volume' => 100,
+            'source_count' => 2,
+        ];
+
+        $result = ThreatScorer::scoreFromMetric($metricData, z: 5.1, hasSufficientBaseline: true, activeSources: 3);
+
+        $this->assertSame(65, $result['score']);
+        $this->assertSame('medium', $result['severity']);
+    }
+
+    public function test_options_from_settings_helper(): void
+    {
+        $rawSettings = [
+            'weights' => ['spike' => 35, 'anomaly' => 35, 'sentiment' => 20, 'reach' => 10],
+            'severity_cutoffs' => ['medium' => 45, 'high' => 75],
+            'z_threshold' => 2.8,
+            'impersonation_threshold' => 0.65,
+        ];
+
+        $options = ThreatScorer::optionsFromSettings($rawSettings);
+
+        $this->assertSame(35, $options['weights']['spike']);
+        $this->assertSame(45, $options['severity_cutoffs']['medium']);
+        $this->assertSame(2.8, $options['z_threshold']);
+        $this->assertSame(0.65, $options['impersonation_threshold']);
+    }
+
+    public function test_score_unified_entrypoint_dispatches_impersonation(): void
+    {
+        $input = [
+            'kind' => 'impersonation',
+            'similarity' => 0.85,
+            'is_young_account' => true,
+        ];
+
+        $result = ThreatScorer::score($input);
+
+        $this->assertSame(90, $result['score']);
+        $this->assertSame('high', $result['severity']);
+        $this->assertArrayHasKey('similarity', $result['score_breakdown']);
+        $this->assertArrayHasKey('young_account', $result['score_breakdown']);
+    }
+
+    public function test_options_from_settings_supports_wrapped_detection_array(): void
+    {
+        $wrapped = [
+            'detection' => [
+                'weights' => ['spike' => 30, 'anomaly' => 30, 'sentiment' => 20, 'reach' => 20],
+                'severity_cutoffs' => ['medium' => 50, 'high' => 80],
+                'z_threshold' => 3.5,
+                'impersonation_threshold' => 0.70,
+            ],
+        ];
+
+        $options = ThreatScorer::optionsFromSettings($wrapped);
+
+        $this->assertSame(30, $options['weights']['spike']);
+        $this->assertSame(50, $options['severity_cutoffs']['medium']);
+        $this->assertSame(3.5, $options['z_threshold']);
+        $this->assertSame(0.70, $options['impersonation_threshold']);
+    }
+
+    public function test_score_from_metric_resolves_active_sources_from_options(): void
+    {
+        $metricData = [
+            'anomalous_accounts' => 5,
+            'unique_accounts' => 10,
+            'negative_count' => 50,
+            'volume' => 100,
+            'source_count' => 2,
+        ];
+
+        // activeSources parameter omitted (null), passed via options
+        $result = ThreatScorer::scoreFromMetric(
+            $metricData,
+            z: 6.0,
+            hasSufficientBaseline: true,
+            options: ['active_sources' => 4]
+        );
+
+        // reach = 2 / 4 = 0.50 => 0.50 * 10 = 5.0
+        $this->assertEquals(5.0, $result['score_breakdown']['reach']['value']);
+    }
 }

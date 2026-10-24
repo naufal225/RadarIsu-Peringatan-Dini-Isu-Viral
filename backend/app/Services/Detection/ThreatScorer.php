@@ -72,6 +72,13 @@ class ThreatScorer
      */
     public static function score(array $input, array $options = []): array
     {
+        if (($input['kind'] ?? null) === 'impersonation') {
+            $similarity = (float) ($input['similarity'] ?? 0.0);
+            $isYoung = (bool) ($input['is_young_account'] ?? $input['is_young'] ?? false);
+
+            return static::scoreImpersonation($similarity, $isYoung, $options);
+        }
+
         return static::scoreIssue($input, $options);
     }
 
@@ -104,20 +111,20 @@ class ThreatScorer
         if (isset($input['anomaly_ratio'])) {
             $rawAnomaly = (float) $input['anomaly_ratio'];
         } else {
-            $anomalous = (float) ($input['anomalous_accounts'] ?? 0);
-            $uniqueAccounts = (float) ($input['unique_accounts'] ?? 0);
+            $anomalous = (float) ($input['anomalous_accounts'] ?? $input['anomalous'] ?? 0);
+            $uniqueAccounts = (float) ($input['unique_accounts'] ?? $input['accounts_count'] ?? 0);
             $rawAnomaly = ($uniqueAccounts > 0.0) ? ($anomalous / $uniqueAccounts) : 0.0;
         }
         $rawAnomaly = max(0.0, $rawAnomaly);
         $anomalyRatio = min($rawAnomaly, 1.0);
         $anomalyValue = $anomalyRatio * (float) $weights['anomaly'];
 
-        // 3. Sentiment component
+        // 3. Sentiment component (supports MetricHourly fields: negative_count, volume)
         if (isset($input['sentiment_ratio'])) {
             $rawSentiment = (float) $input['sentiment_ratio'];
         } else {
-            $negative = (float) ($input['negative_posts'] ?? 0);
-            $volume = (float) ($input['total_posts'] ?? 0);
+            $negative = (float) ($input['negative_count'] ?? $input['negative_posts'] ?? $input['negative'] ?? 0);
+            $volume = (float) ($input['volume'] ?? $input['total_posts'] ?? $input['posts_count'] ?? 0);
             $rawSentiment = ($volume > 0.0) ? ($negative / $volume) : 0.0;
         }
         $rawSentiment = max(0.0, $rawSentiment);
@@ -128,8 +135,8 @@ class ThreatScorer
         if (isset($input['reach_ratio'])) {
             $rawReach = (float) $input['reach_ratio'];
         } else {
-            $sourceCount = (float) ($input['source_count'] ?? 0);
-            $activeSources = (float) ($input['active_sources'] ?? 0);
+            $sourceCount = (float) ($input['source_count'] ?? $input['sources_count'] ?? 0);
+            $activeSources = (float) ($input['active_sources'] ?? $options['active_sources'] ?? 0);
             $rawReach = ($activeSources > 0.0) ? ($sourceCount / $activeSources) : 0.0;
         }
         $rawReach = max(0.0, $rawReach);
@@ -247,5 +254,60 @@ class ThreatScorer
         }
 
         return 'low';
+    }
+
+    /**
+     * Score directly from a MetricHourly instance or array + z-score and active sources.
+     *
+     * @param array|\ArrayAccess|object $metric
+     * @param float $z
+     * @param bool $hasSufficientBaseline
+     * @param int $activeSources
+     * @param array $options
+     * @return array
+     */
+    public static function scoreFromMetric(
+        mixed $metric,
+        float $z = 0.0,
+        bool $hasSufficientBaseline = true,
+        ?int $activeSources = null,
+        array $options = []
+    ): array {
+        $data = is_array($metric) ? $metric : (method_exists($metric, 'toArray') ? $metric->toArray() : (array) $metric);
+
+        $sources = $activeSources ?? (int) ($options['active_sources'] ?? 1);
+
+        $input = [
+            'z' => $z,
+            'has_sufficient_baseline' => $hasSufficientBaseline,
+            'anomalous_accounts' => $data['anomalous_accounts'] ?? 0,
+            'unique_accounts' => $data['unique_accounts'] ?? 0,
+            'negative_count' => $data['negative_count'] ?? 0,
+            'volume' => $data['volume'] ?? 0,
+            'source_count' => $data['source_count'] ?? 0,
+            'active_sources' => $sources,
+        ];
+
+        return static::score($input, $options);
+    }
+
+    /**
+     * Extract scoring options directly from Setting 'detection' array.
+     *
+     * @param array $settings
+     * @return array
+     */
+    public static function optionsFromSettings(array $settings): array
+    {
+        $detection = (isset($settings['detection']) && is_array($settings['detection']))
+            ? $settings['detection']
+            : $settings;
+
+        return [
+            'weights' => $detection['weights'] ?? self::DEFAULT_WEIGHTS,
+            'severity_cutoffs' => $detection['severity_cutoffs'] ?? self::DEFAULT_SEVERITY_CUTOFFS,
+            'z_threshold' => $detection['z_threshold'] ?? self::DEFAULT_Z_THRESHOLD,
+            'impersonation_threshold' => $detection['impersonation_threshold'] ?? self::DEFAULT_IMPERSONATION_THRESHOLD,
+        ];
     }
 }
