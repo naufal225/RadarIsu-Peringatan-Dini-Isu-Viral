@@ -118,6 +118,14 @@ class DetectionSettingsTest extends TestCase
             'string instead of number' => [['min_volume' => 'banyak'], 'min_volume'],
             'numeric string' => [['min_volume' => '25'], 'min_volume'],
             'fraction for integer field' => [['young_account_days' => 30.5], 'young_account_days'],
+            'spike window below range' => [['spike_current_window_minutes' => 14], 'spike_current_window_minutes'],
+            'sample limit of zero' => [['spike_sample_limit' => 0], 'spike_sample_limit'],
+            'synchronized window beyond range' => [['synchronized_window_minutes' => 61], 'synchronized_window_minutes'],
+            'synchronized ratio below half' => [['synchronized_ratio' => 0.4], 'synchronized_ratio'],
+            'impersonation window beyond a week' => [['impersonation_window_hours' => 169], 'impersonation_window_hours'],
+            'negative cooldown' => [['cooldown_minutes' => -1], 'cooldown_minutes'],
+            'cooldown as string' => [['cooldown_minutes' => '60'], 'cooldown_minutes'],
+            'post cap too small' => [['coordination_max_posts' => 99], 'coordination_max_posts'],
         ];
     }
 
@@ -164,6 +172,44 @@ class DetectionSettingsTest extends TestCase
 
         $this->assertSame(99, $detection['min_volume']);
         $this->assertSame(Setting::DETECTION_DEFAULTS['weights'], $detection['weights']);
+    }
+
+    public function test_detector_keys_default_to_the_prd_constants(): void
+    {
+        $detection = Setting::detection();
+
+        $this->assertSame(60, $detection['spike_current_window_minutes']);
+        $this->assertSame(10, $detection['spike_sample_limit']);
+        $this->assertSame(5, $detection['synchronized_window_minutes']);
+        $this->assertSame(0.8, $detection['synchronized_ratio']);
+        $this->assertSame(24, $detection['impersonation_window_hours']);
+    }
+
+    public function test_row_saved_before_the_new_keys_still_reads_with_defaults(): void
+    {
+        $old = Setting::DETECTION_DEFAULTS;
+        foreach (['cooldown_minutes', 'coordination_max_posts', 'impersonation_window_hours', 'synchronized_ratio',
+            'synchronized_window_minutes', 'spike_current_window_minutes', 'spike_sample_limit'] as $key) {
+            unset($old[$key]);
+        }
+        Setting::whereKey('detection')->update(['value' => json_encode($old)]);
+
+        $this->assertSame(60, Setting::detection()['cooldown_minutes']);
+        $this->assertSame(2000, Setting::detection()['coordination_max_posts']);
+    }
+
+    public function test_changing_a_new_key_is_audited(): void
+    {
+        $this->actingAsRole('admin');
+
+        $this->putJson(self::URL, $this->payload(['cooldown_minutes' => 120]))
+            ->assertOk()
+            ->assertJsonPath('data.value.cooldown_minutes', 120);
+
+        $this->assertEquals(
+            ['cooldown_minutes' => ['from' => 60, 'to' => 120]],
+            AuditLog::where('action', 'settings.update')->sole()->detail['changes'],
+        );
     }
 
     /**
