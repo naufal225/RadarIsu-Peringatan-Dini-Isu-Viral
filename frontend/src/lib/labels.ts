@@ -1,6 +1,7 @@
 // UI label map (PRD §14). Code identifiers stay English; every user-facing string comes from here.
 
 import { authUi } from "./labels/auth";
+import { detectionUi } from "./labels/detection";
 import { settingsUi } from "./labels/settings";
 import { coordinationUi } from "./labels/coordination";
 import { impersonationUi } from "./labels/impersonation";
@@ -11,6 +12,7 @@ import { dashboardUi } from "./labels/dashboard";
 // Per-owner label files (docs/OWNERSHIP.md) are merged here so callers keep one import path.
 export { roleLabels } from "./labels/auth";
 export { sensitivityLabels, topicCategoryLabels } from "./labels/topics";
+export { spikeStatusLabels } from "./labels/detection";
 
 export const alertStatusLabels = {
   new: "Baru",
@@ -137,6 +139,7 @@ export const ui = {
   coordination: coordinationUi,
   impersonation: impersonationUi,
   topics: topicsUi,
+  detection: detectionUi,
   alerts: bUi.alerts,
   briefings: bUi.briefings,
   common: {
