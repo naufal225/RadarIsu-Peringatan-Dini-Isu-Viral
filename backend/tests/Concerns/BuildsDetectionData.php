@@ -41,6 +41,21 @@ trait BuildsDetectionData
     }
 
     /**
+     * One account with a chosen name, first-seen time and (optional) creation time.
+     */
+    protected function makeAccount(string $handle, ?string $displayName, CarbonInterface $firstSeen, ?CarbonInterface $createdAt = null): int
+    {
+        $now = now()->utc()->format('Y-m-d H:i:s').'+00';
+        $format = fn (?CarbonInterface $at) => $at === null ? null : $at->copy()->utc()->format('Y-m-d H:i:s').'+00';
+
+        return DB::table('accounts')->insertGetId([
+            'source_type' => 'csv', 'handle' => $handle, 'display_name' => $displayName,
+            'platform_created_at' => $format($createdAt), 'first_seen_at' => $format($firstSeen),
+            'created_at' => $now, 'updated_at' => $now,
+        ]);
+    }
+
+    /**
      * @param  list<array{at: string|CarbonInterface, account_id: int, sentiment?: string|null, text?: string}>  $posts
      * @return list<int> post ids, in the order given
      */

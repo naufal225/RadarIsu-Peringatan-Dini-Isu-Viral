@@ -5,9 +5,13 @@ namespace Tests\Feature\Alerts;
 use App\Models\Alert;
 use App\Models\AlertAction;
 use App\Models\AuditLog;
+use App\Models\OfficialAccount;
+use App\Models\Topic;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Tests\Concerns\BuildsDetectionData;
 use Tests\TestCase;
 
 /**
@@ -15,6 +19,7 @@ use Tests\TestCase;
  */
 class AlertWorkflowTest extends TestCase
 {
+    use BuildsDetectionData;
     use RefreshDatabase;
 
     protected bool $seed = true;
@@ -269,7 +274,38 @@ class AlertWorkflowTest extends TestCase
     // 8
     public function test_detector_does_not_duplicate_open_alert(): void
     {
-        $this->markTestIncomplete('PRD §19.2 butir 8 bergantung pada detektor (Fase 4).');
+        $clock = CarbonImmutable::parse('2026-10-26 12:30:00', 'UTC');
+        $this->travelTo($clock);
+
+        // A topic with a spike (F3) and a coordinated burst (F4), and a look-alike of an official account (F13).
+        $source = $this->makeSource();
+        $accounts = $this->makeAccounts(30, 'wf');
+        $topic = Topic::factory()->create();
+        $this->addHourlyHistory($source, $topic, $accounts, $clock->startOfHour(), 48, 3);
+        $this->addPosts($source, $topic, array_map(
+            fn ($i) => ['at' => $clock->subMinutes(8)->addSeconds($i * 10), 'account_id' => $accounts[$i % 30],
+                'text' => 'waspada penipuan atas nama satuan kami segera pindahkan dana ke rekening resmi kode '.($i % 9)],
+            range(0, 39),
+        ));
+        $this->rebuildMetrics($topic);
+        OfficialAccount::factory()->create(['handle' => '@kodam_contoh', 'display_name' => 'Kodam Contoh']);
+        $lookalike = $this->makeAccount('@kodam_c0ntoh', null, $clock->subHours(2));
+
+        $this->artisan('radarisu:detect --sync')->assertSuccessful();
+        $this->artisan('radarisu:detect --sync')->assertSuccessful();
+
+        $this->assertSame(1, Alert::where('kind', 'issue')->where('topic_id', $topic->id)->count());
+        $this->assertSame(1, Alert::where('kind', 'impersonation')->where('subject_account_id', $lookalike)->count());
+        $this->assertSame(2, Alert::count());
+
+        // Still one after a human took the alert: the detector refreshes it and leaves its status alone.
+        $issue = Alert::where('kind', 'issue')->sole();
+        $issue->forceFill(['status' => 'reviewing'])->save();
+        $this->artisan('radarisu:detect --sync')->assertSuccessful();
+
+        $this->assertSame(2, Alert::count());
+        $this->assertSame('reviewing', $issue->refresh()->status);
+        $this->assertSame(0, AlertAction::count());
     }
 
     public function test_database_rejects_second_open_issue_alert_for_same_topic(): void

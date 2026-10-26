@@ -9,6 +9,7 @@ use App\Models\Setting;
 use App\Models\Source;
 use App\Models\Topic;
 use App\Services\Detection\AlertWriter;
+use App\Services\Detection\ImpersonationDetectionService;
 use App\Services\Detection\IssueDetectionService;
 use Carbon\CarbonImmutable;
 use Illuminate\Console\Scheduling\Schedule;
@@ -259,9 +260,9 @@ class SpikeDetectionTest extends TestCase
         $this->mock(AlertWriter::class)->shouldReceive('upsertIssue')->andThrow(new RuntimeException('boom'));
 
         $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('Issue detection failed for 1 topic(s).');
+        $this->expectExceptionMessage('Detection failed for 1 subject(s).');
 
-        (new DetectJob)->handle(app(IssueDetectionService::class));
+        (new DetectJob)->handle(app(IssueDetectionService::class), app(ImpersonationDetectionService::class));
     }
 
     public function test_the_job_is_unique_bounded_and_retried(): void
