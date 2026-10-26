@@ -5,6 +5,9 @@ import { detectionUi } from "./labels/detection";
 import { settingsUi } from "./labels/settings";
 import { coordinationUi } from "./labels/coordination";
 import { impersonationUi } from "./labels/impersonation";
+import { evaluationErrorCodes, evaluationUi } from "./labels/evaluation";
+import { labelingUi } from "./labels/labeling";
+import { replayErrorCodes, replayUi } from "./labels/replay";
 import { topicsUi } from "./labels/topics";
 import { bUi } from "./labels/b";
 import { dashboardUi } from "./labels/dashboard";
@@ -103,6 +106,8 @@ export const errorCodeLabels = {
   source_not_csv: "Impor hanya untuk sumber bertipe CSV",
   offline_mode_enabled: "Mode Offline aktif: koneksi keluar dinonaktifkan",
   connection_test_not_supported: "Uji koneksi hanya untuk sumber RSS dan YouTube",
+  ...replayErrorCodes,
+  ...evaluationErrorCodes,
 } as const;
 
 /** Indonesian description of an API error code; unknown codes are shown as-is. */
@@ -134,8 +139,14 @@ export const ui = {
     audit: "Audit log",
     settings: settingsUi.title,
     topics: "Topik",
+    replay: replayUi.title,
+    labeling: labelingUi.title,
+    evaluation: evaluationUi.title,
   },
   settings: settingsUi,
+  replay: replayUi,
+  labeling: labelingUi,
+  evaluation: evaluationUi,
   coordination: coordinationUi,
   impersonation: impersonationUi,
   topics: topicsUi,

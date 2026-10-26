@@ -130,3 +130,14 @@ Rentang dan aturan jumlah bobot = 100 adalah keputusan implementasi karena PRD h
 - `PUT /settings/detection` mencatat satu baris audit `settings.update` dengan `detail = {key: "detection", changes: {"weights.spike": {from: 40, to: 35}, ...}}`. Bila tidak ada nilai yang berubah, respons tetap 200 dan tidak ada baris audit.
 - `Setting::detection()` tidak di-cache, sehingga perubahan dipakai detektor pada eksekusi berikutnya. Kunci yang hilang dari baris tersimpan diisi dari nilai awal.
 - Izin: `settings.manage` (hanya Admin). Otorisasi ditegakkan di Laravel; frontend hanya menyembunyikan menu.
+
+## Kalibrasi dengan Evaluasi
+
+Ambang dan bobot di atas adalah nilai awal (PRD §16). Alur kalibrasi:
+
+1. Beri label ±200 posting di `/labeling` (termasuk posting skenario Replay).
+2. Jalankan evaluasi di `/evaluation` (atau `php artisan radarisu:evaluate --scenario={id}`) dan catat presisi, recall, F1, dan waktu deteksi.
+3. Ubah satu kelompok pengaturan di `/admin/settings`, putar ulang skenario pada basis data segar (memutar ulang menggandakan volume, OPEN_QUESTIONS #28), lalu jalankan evaluasi lagi.
+4. Halaman Evaluasi menampilkan perubahan F1 terhadap putaran sebelumnya pada cakupan yang sama. Simpan nilai yang menaikkan F1 tanpa menurunkan presisi di bawah kebutuhan pimpinan.
+
+Karena kalibrasi dan pengukuran memakai data yang sama, hasilnya cenderung optimistis; halaman Evaluasi menampilkan keterbatasan ini.

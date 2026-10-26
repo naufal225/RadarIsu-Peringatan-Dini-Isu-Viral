@@ -199,6 +199,22 @@
 /frontend/src/lib/labels/settings.ts                                   @naufal225 @rekis-0103
 /backend/tests/Feature/Settings/                                       @naufal225 @rekis-0103
 
+# --- F14 Pelabelan dan Evaluasi (Naufal, reviewer Rekishi; dialihkan 2026-10-26)
+/backend/app/Console/Commands/*Evaluate*                               @naufal225 @rekis-0103
+/backend/app/Services/Evaluation/                                      @naufal225 @rekis-0103
+/backend/app/Http/Controllers/Api/V1/Labeling*                         @naufal225 @rekis-0103
+/backend/app/Http/Controllers/Api/V1/Evaluation*                       @naufal225 @rekis-0103
+/backend/app/Models/EvaluationRun.php                                  @naufal225 @rekis-0103
+/backend/routes/api/labeling.php                                       @naufal225 @rekis-0103
+/backend/routes/api/evaluation.php                                     @naufal225 @rekis-0103
+/backend/database/migrations/*_create_evaluation_runs_table.php        @naufal225 @rekis-0103
+/backend/tests/Feature/Evaluation/                                     @naufal225 @rekis-0103
+/backend/tests/Feature/Labeling/                                       @naufal225 @rekis-0103
+/frontend/src/app/(app)/labeling/                                      @naufal225 @rekis-0103
+/frontend/src/app/(app)/evaluation/                                    @naufal225 @rekis-0103
+/frontend/src/lib/labels/labeling.ts                                   @naufal225 @rekis-0103
+/frontend/src/lib/labels/evaluation.ts                                 @naufal225 @rekis-0103
+
 # --- Migrasi gabungan lintas domain (audit, replay, evaluasi, settings)
 /backend/database/migrations/*_create_audit_replay_evaluation_settings_tables.php @naufal225 @dapzz-id @rekis-0103
 

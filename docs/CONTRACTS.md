@@ -133,6 +133,14 @@ Aturan transisi dan kode status ada di PRD §8.5. Setiap aksi menulis tepat satu
 | `POST /replay/scenarios/{id}/start` | `replay.manage` | Body `{speed_factor?}` |
 | `POST /replay/scenarios/{id}/stop` | `replay.manage` | |
 
+Bentuk dan perilaku (F11):
+
+- `GET /replay/scenarios?per_page=` → `{data: [ReplayScenario], meta: {current_page, last_page, per_page, total, clock_now, data_now}}`. `clock_now` adalah `settings.replay.clock.now` (null bila tidak ada Replay berjalan), `data_now` adalah `DataClock::now()`. `ReplayScenario`: `id, name, description, total_rows, incident_start_offset_seconds, default_speed_factor, status (idle|running|finished|stopped), speed_factor, run_number, progress_rows, started_at, virtual_anchor_at, heartbeat_at, finished_at, error, source_id, created_at`. Bungkus `data` ada di semua respons skenario tunggal.
+- `POST /replay/scenarios` (multipart: `file`, `name`, `description?`, `incident_start_offset_seconds?`, `default_speed_factor?`) → 201. Kolom CSV dan galat berkas: OPEN_QUESTIONS #27.
+- `POST .../start` `{speed_factor?}` (1–100000, bawaan `default_speed_factor`) → 202 dan job di antrean `replay`. 409 `already_running` | `another_running` | `empty_scenario`. Audit `replay.start`.
+- `POST .../stop` → 200; 409 `not_running`. Audit `replay.stop`. Runner melihat status berubah dan menutup sendiri (jam direset).
+- Untuk F14: posting Replay berlabel lewat `posts.label_manual`; `external_id = replay:{scenario_id}:{run_number}:{replay_row_id}`; waktu deteksi = `alerts.detected_at - (replay_scenarios.virtual_anchor_at + incident_start_offset_seconds)` untuk putaran terakhir (`run_number`).
+
 ### 2.8 Pengaturan, pelabelan, evaluasi, dan sistem (C)
 
 | Rute | Izin | Catatan |
@@ -141,10 +149,12 @@ Aturan transisi dan kode status ada di PRD §8.5. Setiap aksi menulis tepat satu
 | `PUT /settings/detection` | `settings.manage` | Mengganti seluruh nilai, semua kunci wajib. Validasi rentang dan aturan antar-field di `docs/DETECTION_SETTINGS.md`. Mencatat `settings.update` hanya bila ada nilai yang berubah |
 | `GET /settings/offline-mode` | `settings.manage` | Bentuk di 3.5 |
 | `PUT /settings/offline-mode` | `settings.manage` | `{"enabled": bool}` strict. Audit `settings.update` hanya bila berubah |
-| `GET /labeling/posts` | `labels.manage` | Paginasi, filter `unlabeled` |
-| `PUT /labeling/posts/{id}` | `labels.manage` | Body `{label_manual: "organic" \| "anomalous" \| null}` |
-| `GET /evaluation/runs` | `evaluation.view` | |
-| `POST /evaluation/run` | `evaluation.run` | Body `{scenario_id?}` |
+| `GET /labeling/posts` | `labels.manage` | Paginasi (`per_page` ≤ 100, `page`). Filter: `status=all\|unlabeled\|labeled`, `label=organic\|anomalous`, `is_simulated`, `topic_id`. Urutan `posted_at` terbaru. Respons `data[]`: `id, text, posted_at, sentiment, label_manual, is_simulated, account{id,handle,display_name}, topics[{id,name}]`; `meta.progress`: `{labeled, organic, anomalous, target: 200}` (hitungan seluruh posting, bukan hasil filter) |
+| `PUT /labeling/posts/{id}` | `labels.manage` | Body `{label_manual: "organic" \| "anomalous" \| null}`; kunci wajib ada, `null` (juga string kosong) menghapus label. Respons 200 `data` berisi posting. Audit `label.set` `{from, to}` hanya bila nilai berubah |
+| `GET /evaluation/runs` | `evaluation.view` | Paginasi (`per_page` ≤ 100), terbaru dulu. `data[]` hanya agregat: `id, scenario{id,name}\|null, run_by, labeled_posts, tp, fp, fn, precision, recall, f1, detection_latency_seconds, notes[], created_at` (tanpa daftar akun atau posting, jadi aman untuk pimpinan). `meta.scenarios[{id,name}]`: skenario yang pernah diputar, untuk form jalankan |
+| `POST /evaluation/run` | `evaluation.run` | Body `{scenario_id?}` (harus ada dan pernah diputar, kalau tidak 422 `scenario_not_replayed`). Sinkron, 201 dengan satu `data` seperti di atas. Audit `evaluation.run`. Setara CLI `radarisu:evaluate {--scenario=} {--user=}` |
+
+Perhitungan (F14-b, PRD §15): tingkat akun. Kebenaran dasar = akun dengan ≥ 1 posting berlabel `anomalous` di cakupan (semua posting berlabel, atau hanya sumber `replay` milik skenario). Prediksi positif = akun yang menjadi bukti `similar_text\|young_account\|synchronized_posting` pada alert `kind='issue'`. Hanya akun berlabel dihitung. `detection_latency_seconds` = `MIN(alerts.detected_at)` alert `issue` yang menandai akun `anomalous` − (`virtual_anchor_at` + `incident_start_offset_seconds`) putaran terakhir; `null` tanpa skenario atau tanpa alert. `notes` berisi kode: `no_labeled_accounts`, `no_predicted_positive`, `no_actual_positive`, `mixed_label_accounts:N`, `no_detection`.
 | `GET /system/status` | `system.status` | Kesehatan sumber, antrean, jumlah data |
 
 ---

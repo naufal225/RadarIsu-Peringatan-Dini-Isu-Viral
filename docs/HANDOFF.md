@@ -4,6 +4,39 @@ Papan pengumuman untuk perubahan yang menyentuh domain lain, perubahan izin, dan
 
 ---
 
+## 2026-10-26: F14-b Evaluasi (branch `feat/c-f14b-evaluasi`)
+
+- **Untuk Rekishi (reviewer F14):** `EvaluationController` kini berisi `runs` dan `run`; logika ada di `Services/Evaluation/{EvaluationCalculator,EvaluationService}` dan perintah `radarisu:evaluate`. `EvaluationRun` mendapat relasi dan factory. Tidak ada migrasi: tabel `evaluation_runs` dari skema awal.
+- **Untuk semua pemilik:** tidak ada perubahan di file domain lain. `GET /evaluation/runs` membuka semua peran tetapi hanya mengembalikan agregat.
+- Alur kalibrasi: lihat `docs/DETECTION_SETTINGS.md` bagian "Kalibrasi dengan Evaluasi". Demo: `DemoScenarioSeeder` lalu `radarisu:replay {id} --sync` lalu `radarisu:evaluate --scenario={id}`.
+
+---
+
+## 2026-10-26: F14-a Pelabelan data (branch `feat/c-f14a-pelabelan`)
+
+- **Untuk Rekishi (reviewer F14):** pelabelan dipisah dari `EvaluationController` ke `LabelingController` (sesuai pola `Labeling*` di CODEOWNERS). `EvaluationController` kini hanya berisi stub `runs` dan `run` untuk F14-b. Rute `labeling/posts` menunjuk ke controller baru; URI, metode, dan middleware tidak berubah.
+- **Untuk semua pemilik:** tidak ada migrasi, izin, atau perubahan file domain lain. `posts.label_manual` sudah ada sejak skema awal.
+- Demo: `php artisan db:seed --class=CoordinationDemoSeeder` lalu `php artisan db:seed --class=LabelingDemoSeeder` (200 posting terbaru dilabeli; akun kampanye `anomalous`, sisanya `organic`).
+
+---
+
+## 2026-10-26: F11 Mode Replay (branch `feat/a-f11-mode-replay`)
+
+- **Untuk semua pemilik:** Replay butuh pekerja antrean `replay` selain pekerja biasa: `php artisan queue:work --queue=replay`. Tanpa itu, `POST /replay/scenarios/{id}/start` menandai skenario `running` tetapi tidak ada yang memainkannya (detaknya berhenti dan putaran ditutup otomatis setelah 120 detik saat start berikutnya). Untuk demo tanpa pekerja: `php artisan db:seed --class=DemoScenarioSeeder` lalu `php artisan radarisu:replay {id} --sync`.
+- **Untuk Rekishi (C, kini reviewer F14):** `PostNormalizer` dan `NormalizePostsJob` (milik A) menerima kunci opsional `label_manual` di payload kanonik dan menulisnya ke `posts.label_manual`; hanya Replay yang memakainya. `AggregateMetrics` memakai `DataClock::now()`. Tidak ada perubahan di `ThreatScorer` atau `SentimentAnalyzer`.
+- **Untuk Kadavi (B):** tidak ada perubahan di alert atau `AlertWriter`. Alert dari Replay memakai `detected_at` jam virtual (sama seperti detektor lain).
+- **Untuk F14:** kontrak ada di `docs/CONTRACTS.md` §2.7 (bentuk `external_id`, `run_number`, rumus waktu deteksi) dan `docs/OPEN_QUESTIONS.md` #27–#33.
+- Baru: migrasi `add_runtime_columns_to_replay_scenarios_table` (kolom jalan dan indeks unik "satu yang berjalan"), halaman `/admin/replay`, tautan nav "Mode Replay", `labels/replay.ts`.
+
+---
+
+## 2026-10-26: Pengalihan F14-a dan F14-b ke Naufal
+
+- **Untuk Rekishi (C):** F14 (pelabelan data dan halaman Evaluasi) pindah ke Naufal; Rekishi menjadi reviewer. Ikut pindah: tabel `evaluation_runs`, `routes/api/labeling.php` dan `evaluation.php`, halaman `/labeling` dan `/evaluation`, dan path terkait di `.github/CODEOWNERS` (blok baru "F14" di bagian bawah). Belum ada kode F14 yang dikerjakan sebelum pengalihan (hanya kerangka 501).
+- Urutan kerja: F11 Mode Replay (`feat/a-f11-mode-replay`), F14-a (`feat/c-f14a-pelabelan`), F14-b (`feat/c-f14b-evaluasi`).
+
+---
+
 ## 2026-10-26: F13 deteksi peniruan akun (branch `feat/a-f13-deteksi-peniruan`)
 
 - **Untuk Rekishi (C):** alert `impersonation` kini dibuat. Skornya dari `ThreatScorer::scoreImpersonation($similarity, $young, ThreatScorer::optionsFromSettings($settings))` tanpa perubahan; kemiripan yang dipakai adalah yang tertinggi di antara bacaan nama yang dinormalisasi (OPEN_QUESTIONS #20). Severity memakai `severity_cutoffs` yang sama dengan `issue` (#7).
