@@ -34,6 +34,22 @@ class SpikeDemoSeeder extends Seeder
 
     private const SPIKE_POSTS = 90;
 
+    /** Word pools, so each demo post reads differently: this demo is a spike, not a coordinated campaign. */
+    private const CALM = [
+        ['warga', 'pengguna', 'pelanggan', 'peserta', 'relawan', 'pegawai'],
+        ['menanyakan', 'membahas', 'menceritakan', 'mengomentari', 'menyebut', 'membagikan'],
+        ['jadwal', 'layanan', 'antrean', 'loket', 'formulir', 'pengumuman'],
+        ['kemarin', 'pagi tadi', 'minggu ini', 'siang ini', 'semalam', 'barusan'],
+    ];
+
+    private const HOT = [
+        ['kabar', 'isu', 'berita', 'cerita', 'info', 'desas-desus'],
+        ['mengejutkan', 'meresahkan', 'menghebohkan', 'mencurigakan', 'mengganggu', 'memprihatinkan'],
+        ['soal', 'tentang', 'terkait', 'mengenai', 'seputar', 'perihal'],
+        ['anggaran', 'perizinan', 'pengadaan', 'mutasi', 'tender', 'proyek'],
+        ['dibicarakan', 'dipertanyakan', 'diperdebatkan', 'disorot', 'digugat', 'diviralkan'],
+    ];
+
     public function run(MetricsAggregator $aggregator): void
     {
         $admin = User::whereHas('role', fn ($q) => $q->where('slug', 'admin'))->first()
@@ -118,7 +134,7 @@ class SpikeDemoSeeder extends Seeder
                     'at' => $start->addMinutes(($i * 53 + $h * 11) % 60),
                     'account_id' => $accounts[($h + $i) % count($accounts)],
                     'sentiment' => $i % 4 === 0 ? 'negative' : ($i % 2 === 0 ? 'positive' : 'neutral'),
-                    'text' => "Demo lonjakan: obrolan biasa nomor {$h}-{$i} tentang layanan publik.",
+                    'text' => 'Demo lonjakan: '.$this->sentence($h * 10 + $i, self::CALM),
                 ];
             }
         }
@@ -138,7 +154,7 @@ class SpikeDemoSeeder extends Seeder
                 'at' => $now->subMinutes(25)->addSeconds((int) ($i * 24 * 60 / self::SPIKE_POSTS)),
                 'account_id' => $accounts[$i % count($accounts)],
                 'sentiment' => $i % 10 < 7 ? 'negative' : 'neutral',
-                'text' => "Demo lonjakan: isu mendadak ramai dibicarakan, kabar nomor {$i} menyebar cepat.",
+                'text' => 'Demo lonjakan: '.$this->sentence($i * 7 + 3, self::HOT),
             ];
         }
 
@@ -171,5 +187,18 @@ class SpikeDemoSeeder extends Seeder
             $ids = DB::table('posts')->where('source_id', $source->id)->whereIn('external_id', $keys)->pluck('id');
             DB::table('topic_matches')->insertOrIgnore($ids->map(fn ($id) => ['post_id' => $id, 'topic_id' => $topic->id])->all());
         }
+    }
+
+    /**
+     * @param  list<list<string>>  $pools
+     */
+    private function sentence(int $n, array $pools): string
+    {
+        $words = [];
+        foreach ($pools as $k => $pool) {
+            $words[] = $pool[($n * (2 * $k + 3) + $k * 5) % count($pool)];
+        }
+
+        return implode(' ', $words).' '.dechex($n * 2654435761 % 4294967296);
     }
 }

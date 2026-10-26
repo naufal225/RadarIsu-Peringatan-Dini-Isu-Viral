@@ -5,7 +5,7 @@ namespace Tests\Feature\Detection;
 use App\Models\Alert;
 use App\Models\AlertEvidence;
 use App\Models\Topic;
-use App\Services\Detection\SpikeDetectionService;
+use App\Services\Detection\IssueDetectionService;
 use Database\Seeders\SpikeDemoSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -32,7 +32,7 @@ class SpikeDemoSeederTest extends TestCase
             $this->travelTo($at);
             $this->seedDemo();
 
-            $stats = app(SpikeDetectionService::class)->run();
+            $stats = app(IssueDetectionService::class)->run();
 
             $this->assertSame(1, $stats['triggered'], "no spike at {$at}");
             $alert = Alert::where('topic_id', Topic::where('name', SpikeDemoSeeder::TOPIC_NAME)->value('id'))->sole();
@@ -47,8 +47,8 @@ class SpikeDemoSeederTest extends TestCase
     {
         $this->seedDemo();
 
-        app(SpikeDetectionService::class)->run();
-        app(SpikeDetectionService::class)->run();
+        app(IssueDetectionService::class)->run();
+        app(IssueDetectionService::class)->run();
 
         $this->assertSame(1, Alert::count());
         $this->assertSame(10, AlertEvidence::count());
@@ -57,7 +57,7 @@ class SpikeDemoSeederTest extends TestCase
     public function test_reseeding_replaces_the_demo_instead_of_piling_up(): void
     {
         $this->seedDemo();
-        app(SpikeDetectionService::class)->run();
+        app(IssueDetectionService::class)->run();
         $posts = DB::table('posts')->count();
 
         $this->seedDemo();
@@ -70,7 +70,7 @@ class SpikeDemoSeederTest extends TestCase
     public function test_it_refuses_to_reset_a_demo_whose_alert_was_already_triaged(): void
     {
         $this->seedDemo();
-        app(SpikeDetectionService::class)->run();
+        app(IssueDetectionService::class)->run();
         $alert = Alert::sole();
         DB::table('alert_actions')->insert([
             'alert_id' => $alert->id, 'user_id' => null, 'action' => 'comment',
