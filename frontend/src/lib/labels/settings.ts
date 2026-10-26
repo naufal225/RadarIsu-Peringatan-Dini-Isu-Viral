@@ -18,6 +18,7 @@ export const settingsUi = {
     spike: "Deteksi lonjakan isu",
     coordination: "Deteksi koordinasi akun",
     impersonation: "Deteksi peniruan identitas",
+    alertControl: "Pengendalian alert berulang",
     weights: "Bobot skor ancaman",
     severity: "Batas tingkat keparahan",
     sensitivity: "Sensitivitas topik",
@@ -58,6 +59,34 @@ export const settingsUi = {
     impersonation_threshold: {
       label: "Ambang kemiripan nama",
       hint: "Kemiripan handle atau nama tampilan terhadap akun resmi agar akun baru ditandai sebagai potensi peniruan.",
+    },
+    spike_current_window_minutes: {
+      label: "Jendela volume saat ini (menit)",
+      hint: "Rentang waktu terakhir yang dihitung sebagai volume saat ini pada deteksi lonjakan. Bawaan PRD: 60 menit.",
+    },
+    spike_sample_limit: {
+      label: "Contoh posting per lonjakan",
+      hint: "Jumlah maksimum posting contoh yang disimpan sebagai bukti lonjakan. Bawaan PRD: 10.",
+    },
+    synchronized_window_minutes: {
+      label: "Jendela posting serentak (menit)",
+      hint: "Posting klaster dianggap serentak bila berada dalam rentang ini. Bawaan PRD: 5 menit.",
+    },
+    synchronized_ratio: {
+      label: "Porsi posting serentak",
+      hint: "Bukti Posting serentak diberikan bila sekurang-kurangnya porsi ini dari posting klaster berada dalam jendela serentak. Bawaan PRD: 0,8.",
+    },
+    impersonation_window_hours: {
+      label: "Jendela akun baru terlihat (jam)",
+      hint: "Hanya akun yang pertama kali terlihat dalam rentang ini yang dibandingkan dengan akun resmi. Bawaan PRD: 24 jam.",
+    },
+    cooldown_minutes: {
+      label: "Jeda alert berulang (menit)",
+      hint: "Setelah alert Disetujui, Positif palsu, atau Ditutup, detektor tidak membuat alert baru untuk topik atau akun yang sama sebelum jeda ini berlalu. 0 berarti tanpa jeda. Tidak ada di PRD.",
+    },
+    coordination_max_posts: {
+      label: "Batas posting per topik per jendela",
+      hint: "Membatasi beban pembandingan teks. Bila terlampaui, hanya posting terbaru yang dibandingkan dan bukti ditandai terpotong. Tidak ada di PRD.",
     },
     "weights.spike": {
       label: "Bobot lonjakan",
@@ -130,5 +159,25 @@ export const settingsUi = {
     effectiveZ: "Ambang z efektif per sensitivitas",
     effectiveZNote: "Ambang z ditambah offset, minimal 2,0.",
     unavailable: "Pratinjau tersedia setelah semua isian valid.",
+    impersonationTitle: "Pratinjau skor peniruan",
+    impersonationFormula: "skor = pembulatan(kemiripan × 70) + 30 bila akun baru. Severity memakai batas yang sama dengan alert isu.",
+    similarity: "Kemiripan nama (0 sampai 1)",
+    youngAccount: "Akun lebih muda dari batas akun baru",
+    similarityPoints: "Poin kemiripan",
+    youngPoints: "Poin akun baru",
+    cooldownNote: (minutes: number) =>
+      minutes === 0
+        ? "Jeda alert berulang: tidak ada. Alert baru dapat muncul segera setelah alert sebelumnya selesai."
+        : `Jeda alert berulang: ${minutes} menit setelah alert sebelumnya selesai.`,
+  },
+  offline: {
+    title: "Mode Offline",
+    intro:
+      "Bila aktif, penarikan sumber RSS dan YouTube dilewati; data dari CSV dan Replay tetap diproses. Perubahan dicatat di audit log.",
+    enabled: "Mode Offline aktif",
+    save: "Simpan Mode Offline",
+    saved: "Mode Offline disimpan.",
+    lastUpdated: (name: string, when: string) => `Terakhir diubah oleh ${name} pada ${when}.`,
+    neverUpdated: "Belum pernah diubah dari nilai awal.",
   },
 } as const;
