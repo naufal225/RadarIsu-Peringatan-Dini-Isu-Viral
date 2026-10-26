@@ -149,8 +149,8 @@ Bentuk dan perilaku (F11):
 | `PUT /settings/detection` | `settings.manage` | Mengganti seluruh nilai, semua kunci wajib. Validasi rentang dan aturan antar-field di `docs/DETECTION_SETTINGS.md`. Mencatat `settings.update` hanya bila ada nilai yang berubah |
 | `GET /settings/offline-mode` | `settings.manage` | Bentuk di 3.5 |
 | `PUT /settings/offline-mode` | `settings.manage` | `{"enabled": bool}` strict. Audit `settings.update` hanya bila berubah |
-| `GET /labeling/posts` | `labels.manage` | Paginasi, filter `unlabeled` |
-| `PUT /labeling/posts/{id}` | `labels.manage` | Body `{label_manual: "organic" \| "anomalous" \| null}` |
+| `GET /labeling/posts` | `labels.manage` | Paginasi (`per_page` ≤ 100, `page`). Filter: `status=all\|unlabeled\|labeled`, `label=organic\|anomalous`, `is_simulated`, `topic_id`. Urutan `posted_at` terbaru. Respons `data[]`: `id, text, posted_at, sentiment, label_manual, is_simulated, account{id,handle,display_name}, topics[{id,name}]`; `meta.progress`: `{labeled, organic, anomalous, target: 200}` (hitungan seluruh posting, bukan hasil filter) |
+| `PUT /labeling/posts/{id}` | `labels.manage` | Body `{label_manual: "organic" \| "anomalous" \| null}`; kunci wajib ada, `null` (juga string kosong) menghapus label. Respons 200 `data` berisi posting. Audit `label.set` `{from, to}` hanya bila nilai berubah |
 | `GET /evaluation/runs` | `evaluation.view` | |
 | `POST /evaluation/run` | `evaluation.run` | Body `{scenario_id?}` |
 | `GET /system/status` | `system.status` | Kesehatan sumber, antrean, jumlah data |

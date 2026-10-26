@@ -4,6 +4,14 @@ Papan pengumuman untuk perubahan yang menyentuh domain lain, perubahan izin, dan
 
 ---
 
+## 2026-10-26: F14-a Pelabelan data (branch `feat/c-f14a-pelabelan`)
+
+- **Untuk Rekishi (reviewer F14):** pelabelan dipisah dari `EvaluationController` ke `LabelingController` (sesuai pola `Labeling*` di CODEOWNERS). `EvaluationController` kini hanya berisi stub `runs` dan `run` untuk F14-b. Rute `labeling/posts` menunjuk ke controller baru; URI, metode, dan middleware tidak berubah.
+- **Untuk semua pemilik:** tidak ada migrasi, izin, atau perubahan file domain lain. `posts.label_manual` sudah ada sejak skema awal.
+- Demo: `php artisan db:seed --class=CoordinationDemoSeeder` lalu `php artisan db:seed --class=LabelingDemoSeeder` (200 posting terbaru dilabeli; akun kampanye `anomalous`, sisanya `organic`).
+
+---
+
 ## 2026-10-26: F11 Mode Replay (branch `feat/a-f11-mode-replay`)
 
 - **Untuk semua pemilik:** Replay butuh pekerja antrean `replay` selain pekerja biasa: `php artisan queue:work --queue=replay`. Tanpa itu, `POST /replay/scenarios/{id}/start` menandai skenario `running` tetapi tidak ada yang memainkannya (detaknya berhenti dan putaran ditutup otomatis setelah 120 detik saat start berikutnya). Untuk demo tanpa pekerja: `php artisan db:seed --class=DemoScenarioSeeder` lalu `php artisan radarisu:replay {id} --sync`.
