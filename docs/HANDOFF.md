@@ -4,6 +4,17 @@ Papan pengumuman untuk perubahan yang menyentuh domain lain, perubahan izin, dan
 
 ---
 
+## 2026-10-26: F13 deteksi peniruan akun (branch `feat/a-f13-deteksi-peniruan`)
+
+- **Untuk Rekishi (C):** alert `impersonation` kini dibuat. Skornya dari `ThreatScorer::scoreImpersonation($similarity, $young, ThreatScorer::optionsFromSettings($settings))` tanpa perubahan; kemiripan yang dipakai adalah yang tertinggi di antara bacaan nama yang dinormalisasi (OPEN_QUESTIONS #20). Severity memakai `severity_cutoffs` yang sama dengan `issue` (#7).
+- **Untuk Kadavi (B):** satu indeks baru pada `accounts` (`accounts_first_seen_at_idx`), tanpa perubahan kolom. `alert_evidence` untuk alert peniruan memakai alasan yang sudah ada (`name_similarity`, `young_account`) dan ditulis ulang di tempat tiap siklus. Tabel rincian skor di `alerts/[id]/alert-detail.tsx` hanya merender komponen alert `issue` (lonjakan, anomali, sentimen, jangkauan); untuk alert peniruan (`similarity`, `young_account`) tabelnya kosong. Itu file B dan tidak saya ubah di F13.
+- **Infrastruktur:** `backend/Dockerfile` kini memasang ekstensi `intl` (NFKC). Belum diverifikasi dengan membangun image.
+- Baru: `GET /official-accounts/lookalikes` (hanya `alerts.triage`) dan panel "Akun mirip akun resmi" di `/topics` untuk Analis. `DetectJob` menjalankan deteksi isu lalu deteksi peniruan.
+- Demo: `php artisan db:seed --class=ImpersonationDemoSeeder` lalu `php artisan radarisu:detect --sync`.
+- Catatan merge: ringkasan bukti `name_similarity` ada di `lib/coordination.ts` (`summarizeEvidence`); ia baru tampil di halaman alert setelah perubahan `alert-detail.tsx` dari F4 ikut ter-merge.
+
+---
+
 ## 2026-10-26: F4 deteksi koordinasi akun (branch `feat/a-f4-deteksi-koordinasi`)
 
 - **Untuk Rekishi (C):** skor alert `issue` kini bisa membawa komponen *anomaly* dari koordinasi. Input `anomalous_accounts` / `unique_accounts` ke `ThreatScorer::score` dihitung pada jendela koordinasi (OPEN_QUESTIONS #16). `metrics_hourly.anomalous_accounts` kini diisi detektor (hanya naik). Untuk `kind=impersonation` tidak ada perubahan.

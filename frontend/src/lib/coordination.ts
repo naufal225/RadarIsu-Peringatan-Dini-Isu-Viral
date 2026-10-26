@@ -1,6 +1,7 @@
 // Coordination detection data for the topic page and alert evidence (PRD §10.6, F4). Pure helpers.
 
 import { formatDecimal } from "./format";
+import { describeRules, type NormalizationRule } from "./impersonation";
 import { ui } from "./labels";
 
 export type CoordinationAccount = {
@@ -91,6 +92,18 @@ export function summarizeEvidence(reason: string, detail: Record<string, unknown
       const ratio = num(sync.ratio);
       if (inWindow === null || total === null || minutes === null || ratio === null) return null;
       return copy.synchronizedPosting(inWindow, total, minutes, formatDecimal(ratio, 2, 2));
+    }
+    case "name_similarity": {
+      const similarity = num(d.similarity);
+      const handle = record(d.official).handle;
+      if (similarity === null || typeof handle !== "string") return null;
+      const fields = ui.impersonation.evidence.fieldNames;
+      const field = d.field === "display_name" ? fields.display_name : fields.handle;
+      const parts = [ui.impersonation.evidence.nameSimilarity(formatDecimal(similarity, 2, 2), handle, field)];
+      if (d.same_name === true) parts.push(ui.impersonation.evidence.sameName);
+      const rules = Array.isArray(d.rules) ? describeRules(d.rules as NormalizationRule[]) : [];
+      if (rules.length > 0) parts.push(ui.impersonation.evidence.rules(rules.join("; ")));
+      return parts.join(" ");
     }
     default:
       return null;

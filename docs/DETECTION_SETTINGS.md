@@ -55,6 +55,8 @@ Akun yang pertama kali terlihat dalam 24 jam terakhir dibandingkan dengan `offic
 
 Skor dan severity alert peniruan: `score = round(kemiripan × 70) + 30 bila akun muda`, dan severity memakai `severity_cutoffs` yang sama dengan alert `issue` (sama dengan `ThreatScorer::scoreImpersonation`). PRD §10.7 tidak menyebut aturan severity untuk peniruan; ini keputusan sementara yang tercatat di `docs/OPEN_QUESTIONS.md`.
 
+Tabel pemetaan nama **bukan** pengaturan: `config/impersonation.php` berisi karakter mirip (`confusables`, mis. `0`→`o`, `rn`→`m`), bacaan alternatif (`alternatives`, `1` sebagai `i`), huruf Cyrillic/Yunani yang mirip Latin (`homoglyphs`), dan imbuhan yang dibuang di awal atau akhir nama (`affixes`, mis. `official`, `resmi`, `id`). Tambahkan baris untuk memperluasnya; perubahan berlaku pada siklus berikutnya karena akun yang sebelumnya dinilai bersih diperiksa ulang. Alasan dan batasannya ada di `docs/OPEN_QUESTIONS.md` #20 dan #23.
+
 ### Pengendalian alert berulang
 
 | Kunci | Default | Rentang | Arti dan dampak |

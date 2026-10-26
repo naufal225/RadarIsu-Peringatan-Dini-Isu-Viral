@@ -3,6 +3,7 @@
 import { authUi } from "./labels/auth";
 import { settingsUi } from "./labels/settings";
 import { coordinationUi } from "./labels/coordination";
+import { impersonationUi } from "./labels/impersonation";
 import { topicsUi } from "./labels/topics";
 import { bUi } from "./labels/b";
 
@@ -136,6 +137,7 @@ export const ui = {
   },
   settings: settingsUi,
   coordination: coordinationUi,
+  impersonation: impersonationUi,
   topics: topicsUi,
   alerts: bUi.alerts,
   briefings: bUi.briefings,

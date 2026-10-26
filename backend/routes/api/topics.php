@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\OfficialAccountController;
+use App\Http\Controllers\Api\V1\OfficialAccountLookalikeController;
 use App\Http\Controllers\Api\V1\TopicController;
 use App\Http\Controllers\Api\V1\TopicCoordinationController;
 use App\Http\Controllers\Api\V1\TopicSpikeController;
@@ -17,5 +18,7 @@ Route::get('topics/{topic}/coordination', TopicCoordinationController::class)->m
 Route::get('topics/{topic}/spike-baseline', TopicSpikeController::class)->middleware('permission:topics.view');
 
 Route::get('official-accounts', [OfficialAccountController::class, 'index'])->middleware('permission:topics.view');
+// Names accounts as suspected impersonators before any escalation, so analysts only (F13).
+Route::get('official-accounts/lookalikes', OfficialAccountLookalikeController::class)->middleware('permission:alerts.triage');
 Route::post('official-accounts', [OfficialAccountController::class, 'store'])->middleware('permission:topics.manage');
 Route::delete('official-accounts/{officialAccount}', [OfficialAccountController::class, 'destroy'])->middleware('permission:topics.manage');

@@ -1,8 +1,9 @@
 FROM php:8.3-fpm-alpine
 
-RUN apk add --no-cache postgresql-libs \
-    && apk add --no-cache --virtual .build-deps postgresql-dev $PHPIZE_DEPS \
-    && docker-php-ext-install pdo_pgsql pcntl \
+# intl: Unicode NFKC folding of account names for impersonation detection (F13, AccountNameNormalizer).
+RUN apk add --no-cache postgresql-libs icu-libs \
+    && apk add --no-cache --virtual .build-deps postgresql-dev icu-dev $PHPIZE_DEPS \
+    && docker-php-ext-install pdo_pgsql pcntl intl \
     && apk del .build-deps
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer

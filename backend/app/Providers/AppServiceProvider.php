@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Services\Detection\AccountNameNormalizer;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
@@ -15,7 +16,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Built from config/impersonation.php (F13); the container cannot guess an array argument.
+        $this->app->bind(AccountNameNormalizer::class, fn () => AccountNameNormalizer::fromConfig());
     }
 
     /**
