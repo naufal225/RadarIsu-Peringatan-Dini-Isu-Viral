@@ -9,7 +9,7 @@ Perubahan pembagian dilakukan lewat PR yang mengubah file ini dan `.github/CODEO
 |---|---|---|---|
 | **A: Data & Deteksi** | Naufal | Rekishi | F1, F2, F3, F4, F11, F13 |
 | **B: Keamanan & Alur** | Kadavi | Naufal | F6, F9 (F10, F12 dialihkan, lihat di bawah) |
-| **C: Skor & Produk** | Rekishi | Kadavi | F5, F7, F8, F14 (usulan) (F15 dialihkan, lihat di bawah) |
+| **C: Skor & Produk** | Rekishi | Kadavi | F5, F7, F8 (F14 dan F15 dialihkan, lihat di bawah) |
 
 Setiap domain punya dua pemilik di CODEOWNERS. Penulis PR tidak bisa menyetujui PR-nya sendiri, jadi reviewer selalu orang lain.
 
@@ -22,6 +22,8 @@ Fitur yang dipindah ke pemilik lain setelah pembagian awal. Pemilik lama menjadi
 | F10 Audit log | Kadavi | Naufal | Kadavi | 2026-10-23 | `feat/b-f10-audit-logger`, `feat/b-f10-audit-ui` |
 | F12 Autentikasi dan RBAC | Kadavi | Naufal | Kadavi | 2026-10-23 | `feat/b-f12-auth-rbac` |
 | F15 Pengaturan deteksi | Rekishi | Naufal | Rekishi | 2026-10-23 | `feat/c-f15-pengaturan-deteksi` |
+| F14-a Pelabelan data | Rekishi | Naufal | Rekishi | 2026-10-26 | `feat/c-f14a-pelabelan` |
+| F14-b Halaman Evaluasi | Rekishi | Naufal | Rekishi | 2026-10-26 | `feat/c-f14b-evaluasi` |
 
 Prefiks domain di nama branch (`b-`, `c-`) tidak diubah. Path CODEOWNERS untuk fitur ini ada di blok "Pengalihan tugas" di bagian bawah `.github/CODEOWNERS`.
 
@@ -36,7 +38,7 @@ Prefiks domain di nama branch (`b-`, `c-`) tidak diubah. Path CODEOWNERS untuk f
 | alerts, alert_evidence, alert_actions, briefings | B |
 | audit_logs | Naufal (F10) |
 | settings | Naufal (F15) |
-| evaluation_runs | C |
+| evaluation_runs | Naufal (F14) |
 
 Tabel yang dimiliki satu domain boleh dibaca domain lain, tetapi tidak diubah tanpa lewat pemiliknya.
 
@@ -49,7 +51,8 @@ Tabel yang dimiliki satu domain boleh dibaca domain lain, tetapi tidak diubah ta
 | `routes/api/alerts.php`, `briefings.php` | B |
 | `routes/api/sources.php`, `imports.php`, `topics.php`, `replay.php` | A |
 | `routes/api/settings.php` | Naufal (F15) |
-| `routes/api/dashboard.php`, `labeling.php`, `evaluation.php`, `system.php` | C |
+| `routes/api/labeling.php`, `evaluation.php` | Naufal (F14) |
+| `routes/api/dashboard.php`, `system.php` | C |
 | `routes/api.php` (indeks, hanya memuat file di atas) | B |
 
 ## Halaman frontend
@@ -61,7 +64,8 @@ Tabel yang dimiliki satu domain boleh dibaca domain lain, tetapi tidak diubah ta
 | `/alerts`, `/briefings` | B |
 | `/admin/sources`, `/admin/replay`, `/topics` | A |
 | `/admin/settings` | Naufal (F15) |
-| `/dashboard`, `/labeling`, `/evaluation`, `/admin/status` | C |
+| `/labeling`, `/evaluation` | Naufal (F14) |
+| `/dashboard`, `/admin/status` | C |
 
 ## File bersama
 
