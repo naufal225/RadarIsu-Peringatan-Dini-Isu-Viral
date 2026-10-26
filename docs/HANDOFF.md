@@ -4,6 +4,15 @@ Papan pengumuman untuk perubahan yang menyentuh domain lain, perubahan izin, dan
 
 ---
 
+## 2026-10-26: F3 deteksi lonjakan (branch `feat/a-f3-deteksi-lonjakan`)
+
+- **Untuk Kadavi (B):** tabel `alert_evidence` mendapat satu indeks unik, `alert_evidence_dedup_uq (alert_id, reason, COALESCE(post_id,0), COALESCE(account_id,0))`, agar bukti yang sama tidak terpasang dua kali oleh deteksi yang berjalan tiap menit. Hanya indeks; tidak ada kolom baru dan tidak ada file B yang diubah. Alert dari detektor memakai `AlertWriter` (`docs/CONTRACTS.md` §4.1): `status` selalu `new` saat dibuat dan tidak pernah diubah detektor, tanpa baris `alert_actions`.
+- **Untuk Rekishi (C):** detektor memanggil `ThreatScorer::score` dengan `Setting::detection()`. Ambang `z` pada `score_breakdown.thresholds.z` diisi `z_effective` topik tersebut, bukan `z_threshold` dasar.
+- Jadwal baru: `radarisu:detect` setiap menit (`withoutOverlapping`). Menjalankan lokal butuh `queue:work`; untuk demo: `php artisan db:seed --class=SpikeDemoSeeder` lalu `php artisan radarisu:detect --sync`.
+- Endpoint baru: `GET /topics/{id}/spike-baseline` (`topics.view`), dan panel "Deteksi lonjakan" di `/topics/{id}`.
+
+---
+
 ## 2026-10-26: F15 pengaturan deteksi lengkap untuk F3, F4, F13 (branch `feat/c-f15-pengaturan-deteksi`)
 
 - **Untuk domain A (detektor):** baca ambang lewat `Setting::detection()` (sekali per eksekusi, tidak di-cache); arti tiap kunci di `docs/DETECTION_SETTINGS.md`. Selain kunci PRD §9.6, kini ada `spike_current_window_minutes`, `spike_sample_limit`, `synchronized_window_minutes`, `synchronized_ratio`, `impersonation_window_hours` (bawaan = konstanta PRD), serta `cooldown_minutes` dan `coordination_max_posts` (tidak ada di PRD, `docs/OPEN_QUESTIONS.md` #8-#9). Jangan hardcode angka-angka itu.

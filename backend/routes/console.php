@@ -36,3 +36,4 @@ Artisan::command('permissions:export-ts {--check : Fail if the generated file is
 // event-driven AggregateMetricsJob.
 Schedule::job(new NormalizePostsJob)->everyMinute()->withoutOverlapping();
 Schedule::command('radarisu:aggregate')->everyFiveMinutes()->withoutOverlapping();
+Schedule::command('radarisu:detect')->everyMinute()->withoutOverlapping();

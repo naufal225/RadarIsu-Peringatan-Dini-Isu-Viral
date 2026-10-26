@@ -77,6 +77,7 @@ Notasi izin mengikuti `config/permissions.php`. "Policy" berarti selain izin, be
 | `POST /topics` | `topics.manage` | Kata kunci berisi `[` atau `]` ditolak 422 (PRD §9.8), kata kunci tanpa huruf atau angka ditolak. Memicu pencocokan ulang topik. Audit `topic.create` |
 | `PATCH /topics/{id}` | `topics.manage` | Termasuk menonaktifkan. Templat tidak bisa diubah (422 `template_readonly`). Kata kunci atau status aktif yang berubah memicu pencocokan ulang. Audit `topic.update` |
 | `GET /topics/{id}/metrics?from&to` | `topics.view` | Deret `metrics_hourly`. `from`/`to` `Y-m-d` UTC, `to` mencakup harinya, maksimum 31 hari. Bawaan: 7 hari yang berakhir pada hari metrik terakhir. `meta`: `from`, `to` (tidak ikut dihitung), `total`, `has_simulated_data` |
+| `GET /topics/{id}/spike-baseline?hours=72` | `topics.view` | Data grafik lonjakan: keputusan detektor saat ini dan volume per jam. Bentuk di 3.6 |
 | `GET /official-accounts` | `topics.view` | Urut `handle` |
 | `POST /official-accounts` | `topics.manage` | `handle` unik. Audit `official_account.create` |
 | `DELETE /official-accounts/{id}` | `topics.manage` | 204. Audit `official_account.delete` |
@@ -235,6 +236,26 @@ Izin `settings.manage`. `PUT` menerima `{"enabled": true|false}` (boolean sebena
 
 Audit `settings.update` dengan `detail.key = "offline_mode"` hanya bila nilainya berubah. Status keputusan: menunggu persetujuan (`docs/OPEN_QUESTIONS.md` #6).
 
+### 3.6 `GET /topics/{id}/spike-baseline?hours=72`
+
+Izin `topics.view`. `hours` 6-168 (bawaan 72), di luar itu 422. Data di balik grafik lonjakan; tidak memuat alert, sehingga tidak ada data yang dibatasi per peran.
+
+```json
+{ "data": {
+    "topic_id": 3, "as_of": "2026-10-26T12:30:00Z",
+    "spike": {
+      "triggered": true, "status": "triggered", "has_sufficient_baseline": true,
+      "current": 64, "current_rate": 64.0, "mean": 5.0, "std": 0.0, "z": 59.0, "z_effective": 3.0,
+      "baseline_hours": 48, "threshold_rate": 8.0,
+      "thresholds": { "z_threshold": 3.0, "sensitivity": "medium", "sensitivity_z_offset": 0.0, "z_effective": 3.0,
+                      "min_volume": 20, "min_baseline_hours": 24, "baseline_window_hours": 168, "current_window_minutes": 60 }
+    },
+    "series": [ { "hour": "2026-10-26T12:00:00Z", "volume": 60, "is_running_hour": true } ]
+} }
+```
+
+`status`: `triggered`, `below_threshold`, `below_min_volume`, `insufficient_baseline`. `series` berisi satu baris per jam (jam tanpa posting bernilai 0), jam terakhir adalah jam berjalan. `as_of` adalah jam data (`DataClock`), bukan selalu jam dinding.
+
 ---
 
 ## 4. Kontrak service (antarmuka kode)
@@ -243,3 +264,11 @@ Audit `settings.update` dengan `detail.key = "offline_mode"` hanya bila nilainya
 
 
 Semua fungsi penilaian dibuat sebagai fungsi murni: tanpa akses database, tanpa `now()`, dan threshold dari argumen. Dengan begitu bisa diuji tanpa database dan bisa dipakai sebelum
+
+### 4.1 Detektor dan penulis alert (A → B), diisi saat F3
+
+- `DataClock::now()`: jam yang dibaca detektor (`settings.replay.clock.now`, bila tidak null, selain itu jam dinding UTC). Detektor tidak memanggil `now()` sendiri.
+- `SpikeDetector::evaluate(int $current, array $baseline, array $settings, string $sensitivity): array` murni: keputusan lonjakan, `z`, `z_effective`, `mean`, `std`, `threshold_rate`, dan `thresholds` yang dipakai. Tidak ada akses database.
+- `ThreatScorer::score(...)` (domain C) menghitung skor alert `issue` dari hasil detektor dan `Setting::detection()`.
+- `AlertWriter::upsertIssue($topicId, $scored, $windowStart, $windowEnd, $detectedAt, $evidence, $cooldownMinutes, $evidenceLimits)`: satu-satunya jalan detektor membuat atau memperbarui alert `issue` (PRD §10.9). Satu alert terbuka per topik dijamin indeks unik parsial `alerts_open_issue_uq` (upsert dengan `ON CONFLICT`); bukti ganda ditolak indeks `alert_evidence_dedup_uq`. Tidak pernah mengubah `status` dan tidak menulis `alert_actions`. Mengembalikan `outcome` `created|updated|cooldown`.
+- `DetectJob` (`ShouldBeUnique`, `tries` 3, `backoff` 10/30/60 detik, `timeout` 120 detik) dijalankan oleh `radarisu:detect` setiap menit. F4 dan F13 menambah detektornya ke job yang sama.
