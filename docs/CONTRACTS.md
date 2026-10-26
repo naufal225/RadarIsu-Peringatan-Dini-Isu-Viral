@@ -136,6 +136,8 @@ Aturan transisi dan kode status ada di PRD §8.5. Setiap aksi menulis tepat satu
 |---|---|---|
 | `GET /settings/detection` | `settings.manage` | Bentuk di 3.4 |
 | `PUT /settings/detection` | `settings.manage` | Mengganti seluruh nilai, semua kunci wajib. Validasi rentang dan aturan antar-field di `docs/DETECTION_SETTINGS.md`. Mencatat `settings.update` hanya bila ada nilai yang berubah |
+| `GET /settings/offline-mode` | `settings.manage` | Bentuk di 3.5 |
+| `PUT /settings/offline-mode` | `settings.manage` | `{"enabled": bool}` strict. Audit `settings.update` hanya bila berubah |
 | `GET /labeling/posts` | `labels.manage` | Paginasi, filter `unlabeled` |
 | `PUT /labeling/posts/{id}` | `labels.manage` | Body `{label_manual: "organic" \| "anomalous" \| null}` |
 | `GET /evaluation/runs` | `evaluation.view` | |
@@ -208,6 +210,10 @@ Contoh di bawah sudah dikoreksi. Di PRD sebelumnya tertulis skor 82, padahal jum
       "baseline_hours": 168, "min_baseline_hours": 24,
       "similarity_threshold": 0.8, "min_accounts_cluster": 5, "young_account_days": 30,
       "impersonation_threshold": 0.6,
+      "spike_current_window_minutes": 60, "spike_sample_limit": 10,
+      "synchronized_window_minutes": 5, "synchronized_ratio": 0.8,
+      "impersonation_window_hours": 24,
+      "cooldown_minutes": 60, "coordination_max_posts": 2000,
       "weights": { "spike": 40, "anomaly": 30, "sentiment": 20, "reach": 10 },
       "severity_cutoffs": { "medium": 40, "high": 70 },
       "sensitivity_z_offset": { "low": 1.0, "medium": 0.0, "high": -0.5 }
@@ -218,6 +224,16 @@ Contoh di bawah sudah dikoreksi. Di PRD sebelumnya tertulis skor 82, padahal jum
 ```
 
 `updated_at` dan `updated_by` bernilai `null` sebelum pernah diubah. Galat validasi memakai bentuk 422 biasa, dengan nama field bertitik (`weights`, `weights.spike`, `severity_cutoffs.medium`).
+
+### 3.5 `GET /settings/offline-mode` dan `PUT /settings/offline-mode`
+
+Izin `settings.manage`. `PUT` menerima `{"enabled": true|false}` (boolean sebenarnya, selain itu 422) dan mengembalikan bentuk yang sama dengan `GET`:
+
+```json
+{ "data": { "key": "offline_mode", "value": { "enabled": false }, "updated_at": null, "updated_by": null } }
+```
+
+Audit `settings.update` dengan `detail.key = "offline_mode"` hanya bila nilainya berubah. Status keputusan: menunggu persetujuan (`docs/OPEN_QUESTIONS.md` #6).
 
 ---
 
