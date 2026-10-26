@@ -13,7 +13,7 @@ class DetectAnomalies extends Command
 {
     protected $signature = 'radarisu:detect {--sync : Run the pass now instead of queueing it}';
 
-    protected $description = 'Run the detectors (spike) over the current data window';
+    protected $description = 'Run the detectors (spike, coordination) over the current data window';
 
     public function handle(): int
     {

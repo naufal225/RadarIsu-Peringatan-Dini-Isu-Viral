@@ -55,7 +55,8 @@ trait BuildsDetectionData
             foreach ($chunk as $post) {
                 $key = 'fx-'.(++$this->postSequence);
                 $keys[] = $key;
-                $text = $post['text'] ?? 'post '.$key;
+                // Unrelated words per post: near-identical default texts would be read as coordination.
+                $text = $post['text'] ?? 'kabar '.substr(md5($key), 0, 10).' '.substr(md5($key.'b'), 0, 10);
                 $rows[] = [
                     'source_id' => $source->id, 'account_id' => $post['account_id'], 'external_id' => $key,
                     'text' => $text, 'text_norm' => mb_strtolower($text),

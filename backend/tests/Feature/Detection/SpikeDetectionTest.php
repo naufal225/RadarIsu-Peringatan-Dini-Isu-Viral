@@ -9,7 +9,7 @@ use App\Models\Setting;
 use App\Models\Source;
 use App\Models\Topic;
 use App\Services\Detection\AlertWriter;
-use App\Services\Detection\SpikeDetectionService;
+use App\Services\Detection\IssueDetectionService;
 use Carbon\CarbonImmutable;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
@@ -74,7 +74,7 @@ class SpikeDetectionTest extends TestCase
 
     private function detect(): array
     {
-        return app(SpikeDetectionService::class)->run();
+        return app(IssueDetectionService::class)->run();
     }
 
     public function test_a_spike_opens_one_alert_with_score_breakdown_and_evidence(): void
@@ -259,9 +259,9 @@ class SpikeDetectionTest extends TestCase
         $this->mock(AlertWriter::class)->shouldReceive('upsertIssue')->andThrow(new RuntimeException('boom'));
 
         $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('Spike detection failed for 1 topic(s).');
+        $this->expectExceptionMessage('Issue detection failed for 1 topic(s).');
 
-        (new DetectJob)->handle(app(SpikeDetectionService::class));
+        (new DetectJob)->handle(app(IssueDetectionService::class));
     }
 
     public function test_the_job_is_unique_bounded_and_retried(): void
@@ -272,7 +272,7 @@ class SpikeDetectionTest extends TestCase
         $this->assertSame('detect', $job->uniqueId());
         $this->assertSame(3, $job->tries);
         $this->assertSame([10, 30, 60], $job->backoff);
-        $this->assertSame(120, $job->timeout);
+        $this->assertSame(240, $job->timeout);
     }
 
     public function test_the_detect_command_queues_the_pass(): void

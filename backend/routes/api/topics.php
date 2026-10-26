@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\V1\OfficialAccountController;
 use App\Http\Controllers\Api\V1\TopicController;
+use App\Http\Controllers\Api\V1\TopicCoordinationController;
 use App\Http\Controllers\Api\V1\TopicSpikeController;
 use Illuminate\Support\Facades\Route;
 
@@ -11,6 +12,8 @@ Route::get('topics', [TopicController::class, 'index'])->middleware('permission:
 Route::post('topics', [TopicController::class, 'store'])->middleware('permission:topics.manage');
 Route::patch('topics/{topic}', [TopicController::class, 'update'])->middleware('permission:topics.manage');
 Route::get('topics/{topic}/metrics', [TopicController::class, 'metrics'])->middleware('permission:topics.view');
+// Names accounts and quotes posts before any escalation, so analysts only (F4).
+Route::get('topics/{topic}/coordination', TopicCoordinationController::class)->middleware('permission:alerts.triage');
 Route::get('topics/{topic}/spike-baseline', TopicSpikeController::class)->middleware('permission:topics.view');
 
 Route::get('official-accounts', [OfficialAccountController::class, 'index'])->middleware('permission:topics.view');
