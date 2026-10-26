@@ -48,6 +48,8 @@ describe("label map", () => {
       expect(field.label.trim()).not.toBe("");
       expect(field.hint.trim()).not.toBe("");
     }
+  });
+
   it("labels every topic category and sensitivity, and the API error codes of topics", () => {
     expect(keys(topicCategoryLabels)).toEqual([...CATEGORIES].sort());
     expect(keys(sensitivityLabels)).toEqual([...SENSITIVITIES].sort());
