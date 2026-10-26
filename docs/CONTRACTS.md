@@ -79,6 +79,7 @@ Notasi izin mengikuti `config/permissions.php`. "Policy" berarti selain izin, be
 | `GET /topics/{id}/metrics?from&to` | `topics.view` | Deret `metrics_hourly`. `from`/`to` `Y-m-d` UTC, `to` mencakup harinya, maksimum 31 hari. Bawaan: 7 hari yang berakhir pada hari metrik terakhir. `meta`: `from`, `to` (tidak ikut dihitung), `total`, `has_simulated_data` |
 | `GET /topics/{id}/spike-baseline?hours=72` | `topics.view` | Data grafik lonjakan: keputusan detektor saat ini dan volume per jam. Bentuk di 3.6 |
 | `GET /topics/{id}/coordination` | `alerts.triage` | Klaster teks hampir identik yang dilihat detektor koordinasi sekarang. Hanya-baca, hanya Analis. Bentuk di 3.7 |
+| `GET /official-accounts/lookalikes` | `alerts.triage` | Akun yang mirip akun resmi saat ini (detektor peniruan), terpaginasi: `page`, `per_page` (1-100), `official_account_id`. Hanya-baca, hanya Analis. Bentuk di 3.9 |
 | `GET /official-accounts` | `topics.view` | Urut `handle` |
 | `POST /official-accounts` | `topics.manage` | `handle` unik. Audit `official_account.create` |
 | `DELETE /official-accounts/{id}` | `topics.manage` | 204. Audit `official_account.delete` |
@@ -290,6 +291,29 @@ Angka di balik tiap bukti, agar analis tahu mengapa sesuatu ditandai. Struktur `
 | `similar_text` | `similarity`, `account_posts`, `cluster_id`, `seed_post_id`, `cluster_accounts`, `cluster_posts`, `window`, `truncated`, `thresholds` |
 | `young_account` | `account_age_days`, `young_account_days`, serta `cluster_id`, `seed_post_id`, `cluster_accounts`, `cluster_posts`, `window`, `truncated`, `thresholds` |
 | `synchronized_posting` | `synchronized` (`is_synchronized`, `ratio`, `posts_in_window`, `window_minutes`), serta `cluster_id`, `seed_post_id`, `cluster_accounts`, `cluster_posts`, `window`, `truncated`, `thresholds` |
+| `name_similarity` | `similarity`, `field` (`handle`/`display_name`), `reading` (`base`, `alt:1`, `stripped`), `compared` (`account`, `official`: kedua string yang dibandingkan), `same_name`, `rules` (aturan normalisasi yang menghasilkan bacaan itu), `official` (`id`, `handle`, `display_name`), `other_matches` (`official_id`, `handle`, `similarity`, `field`), `account_first_seen_at`, `thresholds` (`impersonation_threshold`, `young_account_days`, `impersonation_window_hours`) |
+| `young_account` (alert peniruan) | `account_age_days`, `young_account_days`, `official`, `account_first_seen_at`, `thresholds` |
+
+### 3.9 `GET /official-accounts/lookalikes`
+
+Izin `alerts.triage` (hanya Analis; Pimpinan dan Admin 403). Hanya-baca: tidak membuat alert. Terurut dari kemiripan tertinggi, lalu id akun. Query: `page` (>= 1), `per_page` (1-100, bawaan 25), `official_account_id` (harus ada), selain itu 422.
+
+```json
+{ "data": [ {
+    "account": { "id": 21, "handle": "@demo_kodam_official", "display_name": "Demo Kodam Contoh",
+                 "first_seen_at": "2026-10-26T10:30:00Z", "platform_created_at": "2026-10-23T12:30:00Z" },
+    "official": { "id": 1, "handle": "@demo_kodam", "display_name": "Demo Kodam Contoh" },
+    "similarity": 1.0, "field": "handle", "reading": "stripped", "same_name": true,
+    "rules": [ { "rule": "affix_stripped", "value": "official", "position": "suffix" } ],
+    "other_matches": [ { "official_id": 2, "handle": "@demo_humas_kodam", "similarity": 0.64, "field": "handle" } ],
+    "young": true, "age_days": 3.0,
+    "alert": { "id": 7, "status": "new" }
+} ],
+  "meta": { "current_page": 1, "last_page": 1, "per_page": 25, "total": 1, "as_of": "2026-10-26T12:30:00Z",
+            "window": { "from": "2026-10-25T12:30:00Z", "to": "2026-10-26T12:30:00Z" }, "officials_count": 2 } }
+```
+
+`rules` memakai nama: `unicode_folded`, `separators_removed`, `confusable_chars` (`pairs`), `affix_stripped` (`value`, `position`), `trailing_digits_stripped` (`value`). `alert` adalah alert terbuka akun itu, atau `null`.
 
 ---
 
@@ -300,7 +324,7 @@ Angka di balik tiap bukti, agar analis tahu mengapa sesuatu ditandai. Struktur `
 
 Semua fungsi penilaian dibuat sebagai fungsi murni: tanpa akses database, tanpa `now()`, dan threshold dari argumen. Dengan begitu bisa diuji tanpa database dan bisa dipakai sebelum
 
-### 4.1 Detektor dan penulis alert (A → B), diisi saat F3 dan F4
+### 4.1 Detektor dan penulis alert (A → B), diisi saat F3, F4, dan F13
 
 - `DataClock::now()`: jam yang dibaca detektor (`settings.replay.clock.now`, bila tidak null, selain itu jam dinding UTC). Detektor tidak memanggil `now()` sendiri.
 - `SpikeDetector::evaluate(int $current, array $baseline, array $settings, string $sensitivity): array` murni: keputusan lonjakan, `z`, `z_effective`, `mean`, `std`, `threshold_rate`, dan `thresholds` yang dipakai. Tidak ada akses database.
@@ -309,3 +333,5 @@ Semua fungsi penilaian dibuat sebagai fungsi murni: tanpa akses database, tanpa 
 - `DetectJob` (`ShouldBeUnique`, `tries` 3, `backoff` 10/30/60 detik, `timeout` 120 detik) dijalankan oleh `radarisu:detect` setiap menit. F4 dan F13 menambah detektornya ke job yang sama.
 - `IssueDetectionService::run()` (F4) menjalankan satu pass untuk semua topik aktif: koordinasi dulu (menulis `metrics_hourly.anomalous_accounts`), lalu keputusan lonjakan, lalu satu skor dan satu `upsertIssue` per topik. Alert dibuat bila lonjakan **atau** koordinasi terpicu, jadi satu topik tidak punya dua alert yang bersaing. Menggantikan `SpikeDetectionService::run()` dari F3; `SpikeDetectionService` kini hanya membaca data dan mengembalikan keputusan (`snapshots()`, `samples()`).
 - `CoordinationDetector::detect($posts, $pairs, $settings)` murni: klaster berbasis seed, akun berbeda minimum, `young_account`, `synchronized_posting`. `CoordinationDetectionService` mencari pasangan lewat `pg_trgm` (tabel sementara berindeks GIN) dan menulis `anomalous_accounts`.
+- `AlertWriter::upsertImpersonation($subjectAccountId, $scored, $windowStart, $windowEnd, $detectedAt, $evidence, $cooldownMinutes, $refreshReasons)` (F13): jalan yang sama dengan `upsertIssue`, untuk alert `impersonation` per akun (indeks unik `alerts_open_impersonation_uq`). Bukti pada `$refreshReasons` (bawaan `name_similarity`, `young_account`) ditulis ulang di tempat dan baris yang tidak lagi benar dihapus; bukti lain tetap tambah-saja.
+- `AccountNameNormalizer` (murni, digerakkan `config/impersonation.php`) menghasilkan bacaan nama; `ImpersonationDetector::decide(...)` (murni) memutuskan dari kemiripan yang dihitung pg_trgm; `ImpersonationDetectionService::run()` membaca akun yang pertama kali terlihat dalam `impersonation_window_hours`, menghitung `similarity()` di database, menilai dengan `ThreatScorer::scoreImpersonation`, dan menulis lewat `AlertWriter`. `DetectJob` menjalankan `IssueDetectionService` lalu `ImpersonationDetectionService`.
