@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Services\Detection\ImpersonationDetectionService;
 use App\Services\Detection\IssueDetectionService;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -12,7 +13,7 @@ use Throwable;
 
 /**
  * One detection pass (PRD §10.1, §10.2: every minute from `radarisu:detect`): the spike (F3) and
- * coordination (F4) detectors raise `issue` alerts; the impersonation detector (F13) joins the same pass.
+ * coordination (F4) detectors raise `issue` alerts; the impersonation detector (F13) raises `impersonation` alerts.
  *
  * Unique while queued or running, so a slow pass is never overlapped by the next minute's dispatch.
  * Idempotent: windows come from the data clock and every write is an upsert.
@@ -37,15 +38,19 @@ class DetectJob implements ShouldBeUnique, ShouldQueue
         return 'detect';
     }
 
-    public function handle(IssueDetectionService $issues): void
+    public function handle(IssueDetectionService $issues, ImpersonationDetectionService $impersonation): void
     {
-        $stats = $issues->run();
+        // Both detectors run even when the first one has failures, so a bad topic cannot hide a look-alike.
+        $issueStats = $issues->run();
+        Log::info('detection.pass', ['detector' => 'issue'] + $issueStats);
 
-        Log::info('detection.pass', ['detector' => 'issue'] + $stats);
+        $impersonationStats = $impersonation->run();
+        Log::info('detection.pass', ['detector' => 'impersonation'] + $impersonationStats);
 
-        if ($stats['failed'] > 0) {
-            // Topics that worked are already written; the retry only has to redo the failed ones.
-            throw new RuntimeException("Issue detection failed for {$stats['failed']} topic(s).");
+        $failed = $issueStats['failed'] + $impersonationStats['failed'];
+        if ($failed > 0) {
+            // What worked is already written; the retry only has to redo the failures.
+            throw new RuntimeException("Detection failed for {$failed} subject(s).");
         }
     }
 
