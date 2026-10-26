@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useCan } from "@/components/permissions-provider";
 import { Button, ErrorText, Field, inputClass, PageTitle, Section, StatusBadge, Table, Td } from "@/components/ui";
 import { api, ApiError } from "@/lib/api";
+import { summarizeEvidence } from "@/lib/coordination";
 import { formatDateTime } from "@/lib/format";
 import {
   alertActionLabels,
@@ -273,8 +274,16 @@ export function AlertDetail({ id }: { id: number }) {
                     <span className="ml-1 text-neutral-400">({ui.simulatedData})</span>
                   ) : null}
                 </Td>
-                <Td className="max-w-xs break-words font-mono text-xs">
-                  {ev.detail ? JSON.stringify(ev.detail) : ui.common.none}
+                <Td className="max-w-xs break-words text-xs">
+                  {summarizeEvidence(ev.reason, ev.detail) ? <p className="mb-1">{summarizeEvidence(ev.reason, ev.detail)}</p> : null}
+                  {ev.detail ? (
+                    <details>
+                      <summary className="cursor-pointer text-neutral-500">{ui.coordination.evidence.raw}</summary>
+                      <code className="font-mono">{JSON.stringify(ev.detail)}</code>
+                    </details>
+                  ) : (
+                    ui.common.none
+                  )}
                 </Td>
               </tr>
             ))}
