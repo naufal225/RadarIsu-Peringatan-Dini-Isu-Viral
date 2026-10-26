@@ -8,6 +8,7 @@ import { sensitivityLabels, topicCategoryLabels, ui } from "@/lib/labels";
 import { fillHours, summarize, type MetricsResponse, type Topic } from "@/lib/topics";
 import { useApiData } from "@/lib/use-api-data";
 import { MetricsChart } from "./metrics-chart";
+import { SpikePanel } from "./spike-panel";
 
 const copy = ui.topics.detail;
 
@@ -120,6 +121,8 @@ export function TopicDetail({ id }: { id: number }) {
           <p className="text-sm text-neutral-500">{ui.loading}</p>
         )}
       </Section>
+
+      <SpikePanel id={id} />
     </>
   );
 }

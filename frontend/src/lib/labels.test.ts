@@ -14,12 +14,14 @@ import {
   severityLabels,
   sourceStatusLabels,
   sourceTypeLabels,
+  spikeStatusLabels,
   topicCategoryLabels,
   ui,
 } from "./labels";
 import { FIELD_RANGES } from "./detection-settings";
 import { authUi, roleLabels as authRoleLabels } from "./labels/auth";
 import { settingsUi } from "./labels/settings";
+import { SPIKE_STATUSES } from "./spike";
 import { ROLES } from "./permissions";
 import { CATEGORIES, SENSITIVITIES } from "./topics";
 
@@ -48,6 +50,12 @@ describe("label map", () => {
       expect(field.label.trim()).not.toBe("");
       expect(field.hint.trim()).not.toBe("");
     }
+  });
+
+  it("labels every spike status the API can return", () => {
+    expect(keys(spikeStatusLabels)).toEqual([...SPIKE_STATUSES].sort());
+    for (const label of Object.values(spikeStatusLabels)) expect(label.trim()).not.toBe("");
+    expect(ui.detection.spike.title.trim()).not.toBe("");
   });
 
   it("labels every topic category and sensitivity, and the API error codes of topics", () => {
