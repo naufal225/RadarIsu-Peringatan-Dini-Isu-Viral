@@ -78,6 +78,7 @@ Notasi izin mengikuti `config/permissions.php`. "Policy" berarti selain izin, be
 | `PATCH /topics/{id}` | `topics.manage` | Termasuk menonaktifkan. Templat tidak bisa diubah (422 `template_readonly`). Kata kunci atau status aktif yang berubah memicu pencocokan ulang. Audit `topic.update` |
 | `GET /topics/{id}/metrics?from&to` | `topics.view` | Deret `metrics_hourly`. `from`/`to` `Y-m-d` UTC, `to` mencakup harinya, maksimum 31 hari. Bawaan: 7 hari yang berakhir pada hari metrik terakhir. `meta`: `from`, `to` (tidak ikut dihitung), `total`, `has_simulated_data` |
 | `GET /topics/{id}/spike-baseline?hours=72` | `topics.view` | Data grafik lonjakan: keputusan detektor saat ini dan volume per jam. Bentuk di 3.6 |
+| `GET /topics/{id}/coordination` | `alerts.triage` | Klaster teks hampir identik yang dilihat detektor koordinasi sekarang. Hanya-baca, hanya Analis. Bentuk di 3.7 |
 | `GET /official-accounts` | `topics.view` | Urut `handle` |
 | `POST /official-accounts` | `topics.manage` | `handle` unik. Audit `official_account.create` |
 | `DELETE /official-accounts/{id}` | `topics.manage` | 204. Audit `official_account.delete` |
@@ -256,6 +257,40 @@ Izin `topics.view`. `hours` 6-168 (bawaan 72), di luar itu 422. Data di balik gr
 
 `status`: `triggered`, `below_threshold`, `below_min_volume`, `insufficient_baseline`. `series` berisi satu baris per jam (jam tanpa posting bernilai 0), jam terakhir adalah jam berjalan. `as_of` adalah jam data (`DataClock`), bukan selalu jam dinding.
 
+### 3.7 `GET /topics/{id}/coordination`
+
+Izin `alerts.triage` (hanya Analis; Pimpinan dan Admin 403). Hanya-baca: tidak membuat alert dan tidak menulis metrik. Menampilkan apa yang dilihat detektor koordinasi pada jendela data saat ini.
+
+```json
+{ "data": {
+    "topic_id": 3, "as_of": "2026-10-26T12:30:00Z", "triggered": true,
+    "window": { "from": "2026-10-26T12:15:00Z", "to": "2026-10-26T12:30:00Z" },
+    "posts_in_window": 55, "accounts_in_window": 55, "truncated": false,
+    "thresholds": { "similarity_threshold": 0.8, "min_accounts_cluster": 5, "coordination_window_minutes": 15,
+                    "young_account_days": 30, "synchronized_window_minutes": 5, "synchronized_ratio": 0.8 },
+    "clusters": [ {
+      "cluster_id": 1, "accounts_count": 40, "posts_count": 40, "similarity_min": 0.88, "similarity_max": 0.97,
+      "from": "2026-10-26T12:21:00Z", "to": "2026-10-26T12:27:00Z",
+      "synchronized": { "is_synchronized": true, "ratio": 0.85, "posts_in_window": 34, "window_minutes": 5 },
+      "sample_text": "waspada ...",
+      "accounts": [ { "id": 11, "handle": "@demo_koordinasi_1", "similarity": 0.93, "young": true, "age_days": 3.0, "synchronized": true, "posts_count": 1 } ]
+    } ]
+} }
+```
+
+`accounts` memuat paling banyak 100 akun per klaster; `accounts_count` selalu jumlah penuh. `sample_text` dipotong 280 karakter.
+
+### 3.8 Bukti alert dari detektor (`alert_evidence.detail`)
+
+Angka di balik tiap bukti, agar analis tahu mengapa sesuatu ditandai. Struktur `detail` tidak dibakukan di PRD; ini yang ditulis detektor:
+
+| `reason` | Isi `detail` |
+|---|---|
+| `spike_sample` | `rank`, `posted_at`, `current`, `current_rate`, `baseline_mean`, `baseline_std`, `baseline_hours`, `z`, `thresholds` (`z_effective`, `min_volume`, ...) |
+| `similar_text` | `similarity`, `account_posts`, `cluster_id`, `seed_post_id`, `cluster_accounts`, `cluster_posts`, `window`, `truncated`, `thresholds` |
+| `young_account` | `account_age_days`, `young_account_days`, serta `cluster_id`, `seed_post_id`, `cluster_accounts`, `cluster_posts`, `window`, `truncated`, `thresholds` |
+| `synchronized_posting` | `synchronized` (`is_synchronized`, `ratio`, `posts_in_window`, `window_minutes`), serta `cluster_id`, `seed_post_id`, `cluster_accounts`, `cluster_posts`, `window`, `truncated`, `thresholds` |
+
 ---
 
 ## 4. Kontrak service (antarmuka kode)
@@ -265,10 +300,12 @@ Izin `topics.view`. `hours` 6-168 (bawaan 72), di luar itu 422. Data di balik gr
 
 Semua fungsi penilaian dibuat sebagai fungsi murni: tanpa akses database, tanpa `now()`, dan threshold dari argumen. Dengan begitu bisa diuji tanpa database dan bisa dipakai sebelum
 
-### 4.1 Detektor dan penulis alert (A → B), diisi saat F3
+### 4.1 Detektor dan penulis alert (A → B), diisi saat F3 dan F4
 
 - `DataClock::now()`: jam yang dibaca detektor (`settings.replay.clock.now`, bila tidak null, selain itu jam dinding UTC). Detektor tidak memanggil `now()` sendiri.
 - `SpikeDetector::evaluate(int $current, array $baseline, array $settings, string $sensitivity): array` murni: keputusan lonjakan, `z`, `z_effective`, `mean`, `std`, `threshold_rate`, dan `thresholds` yang dipakai. Tidak ada akses database.
 - `ThreatScorer::score(...)` (domain C) menghitung skor alert `issue` dari hasil detektor dan `Setting::detection()`.
 - `AlertWriter::upsertIssue($topicId, $scored, $windowStart, $windowEnd, $detectedAt, $evidence, $cooldownMinutes, $evidenceLimits)`: satu-satunya jalan detektor membuat atau memperbarui alert `issue` (PRD §10.9). Satu alert terbuka per topik dijamin indeks unik parsial `alerts_open_issue_uq` (upsert dengan `ON CONFLICT`); bukti ganda ditolak indeks `alert_evidence_dedup_uq`. Tidak pernah mengubah `status` dan tidak menulis `alert_actions`. Mengembalikan `outcome` `created|updated|cooldown`.
 - `DetectJob` (`ShouldBeUnique`, `tries` 3, `backoff` 10/30/60 detik, `timeout` 120 detik) dijalankan oleh `radarisu:detect` setiap menit. F4 dan F13 menambah detektornya ke job yang sama.
+- `IssueDetectionService::run()` (F4) menjalankan satu pass untuk semua topik aktif: koordinasi dulu (menulis `metrics_hourly.anomalous_accounts`), lalu keputusan lonjakan, lalu satu skor dan satu `upsertIssue` per topik. Alert dibuat bila lonjakan **atau** koordinasi terpicu, jadi satu topik tidak punya dua alert yang bersaing. Menggantikan `SpikeDetectionService::run()` dari F3; `SpikeDetectionService` kini hanya membaca data dan mengembalikan keputusan (`snapshots()`, `samples()`).
+- `CoordinationDetector::detect($posts, $pairs, $settings)` murni: klaster berbasis seed, akun berbeda minimum, `young_account`, `synchronized_posting`. `CoordinationDetectionService` mencari pasangan lewat `pg_trgm` (tabel sementara berindeks GIN) dan menulis `anomalous_accounts`.

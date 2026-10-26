@@ -4,6 +4,16 @@ Papan pengumuman untuk perubahan yang menyentuh domain lain, perubahan izin, dan
 
 ---
 
+## 2026-10-26: F4 deteksi koordinasi akun (branch `feat/a-f4-deteksi-koordinasi`)
+
+- **Untuk Rekishi (C):** skor alert `issue` kini bisa membawa komponen *anomaly* dari koordinasi. Input `anomalous_accounts` / `unique_accounts` ke `ThreatScorer::score` dihitung pada jendela koordinasi (OPEN_QUESTIONS #16). `metrics_hourly.anomalous_accounts` kini diisi detektor (hanya naik). Untuk `kind=impersonation` tidak ada perubahan.
+- **Untuk Kadavi (B):** satu perubahan kecil di file milik B, `alerts/[id]/alert-detail.tsx`: sel "Detail" bukti kini menampilkan satu kalimat yang bisa dibaca (dari angka di `detail`) dan JSON mentah di dalam `<details>`. Tidak ada perubahan API alert. Alert dari F4 memakai alasan bukti yang sudah ada (`similar_text`, `young_account`, `synchronized_posting`).
+- Baru: `GET /topics/{id}/coordination` (hanya `alerts.triage`) dan panel "Deteksi koordinasi akun" di `/topics/{id}`, tampil untuk Analis. `DetectJob` kini memanggil `IssueDetectionService` (menggantikan `SpikeDetectionService::run()`) dan `timeout`-nya 240 detik.
+- Demo: `php artisan db:seed --class=CoordinationDemoSeeder` lalu `php artisan radarisu:detect --sync`.
+- Catatan merge: label F4 ada di file sendiri (`lib/labels/coordination.ts`), dan panelnya dipasang dari `topics/[id]/page.tsx` agar tidak bentrok dengan panel lonjakan F3 di `topic-detail.tsx`.
+
+---
+
 ## 2026-10-26: F3 deteksi lonjakan (branch `feat/a-f3-deteksi-lonjakan`)
 
 - **Untuk Kadavi (B):** tabel `alert_evidence` mendapat satu indeks unik, `alert_evidence_dedup_uq (alert_id, reason, COALESCE(post_id,0), COALESCE(account_id,0))`, agar bukti yang sama tidak terpasang dua kali oleh deteksi yang berjalan tiap menit. Hanya indeks; tidak ada kolom baru dan tidak ada file B yang diubah. Alert dari detektor memakai `AlertWriter` (`docs/CONTRACTS.md` §4.1): `status` selalu `new` saat dibuat dan tidak pernah diubah detektor, tanpa baris `alert_actions`.
