@@ -43,5 +43,7 @@ export const dashboardUi = {
     reviewEscalated: "Tinjau Isu Dieskalasi",
     viewTopics: "Kelola Topik Pantauan",
     viewBriefings: "Unduh Briefing PDF",
+    labelingQueue: "Antrean Pelabelan",
+    evaluation: "Hasil Evaluasi",
   },
 };

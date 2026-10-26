@@ -54,5 +54,7 @@ describe("dashboard utilities", () => {
     expect(ui.dashboard.trend.volume).toBe("Volume Posting");
     expect(ui.dashboard.issues.viewAllAlerts).toBe("Lihat Semua Alert");
     expect(ui.dashboard.quickLinks.triageAlerts).toBe("Triase Alert Baru");
+    expect(ui.dashboard.quickLinks.labelingQueue).toBe("Antrean Pelabelan");
+    expect(ui.dashboard.quickLinks.evaluation).toBe("Hasil Evaluasi");
   });
 });

@@ -356,6 +356,24 @@ export function DashboardPanel() {
               {ui.dashboard.quickLinks.viewBriefings}
             </Link>
           )}
+
+          {can("labels.manage") && (
+            <Link
+              href="/labeling"
+              className="rounded-md border border-neutral-300 bg-white px-3 py-1.5 font-medium shadow-sm transition hover:bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:bg-neutral-700"
+            >
+              {ui.dashboard.quickLinks.labelingQueue}
+            </Link>
+          )}
+
+          {can("evaluation.view") && (
+            <Link
+              href="/evaluation"
+              className="rounded-md border border-neutral-300 bg-white px-3 py-1.5 font-medium shadow-sm transition hover:bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:bg-neutral-700"
+            >
+              {ui.dashboard.quickLinks.evaluation}
+            </Link>
+          )}
         </div>
       </div>
     </div>

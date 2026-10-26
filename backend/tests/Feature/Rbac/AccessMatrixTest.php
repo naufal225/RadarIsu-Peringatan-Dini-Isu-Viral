@@ -126,12 +126,20 @@ class AccessMatrixTest extends TestCase
 
     public function test_stub_route_returns_501_with_pending_phase(): void
     {
+        \Illuminate\Support\Facades\Route::get('/api/v1/testing/stub-example', function () {
+            return (new class extends \App\Http\Controllers\Controller {
+                public function test()
+                {
+                    return $this->pendingPhase(9);
+                }
+            })->test();
+        });
+
         $this->actingAsRole('analyst');
 
-        // Evaluation runs is still a stub (Phase 7); dashboard was the example until Phase 8 implemented it.
-        $this->getJson('/api/v1/evaluation/runs')
+        $this->getJson('/api/v1/testing/stub-example')
             ->assertStatus(501)
-            ->assertExactJson(['message' => 'Belum diimplementasikan', 'meta' => ['pending_phase' => 7]]);
+            ->assertExactJson(['message' => 'Belum diimplementasikan', 'meta' => ['pending_phase' => 9]]);
     }
 
     public function test_permission_is_checked_before_stub(): void
