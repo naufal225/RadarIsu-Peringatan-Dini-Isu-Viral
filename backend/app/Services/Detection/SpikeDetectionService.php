@@ -2,68 +2,18 @@
 
 namespace App\Services\Detection;
 
-use App\Models\Setting;
-use App\Models\Source;
 use App\Models\Topic;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use Throwable;
 
 /**
- * Runs the spike detector over the active topics (F3, PRD §10.5, §10.8, §10.9). All I/O lives here;
- * the decision is SpikeDetector and the score is ThreatScorer.
- *
- * One pass is idempotent: a window is derived from the data clock, the alert is an upsert and evidence
- * is deduplicated, so running it twice for the same clock changes nothing.
+ * Reads what the spike detector needs and returns its decision per topic (F3, PRD §10.5). All the I/O
+ * of the spike detector lives here; the decision is SpikeDetector. IssueDetectionService runs it
+ * together with the coordination detector and writes the alert.
  */
 class SpikeDetectionService
 {
-    private const TOPIC_CHUNK = 100;
-
-    public function __construct(private AlertWriter $alerts) {}
-
-    /**
-     * @return array{topics: int, triggered: int, created: int, updated: int, cooldown: int, failed: int}
-     */
-    public function run(): array
-    {
-        $settings = Setting::detection();
-        $now = DataClock::now();
-        $activeSources = Source::where('is_active', true)->count();
-        $stats = ['topics' => 0, 'triggered' => 0, 'created' => 0, 'updated' => 0, 'cooldown' => 0, 'failed' => 0];
-
-        Topic::query()->where('is_active', true)->chunkById(self::TOPIC_CHUNK, function (Collection $topics) use ($settings, $now, $activeSources, &$stats) {
-            $snapshots = $this->snapshots($topics, $now, $settings);
-
-            foreach ($topics as $topic) {
-                $stats['topics']++;
-                $snapshot = $snapshots[$topic->id];
-                if (! $snapshot['spike']['triggered']) {
-                    continue;
-                }
-                $stats['triggered']++;
-
-                // One topic failing must not stop the others; the job fails afterwards so it is retried.
-                try {
-                    $result = $this->raise($topic, $snapshot, $now, $settings, $activeSources);
-                    $stats[$result['outcome']]++;
-                } catch (Throwable $e) {
-                    $stats['failed']++;
-                    Log::error('detection.spike.topic_failed', [
-                        'topic_id' => $topic->id,
-                        'data_clock' => $now->toIso8601String(),
-                        'exception' => $e::class,
-                        'message' => $e->getMessage(),
-                    ]);
-                }
-            }
-        });
-
-        return $stats;
-    }
-
     /**
      * Spike decision and its inputs for the given topics, without writing anything.
      *
@@ -147,62 +97,11 @@ class SpikeDetectionService
     }
 
     /**
-     * @param  array{spike: array<string, mixed>, window: array<string, int>, hour: array<string, int>}  $snapshot
-     * @param  array<string, mixed>  $settings
-     * @return array{outcome: string, alert_id: int|null, evidence_added: int}
-     */
-    private function raise(Topic $topic, array $snapshot, CarbonImmutable $now, array $settings, int $activeSources): array
-    {
-        $spike = $snapshot['spike'];
-        $scored = ThreatScorer::score([
-            'z' => $spike['z'],
-            'has_sufficient_baseline' => $spike['has_sufficient_baseline'],
-            'anomalous_accounts' => $snapshot['hour']['anomalous_accounts'],
-            'unique_accounts' => $snapshot['hour']['unique_accounts'],
-            'negative_count' => $snapshot['window']['negative_count'],
-            'volume' => $snapshot['window']['volume'],
-            'source_count' => $snapshot['window']['source_count'],
-            'active_sources' => $activeSources,
-        ], ThreatScorer::optionsFromSettings($settings));
-        // The z shown as the threshold is the one this topic was held to, not the base setting.
-        $scored['score_breakdown']['thresholds']['z'] = $spike['z_effective'];
-
-        $windowStart = $now->subMinutes((int) $settings['spike_current_window_minutes']);
-        $limit = (int) $settings['spike_sample_limit'];
-
-        $evidence = [];
-        $rank = 0;
-        foreach ($this->samples($topic->id, $windowStart, $now, $limit) as $post) {
-            $evidence[] = [
-                'reason' => 'spike_sample',
-                'post_id' => $post->id,
-                'account_id' => $post->account_id,
-                'detail' => [
-                    'rank' => ++$rank,
-                    'posted_at' => CarbonImmutable::parse($post->posted_at)->toIso8601String(),
-                    'current' => $spike['current'],
-                    'current_rate' => $spike['current_rate'],
-                    'baseline_mean' => $spike['mean'],
-                    'baseline_std' => $spike['std'],
-                    'baseline_hours' => $spike['baseline_hours'],
-                    'z' => $spike['z'],
-                    'thresholds' => $spike['thresholds'],
-                ],
-            ];
-        }
-
-        return $this->alerts->upsertIssue(
-            $topic->id, $scored, $windowStart, $now, $now, $evidence,
-            (int) $settings['cooldown_minutes'], ['spike_sample' => $limit],
-        );
-    }
-
-    /**
      * Earliest posts of the window: a stable choice, so a rerun picks the same ones.
      *
      * @return Collection<int, object{id: int, account_id: int, posted_at: string}>
      */
-    private function samples(int $topicId, CarbonImmutable $from, CarbonImmutable $to, int $limit): Collection
+    public function samples(int $topicId, CarbonImmutable $from, CarbonImmutable $to, int $limit): Collection
     {
         return DB::table('topic_matches as m')->join('posts as p', 'p.id', '=', 'm.post_id')
             ->where('m.topic_id', $topicId)->where('p.posted_at', '>', $from)->where('p.posted_at', '<=', $to)
