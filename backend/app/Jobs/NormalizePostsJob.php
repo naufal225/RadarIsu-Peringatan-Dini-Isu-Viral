@@ -169,6 +169,7 @@ class NormalizePostsJob implements ShouldQueue
             'sentiment' => $post['sentiment'],
             'sentiment_score' => $post['sentiment_score'],
             'is_simulated' => $post['is_simulated'],
+            'label_manual' => $post['label_manual'],
             'created_at' => $now,
             'updated_at' => $now,
         ], $posts);

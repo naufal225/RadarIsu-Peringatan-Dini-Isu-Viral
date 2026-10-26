@@ -11,7 +11,7 @@ use Throwable;
  * Canonical raw_items payload → account and post attributes (PRD §10.4). No database access.
  *
  * The payload has the CSV / replay_rows shape: text, account_handle, posted_at, and optionally
- * external_id, account_display_name, account_created_at. Ingestors write the same shape.
+ * external_id, account_display_name, account_created_at, and label_manual (organic|anomalous, set by Replay for F14). Ingestors write the same shape.
  */
 class PostNormalizer
 {
@@ -19,7 +19,7 @@ class PostNormalizer
      * @param  array<string, mixed>  $payload
      * @return array{
      *     account: array{source_type: string, handle: string, display_name: ?string, platform_created_at: ?CarbonImmutable, first_seen_at: CarbonImmutable},
-     *     post: array{source_id: int, external_id: ?string, text: string, text_norm: string, posted_at: CarbonImmutable, sentiment: string, sentiment_score: float, is_simulated: bool}
+     *     post: array{source_id: int, external_id: ?string, text: string, text_norm: string, posted_at: CarbonImmutable, sentiment: string, sentiment_score: float, is_simulated: bool, label_manual: ?string}
      * }
      *
      * @throws InvalidPayloadException
@@ -50,6 +50,7 @@ class PostNormalizer
                 'sentiment' => $sentiment['label'],
                 'sentiment_score' => $sentiment['score'],
                 'is_simulated' => $source->is_simulated,
+                'label_manual' => $this->label($payload),
             ],
         ];
     }
@@ -62,6 +63,18 @@ class PostNormalizer
         $value = $payload[$key] ?? null;
 
         return is_string($value) && trim($value) !== '' ? trim($value) : null;
+    }
+
+    /**
+     * Only the two labels the posts check constraint allows; anything else is ignored rather than failing the item.
+     *
+     * @param  array<string, mixed>  $payload
+     */
+    private function label(array $payload): ?string
+    {
+        $value = $this->string($payload, 'label_manual');
+
+        return in_array($value, ['organic', 'anomalous'], true) ? $value : null;
     }
 
     /**

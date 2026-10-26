@@ -106,7 +106,13 @@ describe("label map", () => {
       "too_many_rows", "missing_columns", "unknown_columns", "duplicate_columns", "source_not_csv",
       "offline_mode_enabled", "connection_test_not_supported",
     ];
-    expect(keys(errorCodeLabels)).toEqual([...backendCodes].sort());
+    // Codes from ReplayScenarioImporter, ReplayRunner and ReplayController (F11).
+    const replayCodes = [
+      "invalid_rows", "no_rows", "no_incident_rows", "baseline_after_incident", "invalid_offset_seconds",
+      "invalid_phase", "invalid_label_manual", "invalid_account_age_days", "already_running", "another_running",
+      "empty_scenario", "not_running",
+    ];
+    expect(keys(errorCodeLabels)).toEqual([...backendCodes, ...replayCodes].sort());
   });
 
   it("describes error codes, keeping the detail after the colon", () => {

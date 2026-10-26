@@ -133,6 +133,14 @@ Aturan transisi dan kode status ada di PRD §8.5. Setiap aksi menulis tepat satu
 | `POST /replay/scenarios/{id}/start` | `replay.manage` | Body `{speed_factor?}` |
 | `POST /replay/scenarios/{id}/stop` | `replay.manage` | |
 
+Bentuk dan perilaku (F11):
+
+- `GET /replay/scenarios?per_page=` → `{data: [ReplayScenario], meta: {current_page, last_page, per_page, total, clock_now, data_now}}`. `clock_now` adalah `settings.replay.clock.now` (null bila tidak ada Replay berjalan), `data_now` adalah `DataClock::now()`. `ReplayScenario`: `id, name, description, total_rows, incident_start_offset_seconds, default_speed_factor, status (idle|running|finished|stopped), speed_factor, run_number, progress_rows, started_at, virtual_anchor_at, heartbeat_at, finished_at, error, source_id, created_at`. Bungkus `data` ada di semua respons skenario tunggal.
+- `POST /replay/scenarios` (multipart: `file`, `name`, `description?`, `incident_start_offset_seconds?`, `default_speed_factor?`) → 201. Kolom CSV dan galat berkas: OPEN_QUESTIONS #27.
+- `POST .../start` `{speed_factor?}` (1–100000, bawaan `default_speed_factor`) → 202 dan job di antrean `replay`. 409 `already_running` | `another_running` | `empty_scenario`. Audit `replay.start`.
+- `POST .../stop` → 200; 409 `not_running`. Audit `replay.stop`. Runner melihat status berubah dan menutup sendiri (jam direset).
+- Untuk F14: posting Replay berlabel lewat `posts.label_manual`; `external_id = replay:{scenario_id}:{run_number}:{replay_row_id}`; waktu deteksi = `alerts.detected_at - (replay_scenarios.virtual_anchor_at + incident_start_offset_seconds)` untuk putaran terakhir (`run_number`).
+
 ### 2.8 Pengaturan, pelabelan, evaluasi, dan sistem (C)
 
 | Rute | Izin | Catatan |

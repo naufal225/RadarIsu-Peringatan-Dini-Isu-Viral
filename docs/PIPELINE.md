@@ -52,6 +52,7 @@ Siapa pun yang menulis `raw_items` (impor CSV, `RssIngestor`, `YoutubeIngestor`,
    | `external_id` | | dipakai agar posting yang sama tidak masuk dua kali |
    | `account_display_name` | | |
    | `account_created_at` | | ISO 8601 dengan zona waktu |
+   | `label_manual` | | `organic` atau `anomalous`; hanya Replay yang mengisinya (kebenaran dasar F14), nilai lain diabaikan |
 
 2. Setelah menulis, panggil `NormalizePostsJob::dispatch()`. Sapuan tiap menit hanya jaring pengaman.
 3. `sources.type` menentukan `accounts.source_type`, dan `sources.is_simulated` menentukan `posts.is_simulated` (lencana "DATA SIMULASI").
