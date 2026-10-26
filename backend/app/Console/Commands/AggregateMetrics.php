@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\Topic;
+use App\Services\Detection\DataClock;
 use App\Services\Detection\MetricsAggregator;
 use Illuminate\Console\Command;
 
@@ -43,7 +44,8 @@ class AggregateMetrics extends Command
             return self::FAILURE;
         }
 
-        $aggregator->recomputeSince(now()->subHours((int) $hours), $topicId);
+        // The data clock, so a replay (virtual time) is recomputed around its own "now".
+        $aggregator->recomputeSince(DataClock::now()->subHours((int) $hours), $topicId);
         $this->info("Metrics recomputed for the last $hours hours.");
 
         return self::SUCCESS;
