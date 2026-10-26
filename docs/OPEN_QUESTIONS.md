@@ -38,6 +38,9 @@ Dicatat sesuai CLAUDE.md: konflik tidak ditebak. Keputusan dicatat di sini dan d
 32. **`label_manual` ikut payload kanonik (F11).** Agar label baris Replay menjadi kebenaran dasar F14 tanpa pemetaan kedua, `PostNormalizer` menerima kunci opsional `label_manual` (`organic`|`anomalous`, nilai lain diabaikan) dan `NormalizePostsJob` menulisnya ke `posts.label_manual`. Impor CSV tidak memakai kunci itu. `AggregateMetrics` (`--hours`) kini memakai `DataClock::now()` alih-alih `now()`.
 33. **PRD baris 971 (F11 milik C) vs `docs/OWNERSHIP.md` (F11 milik A).** OWNERSHIP menang. F14 (a, b) dialihkan dari Rekishi ke Naufal pada 2026-10-26 (OWNERSHIP, CODEOWNERS, HANDOFF).
 34. **Pelabelan (F14-a).** `meta.progress` menghitung seluruh posting berlabel (target ±200 dari PRD §15 dipakai sebagai angka tetap), bukan hasil filter. `PUT` dengan string kosong diperlakukan sebagai `null` (menghapus label) karena middleware Laravel mengubah string kosong menjadi `null`. Admin dan pimpinan tidak dapat membaca antrean (PRD §8.3: hanya analis).
+35. **Evaluasi (F14-b), akun berlabel campuran.** Akun yang punya posting `organic` dan `anomalous` dihitung `anomalous` (PRD §15 hanya menulis "memiliki posting berlabel anomalous"); jumlahnya dicatat di `notes` (`mixed_label_accounts:N`).
+36. **Evaluasi, pembagi nol.** Presisi, recall, atau F1 dengan pembagi 0 dihitung 0 (bukan null) dan alasannya masuk `notes`. Cakupan skenario memakai posting dari sumber `replay` skenario itu (semua putaran, karena tiap skenario satu sumber, #28); waktu deteksi memakai putaran terakhir.
+37. **Evaluasi, waktu deteksi.** Dihitung dari alert `issue` pertama yang menandai akun `anomalous` berlabel, bukan alert pertama di topik; bisa negatif bila alert muncul sebelum awal incident. `GET /evaluation/runs` membawa `meta.scenarios` karena analis tidak boleh memanggil `/replay/scenarios`.
 
 
 ## Diputuskan 2026-10-21 (PRD v2.2, Fase 2)

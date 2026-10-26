@@ -12,6 +12,7 @@ const LINKS: { href: string; label: string; permission: Permission }[] = [
   { href: "/alerts", label: ui.nav.alerts, permission: "alerts.view" },
   { href: "/briefings", label: ui.nav.briefings, permission: "briefings.view" },
   { href: "/labeling", label: ui.nav.labeling, permission: "labels.manage" },
+  { href: "/evaluation", label: ui.nav.evaluation, permission: "evaluation.view" },
   { href: "/admin/status", label: ui.nav.status, permission: "system.status" },
   { href: "/admin/users", label: ui.nav.users, permission: "users.view" },
   { href: "/admin/sources", label: ui.nav.sources, permission: "sources.view" },

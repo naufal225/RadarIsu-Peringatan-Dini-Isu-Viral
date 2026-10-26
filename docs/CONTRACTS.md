@@ -151,8 +151,10 @@ Bentuk dan perilaku (F11):
 | `PUT /settings/offline-mode` | `settings.manage` | `{"enabled": bool}` strict. Audit `settings.update` hanya bila berubah |
 | `GET /labeling/posts` | `labels.manage` | Paginasi (`per_page` ≤ 100, `page`). Filter: `status=all\|unlabeled\|labeled`, `label=organic\|anomalous`, `is_simulated`, `topic_id`. Urutan `posted_at` terbaru. Respons `data[]`: `id, text, posted_at, sentiment, label_manual, is_simulated, account{id,handle,display_name}, topics[{id,name}]`; `meta.progress`: `{labeled, organic, anomalous, target: 200}` (hitungan seluruh posting, bukan hasil filter) |
 | `PUT /labeling/posts/{id}` | `labels.manage` | Body `{label_manual: "organic" \| "anomalous" \| null}`; kunci wajib ada, `null` (juga string kosong) menghapus label. Respons 200 `data` berisi posting. Audit `label.set` `{from, to}` hanya bila nilai berubah |
-| `GET /evaluation/runs` | `evaluation.view` | |
-| `POST /evaluation/run` | `evaluation.run` | Body `{scenario_id?}` |
+| `GET /evaluation/runs` | `evaluation.view` | Paginasi (`per_page` ≤ 100), terbaru dulu. `data[]` hanya agregat: `id, scenario{id,name}\|null, run_by, labeled_posts, tp, fp, fn, precision, recall, f1, detection_latency_seconds, notes[], created_at` (tanpa daftar akun atau posting, jadi aman untuk pimpinan). `meta.scenarios[{id,name}]`: skenario yang pernah diputar, untuk form jalankan |
+| `POST /evaluation/run` | `evaluation.run` | Body `{scenario_id?}` (harus ada dan pernah diputar, kalau tidak 422 `scenario_not_replayed`). Sinkron, 201 dengan satu `data` seperti di atas. Audit `evaluation.run`. Setara CLI `radarisu:evaluate {--scenario=} {--user=}` |
+
+Perhitungan (F14-b, PRD §15): tingkat akun. Kebenaran dasar = akun dengan ≥ 1 posting berlabel `anomalous` di cakupan (semua posting berlabel, atau hanya sumber `replay` milik skenario). Prediksi positif = akun yang menjadi bukti `similar_text\|young_account\|synchronized_posting` pada alert `kind='issue'`. Hanya akun berlabel dihitung. `detection_latency_seconds` = `MIN(alerts.detected_at)` alert `issue` yang menandai akun `anomalous` − (`virtual_anchor_at` + `incident_start_offset_seconds`) putaran terakhir; `null` tanpa skenario atau tanpa alert. `notes` berisi kode: `no_labeled_accounts`, `no_predicted_positive`, `no_actual_positive`, `mixed_label_accounts:N`, `no_detection`.
 | `GET /system/status` | `system.status` | Kesehatan sumber, antrean, jumlah data |
 
 ---

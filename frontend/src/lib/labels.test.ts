@@ -112,7 +112,8 @@ describe("label map", () => {
       "invalid_phase", "invalid_label_manual", "invalid_account_age_days", "already_running", "another_running",
       "empty_scenario", "not_running",
     ];
-    expect(keys(errorCodeLabels)).toEqual([...backendCodes, ...replayCodes].sort());
+    const evaluationCodes = ["scenario_not_replayed"];
+    expect(keys(errorCodeLabels)).toEqual([...backendCodes, ...replayCodes, ...evaluationCodes].sort());
   });
 
   it("describes error codes, keeping the detail after the colon", () => {
