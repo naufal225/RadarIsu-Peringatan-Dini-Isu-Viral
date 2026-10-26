@@ -1,9 +1,9 @@
 import { redirect } from "next/navigation";
 import { RequirePermission } from "@/components/require-permission";
-import { ui } from "@/lib/labels";
 import { getMe } from "@/lib/server-api";
+import { DashboardPanel } from "./dashboard-panel";
 
-// TODO Fase 6/8: situation summary from GET /dashboard/summary.
+// PRD §11.2, §12.2: situation summary and priority issues for analyst and leader.
 export default async function DashboardPage() {
   const result = await getMe();
   // PRD §12.2: admins have no dashboard.view and are sent to the system status page.
@@ -11,8 +11,7 @@ export default async function DashboardPage() {
 
   return (
     <RequirePermission permission="dashboard.view">
-      <h1 className="text-xl font-semibold">{ui.dashboard.title}</h1>
-      <p className="mt-2 text-sm text-neutral-600">{ui.dashboard.pending}</p>
+      <DashboardPanel />
     </RequirePermission>
   );
 }

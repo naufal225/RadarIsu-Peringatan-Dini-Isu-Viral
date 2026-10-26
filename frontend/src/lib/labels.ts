@@ -10,6 +10,7 @@ import { labelingUi } from "./labels/labeling";
 import { replayErrorCodes, replayUi } from "./labels/replay";
 import { topicsUi } from "./labels/topics";
 import { bUi } from "./labels/b";
+import { dashboardUi } from "./labels/dashboard";
 
 // Per-owner label files (docs/OWNERSHIP.md) are merged here so callers keep one import path.
 export { roleLabels } from "./labels/auth";
@@ -127,10 +128,7 @@ export const ui = {
   logout: authUi.logout,
   loading: "Memuat…",
   forbidden: authUi.forbidden,
-  dashboard: {
-    title: "Dasbor situasi",
-    pending: "Ringkasan situasi tersedia pada fase berikutnya.",
-  },
+  dashboard: dashboardUi,
   nav: {
     dashboard: "Dasbor",
     alerts: bUi.nav.alerts,
