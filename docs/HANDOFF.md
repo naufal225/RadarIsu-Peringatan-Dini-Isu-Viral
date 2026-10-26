@@ -4,6 +4,16 @@ Papan pengumuman untuk perubahan yang menyentuh domain lain, perubahan izin, dan
 
 ---
 
+## 2026-10-26: F15 pengaturan deteksi lengkap untuk F3, F4, F13 (branch `feat/c-f15-pengaturan-deteksi`)
+
+- **Untuk domain A (detektor):** baca ambang lewat `Setting::detection()` (sekali per eksekusi, tidak di-cache); arti tiap kunci di `docs/DETECTION_SETTINGS.md`. Selain kunci PRD §9.6, kini ada `spike_current_window_minutes`, `spike_sample_limit`, `synchronized_window_minutes`, `synchronized_ratio`, `impersonation_window_hours` (bawaan = konstanta PRD), serta `cooldown_minutes` dan `coordination_max_posts` (tidak ada di PRD, `docs/OPEN_QUESTIONS.md` #8-#9). Jangan hardcode angka-angka itu.
+- Baru: `GET`/`PUT /settings/offline-mode` (`settings.manage`, audit `settings.update`) dan panel Mode Offline di `/admin/settings`. Pembaca `offline_mode` yang ada tidak berubah.
+- Severity alert peniruan memakai `severity_cutoffs` yang sama dengan alert `issue` (keputusan sementara, OPEN_QUESTIONS #7), sesuai `ThreatScorer::scoreImpersonation`.
+- Perbaikan kecil yang memblokir lint/build: `frontend/src/lib/labels.ts` (`topics: "Topik"` terlempar keluar dari objek `nav` akibat merge) dan `labels.test.ts` (penutup `});` hilang).
+- Tidak ada migrasi dan tidak ada izin baru. Baris `settings.detection` lama tetap terbaca (kunci yang hilang diisi bawaan).
+
+---
+
 ## 2026-10-23: Pipeline normalisasi → topic match → agregasi, dan F2 (branch `feat/a-f2-topik-pantauan`)
 
 Detail lengkap di `docs/PIPELINE.md`.

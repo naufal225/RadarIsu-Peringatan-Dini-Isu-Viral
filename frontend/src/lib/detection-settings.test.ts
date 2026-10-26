@@ -3,6 +3,7 @@ import {
   effectiveZ,
   FIELD_RANGES,
   getPath,
+  previewImpersonation,
   previewScore,
   setPath,
   validateDetection,
@@ -21,10 +22,49 @@ const defaults: DetectionSettings = {
   min_accounts_cluster: 5,
   young_account_days: 30,
   impersonation_threshold: 0.6,
+  spike_current_window_minutes: 60,
+  spike_sample_limit: 10,
+  synchronized_window_minutes: 5,
+  synchronized_ratio: 0.8,
+  impersonation_window_hours: 24,
+  cooldown_minutes: 60,
+  coordination_max_posts: 2000,
   weights: { spike: 40, anomaly: 30, sentiment: 20, reach: 10 },
   severity_cutoffs: { medium: 40, high: 70 },
   sensitivity_z_offset: { low: 1, medium: 0, high: -0.5 },
 };
+
+describe("previewImpersonation (PRD §10.7)", () => {
+  it("scores round(similarity × 70) plus 30 for a young account", () => {
+    const young = previewImpersonation(defaults, 0.9, true);
+
+    expect(young.score).toBe(93);
+    expect(young.severity).toBe("high");
+    expect(previewImpersonation(defaults, 0.9, false).score).toBe(63);
+  });
+
+  it("uses the severity cutoffs of issue alerts", () => {
+    expect(previewImpersonation(defaults, 0.6, false).severity).toBe("medium"); // 42
+    expect(previewImpersonation(defaults, 0.4, false).severity).toBe("low"); // 28
+    expect(previewImpersonation({ ...defaults, severity_cutoffs: { medium: 20, high: 30 } }, 0.4, false).severity).toBe("medium");
+  });
+
+  it("clamps similarity to 0..1", () => {
+    expect(previewImpersonation(defaults, 3, false).score).toBe(70);
+    expect(previewImpersonation(defaults, -1, false).score).toBe(0);
+  });
+});
+
+describe("new detector keys", () => {
+  it("accept the PRD constants and reject values out of range", () => {
+    expect(validateDetection(defaults)).toEqual([]);
+    expect(validateDetection({ ...defaults, cooldown_minutes: -1 })).toEqual(["cooldown_minutes"]);
+    expect(validateDetection({ ...defaults, cooldown_minutes: 0 })).toEqual([]);
+    expect(validateDetection({ ...defaults, synchronized_ratio: 0.4 })).toEqual(["synchronized_ratio"]);
+    expect(validateDetection({ ...defaults, coordination_max_posts: 99 })).toEqual(["coordination_max_posts"]);
+    expect(validateDetection({ ...defaults, spike_sample_limit: 1.5 })).toEqual(["spike_sample_limit"]);
+  });
+});
 
 describe("previewScore (PRD §10.8)", () => {
   it("reproduces the CONTRACTS.md §3.3 example", () => {
@@ -106,7 +146,7 @@ describe("validateDetection", () => {
 
   it("covers every scalar and nested field of the settings", () => {
     for (const path of Object.keys(FIELD_RANGES)) expect(Number.isFinite(getPath(defaults, path))).toBe(true);
-    expect(Object.keys(FIELD_RANGES)).toHaveLength(18);
+    expect(Object.keys(FIELD_RANGES)).toHaveLength(25);
   });
 });
 

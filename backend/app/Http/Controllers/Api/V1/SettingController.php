@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\UpdateOfflineModeRequest;
 use App\Models\Setting;
 use App\Services\Audit\AuditLogger;
 use Illuminate\Http\JsonResponse;
@@ -18,6 +19,8 @@ use Illuminate\Validation\Validator as ValidatorInstance;
 class SettingController extends Controller
 {
     private const KEY = 'detection';
+
+    private const OFFLINE_KEY = 'offline_mode';
 
     public function __construct(private AuditLogger $audit) {}
 
@@ -54,6 +57,47 @@ class SettingController extends Controller
         return $this->payload($setting->load('updatedBy:id,name'));
     }
 
+    public function showOfflineMode(): JsonResponse
+    {
+        return $this->offlinePayload(Setting::with('updatedBy:id,name')->find(self::OFFLINE_KEY));
+    }
+
+    public function updateOfflineMode(UpdateOfflineModeRequest $request): JsonResponse
+    {
+        $enabled = $request->validated('enabled');
+        $current = Setting::find(self::OFFLINE_KEY);
+
+        // Nothing changed: no write and no audit row.
+        if (($current?->value['enabled'] ?? false) === $enabled) {
+            return $this->offlinePayload($current?->load('updatedBy:id,name'));
+        }
+
+        $setting = DB::transaction(function () use ($request, $enabled, $current) {
+            $setting = Setting::updateOrCreate(
+                ['key' => self::OFFLINE_KEY],
+                ['value' => ['enabled' => $enabled], 'updated_by' => $request->user()->id],
+            );
+            $this->audit->log('settings.update', null, [
+                'key' => self::OFFLINE_KEY,
+                'changes' => ['enabled' => ['from' => $current?->value['enabled'] ?? false, 'to' => $enabled]],
+            ]);
+
+            return $setting;
+        });
+
+        return $this->offlinePayload($setting->load('updatedBy:id,name'));
+    }
+
+    private function offlinePayload(?Setting $setting): JsonResponse
+    {
+        return response()->json(['data' => [
+            'key' => self::OFFLINE_KEY,
+            'value' => ['enabled' => (bool) ($setting?->value['enabled'] ?? false)],
+            'updated_at' => $setting?->updated_at,
+            'updated_by' => $setting?->updatedBy?->only(['id', 'name']),
+        ]]);
+    }
+
     /**
      * @return array<string, array<int, mixed>|string>
      */
@@ -69,6 +113,13 @@ class SettingController extends Controller
             'min_accounts_cluster' => 'required|integer:strict|between:2,1000',
             'young_account_days' => 'required|integer:strict|between:1,365',
             'impersonation_threshold' => 'required|numeric:strict|between:0.3,1',
+            'spike_current_window_minutes' => 'required|integer:strict|between:15,180',
+            'spike_sample_limit' => 'required|integer:strict|between:1,50',
+            'synchronized_window_minutes' => 'required|integer:strict|between:1,60',
+            'synchronized_ratio' => 'required|numeric:strict|between:0.5,1',
+            'impersonation_window_hours' => 'required|integer:strict|between:1,168',
+            'cooldown_minutes' => 'required|integer:strict|between:0,10080',
+            'coordination_max_posts' => 'required|integer:strict|between:100,20000',
             'weights' => 'required|array',
             'weights.spike' => 'required|integer:strict|between:0,100',
             'weights.anomaly' => 'required|integer:strict|between:0,100',

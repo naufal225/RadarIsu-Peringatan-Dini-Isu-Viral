@@ -7,6 +7,7 @@ import {
   effectiveZ,
   FIELD_RANGES,
   getPath,
+  previewImpersonation,
   previewScore,
   SENSITIVITIES,
   setPath,
@@ -14,6 +15,7 @@ import {
   WEIGHT_KEYS,
   weightsTotal,
   type DetectionSettings,
+  type OfflineModeResponse,
   type PreviewInput,
   type SettingsResponse,
 } from "@/lib/detection-settings";
@@ -26,12 +28,31 @@ const copy = ui.settings;
 type FieldPath = keyof typeof copy.fields;
 
 const GROUPS: { title: string; fields: FieldPath[] }[] = [
-  { title: copy.groups.spike, fields: ["z_threshold", "min_volume", "baseline_hours", "min_baseline_hours"] },
+  {
+    title: copy.groups.spike,
+    fields: [
+      "z_threshold",
+      "min_volume",
+      "baseline_hours",
+      "min_baseline_hours",
+      "spike_current_window_minutes",
+      "spike_sample_limit",
+    ],
+  },
   {
     title: copy.groups.coordination,
-    fields: ["coordination_window_minutes", "similarity_threshold", "min_accounts_cluster", "young_account_days"],
+    fields: [
+      "coordination_window_minutes",
+      "similarity_threshold",
+      "min_accounts_cluster",
+      "young_account_days",
+      "synchronized_window_minutes",
+      "synchronized_ratio",
+      "coordination_max_posts",
+    ],
   },
-  { title: copy.groups.impersonation, fields: ["impersonation_threshold"] },
+  { title: copy.groups.impersonation, fields: ["impersonation_threshold", "impersonation_window_hours"] },
+  { title: copy.groups.alertControl, fields: ["cooldown_minutes"] },
   { title: copy.groups.weights, fields: WEIGHT_KEYS.map((key) => `weights.${key}` as FieldPath) },
   { title: copy.groups.severity, fields: ["severity_cutoffs.medium", "severity_cutoffs.high"] },
   { title: copy.groups.sensitivity, fields: SENSITIVITIES.map((key) => `sensitivity_z_offset.${key}` as FieldPath) },
@@ -62,7 +83,75 @@ export function SettingsPanel() {
           onEdit={() => setSaved(false)}
         />
       )}
+      <OfflineModeSection />
     </>
+  );
+}
+
+function OfflineModeSection() {
+  const { data, error: loadError, reload } = useApiData<OfflineModeResponse>("settings/offline-mode");
+  const offline = ui.settings.offline;
+
+  return (
+    <Section title={offline.title}>
+      <p className="mb-3 max-w-3xl text-sm text-neutral-600">{offline.intro}</p>
+      <ErrorText>{loadError ? ui.common.loadError : null}</ErrorText>
+      {data === null ? (
+        <p className="text-sm text-neutral-500">{ui.loading}</p>
+      ) : (
+        <OfflineModeForm key={data.data.updated_at ?? "initial"} loaded={data.data} onSaved={reload} />
+      )}
+    </Section>
+  );
+}
+
+function OfflineModeForm({ loaded, onSaved }: { loaded: OfflineModeResponse["data"]; onSaved: () => void }) {
+  const offline = ui.settings.offline;
+  const [enabled, setEnabled] = useState(loaded.value.enabled);
+  const [saved, setSaved] = useState(false);
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setPending(true);
+    setError(null);
+    try {
+      await api("settings/offline-mode", { method: "PUT", body: JSON.stringify({ enabled }) });
+      setSaved(true);
+      onSaved();
+    } catch {
+      setError(ui.common.actionError);
+    } finally {
+      setPending(false);
+    }
+  }
+
+  return (
+    <form onSubmit={submit} className="max-w-3xl space-y-2">
+      <label className="flex items-center gap-2 text-sm">
+        <input
+          type="checkbox"
+          name="enabled"
+          checked={enabled}
+          onChange={(e) => {
+            setEnabled(e.target.checked);
+            setSaved(false);
+          }}
+        />
+        {offline.enabled}
+      </label>
+      <ErrorText>{error}</ErrorText>
+      {saved && <p className="text-sm text-green-700">{offline.saved}</p>}
+      <Button type="submit" variant="primary" disabled={pending || enabled === loaded.value.enabled}>
+        {pending ? ui.common.saving : offline.save}
+      </Button>
+      <p className="text-xs text-neutral-500">
+        {loaded.updated_at && loaded.updated_by
+          ? offline.lastUpdated(loaded.updated_by.name, formatDateTime(loaded.updated_at))
+          : offline.neverUpdated}
+      </p>
+    </form>
   );
 }
 
@@ -262,10 +351,51 @@ function FormulaPreview({ settings, usable }: { settings: DetectionSettings; usa
             </ul>
             <p className="mt-1 text-xs text-neutral-500">{labels.effectiveZNote}</p>
           </div>
+          <p className="text-xs text-neutral-500">{labels.cooldownNote(settings.cooldown_minutes)}</p>
+          <ImpersonationPreview settings={settings} />
         </div>
       ) : (
         <p className="text-sm text-neutral-500">{labels.unavailable}</p>
       )}
     </Section>
+  );
+}
+
+function ImpersonationPreview({ settings }: { settings: DetectionSettings }) {
+  const [similarity, setSimilarity] = useState(settings.impersonation_threshold);
+  const [young, setYoung] = useState(true);
+  const labels = copy.preview;
+  const result = previewImpersonation(settings, similarity, young);
+
+  return (
+    <div>
+      <p className="mb-1 text-sm font-medium">{labels.impersonationTitle}</p>
+      <p className="mb-2 text-xs text-neutral-500">{labels.impersonationFormula}</p>
+      <div className="mb-2 grid gap-4 sm:grid-cols-2">
+        <Field label={labels.similarity}>
+          <input
+            type="number"
+            name="preview_similarity"
+            min={0}
+            max={1}
+            step={0.01}
+            value={similarity}
+            onChange={(e) => setSimilarity(e.target.value === "" ? 0 : Number(e.target.value))}
+            className={inputClass}
+          />
+        </Field>
+        <label className="flex items-center gap-2 self-end pb-2 text-sm">
+          <input type="checkbox" name="preview_young" checked={young} onChange={(e) => setYoung(e.target.checked)} />
+          {labels.youngAccount}
+        </label>
+      </div>
+      <p className="text-sm">
+        {labels.score}: <strong>{result.score}</strong> · {labels.severity}:{" "}
+        <StatusBadge tone={result.severity === "high" ? "error" : result.severity === "medium" ? "muted" : "ok"}>
+          {severityLabels[result.severity]}
+        </StatusBadge>{" "}
+        · {labels.similarityPoints}: {formatDecimal(result.similarityPoints, 1, 1)} · {labels.youngPoints}: {result.youngPoints}
+      </p>
+    </div>
   );
 }

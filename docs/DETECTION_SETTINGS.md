@@ -27,6 +27,8 @@ Detektor membandingkan jumlah posting topik dalam 60 menit terakhir (`current`) 
 | `min_volume` | 20 | 1-10.000 | Jumlah posting minimum dalam 60 menit agar lonjakan dihitung. Mencegah topik sepi memicu alert hanya karena angka kecil naik tajam (misal 1 menjadi 5). **Naik:** topik kecil tidak pernah memicu. **Turun:** topik kecil ikut memicu. |
 | `baseline_hours` | 168 | 24-720 | Berapa jam riwayat (tanpa jam berjalan) yang membentuk rata-rata dan simpangan baku normal. 168 jam = satu minggu, sehingga pola harian dan mingguan ikut tercakup. **Naik:** baseline stabil tetapi lambat menyesuaikan perubahan pola. **Turun:** baseline cepat menyesuaikan tetapi mudah terseret oleh lonjakan sebelumnya. |
 | `min_baseline_hours` | 24 | 1-720 | Jumlah jam riwayat minimum agar baseline dipercaya. Bila riwayat topik lebih sedikit, deteksi lonjakan dilewati dan komponen `spike` pada skor bernilai 0, tanpa galat. Berguna untuk topik baru yang belum punya pembanding. |
+| `spike_current_window_minutes` | 60 | 15-180 | Rentang waktu terakhir yang dihitung sebagai `current`. Bawaan sama dengan PRD §10.5 (60 menit). **Naik:** volume saat ini lebih halus tetapi lonjakan baru terlihat lebih lambat. |
+| `spike_sample_limit` | 10 | 1-50 | Jumlah maksimum posting contoh (`spike_sample`) yang disimpan sebagai bukti. Bawaan sama dengan PRD §10.9 (10). |
 
 ### Deteksi koordinasi akun (PRD §10.6)
 
@@ -38,6 +40,9 @@ Posting topik dalam `coordination_window_minutes` terakhir dikelompokkan berdasa
 | `similarity_threshold` | 0,8 | 0,3-1,0 | Kemiripan trigram (`pg_trgm`, 0 sampai 1) antar `text_norm` agar dua posting masuk satu klaster. **Naik:** hanya teks nyaris identik. **Turun:** teks yang sekadar mirip ikut terkelompok, rawan klaster palsu pada isu yang memang ramai dibicarakan. |
 | `min_accounts_cluster` | 5 | 2-1.000 | Jumlah akun berbeda minimum dalam satu klaster. Satu akun yang mengulang pesan tidak dihitung sebagai koordinasi. **Naik:** lebih sedikit klaster, lebih yakin. **Turun:** lebih peka, lebih banyak kebetulan. |
 | `young_account_days` | 30 | 1-365 | Akun yang usianya (saat memposting) kurang dari ini mendapat bukti `young_account`. Pada deteksi peniruan, akun muda menambah 30 poin skor. **Naik:** lebih banyak akun dianggap baru. **Turun:** hanya akun benar-benar baru. |
+| `synchronized_window_minutes` | 5 | 1-60 | Posting klaster dihitung serentak bila berada dalam rentang ini. Bawaan sama dengan PRD §10.6 (5 menit). |
+| `synchronized_ratio` | 0,8 | 0,5-1,0 | Bukti `synchronized_posting` diberikan bila sekurang-kurangnya porsi ini dari posting klaster berada dalam jendela serentak. Bawaan sama dengan PRD §10.6 (80%). |
+| `coordination_max_posts` | 2000 | 100-20.000 | **Tidak ada di PRD.** Batas posting per topik per jendela yang dibandingkan, agar pembandingan teks tidak tumbuh kuadratik. Bila terlampaui, hanya posting terbaru yang dibandingkan dan bukti ditandai `truncated`. **Naik:** cakupan lebih penuh tetapi query lebih berat. |
 
 ### Deteksi peniruan identitas (PRD §10.7)
 
@@ -46,6 +51,15 @@ Akun yang pertama kali terlihat dalam 24 jam terakhir dibandingkan dengan `offic
 | Kunci | Default | Rentang | Arti dan dampak |
 |---|---|---|---|
 | `impersonation_threshold` | 0,6 | 0,3-1,0 | Kemiripan terbesar antara handle atau nama tampilan akun baru dengan akun resmi. Terpicu bila nilainya sama atau lebih, **dan** handle tidak sama persis dengan akun resmi. **Naik:** hanya tiruan yang sangat mirip. **Turun:** lebih banyak akun ikut ditandai, termasuk yang kebetulan bernama mirip. |
+| `impersonation_window_hours` | 24 | 1-168 | Hanya akun dengan `first_seen_at` dalam rentang ini yang dibandingkan. Bawaan sama dengan PRD §10.7 (24 jam). |
+
+Skor dan severity alert peniruan: `score = round(kemiripan × 70) + 30 bila akun muda`, dan severity memakai `severity_cutoffs` yang sama dengan alert `issue` (sama dengan `ThreatScorer::scoreImpersonation`). PRD §10.7 tidak menyebut aturan severity untuk peniruan; ini keputusan sementara yang tercatat di `docs/OPEN_QUESTIONS.md`.
+
+### Pengendalian alert berulang
+
+| Kunci | Default | Rentang | Arti dan dampak |
+|---|---|---|---|
+| `cooldown_minutes` | 60 | 0-10.080 | **Tidak ada di PRD** (celah yang tercatat di OPEN_QUESTIONS). Setelah alert untuk sebuah topik atau akun berstatus `approved`, `false_positive`, atau `closed`, detektor tidak membuat alert baru untuk subjek yang sama sebelum jeda ini berlalu sejak penyelesaiannya. 0 berarti tanpa jeda (perilaku PRD apa adanya). Alert yang masih terbuka tidak terpengaruh: ia tetap diperbarui (PRD §10.9). |
 
 ### Bobot skor ancaman (PRD §10.8)
 
@@ -99,6 +113,14 @@ Setiap topik punya `sensitivity` (`low`, `medium`, `high`). Offset di bawah dita
 | **Rentang tiap kunci** | Mencegah nilai yang membuat detektor tidak berfungsi (misal jendela 0 menit, klaster 1 akun, kemiripan di bawah 0,3 yang menyatukan hampir semua teks) atau membebani database (jendela atau baseline terlalu besar). |
 
 Rentang dan aturan jumlah bobot = 100 adalah keputusan implementasi karena PRD hanya menyebut "validasi rentang nilai". Keputusan ini tercatat di `docs/OPEN_QUESTIONS.md` menunggu persetujuan.
+
+## Mode Offline
+
+`settings.offline_mode` = `{"enabled": bool}`. Bila aktif, `radarisu:ingest` melewati sumber `rss` dan `youtube` (PRD §10.2); CSV dan Replay tetap berjalan. Dibaca oleh `SourceController` dan `/system/status`.
+
+- `GET /settings/offline-mode` mengembalikan `{key, value:{enabled}, updated_at, updated_by}`.
+- `PUT /settings/offline-mode` dengan body `{"enabled": true|false}`. Nilai harus boolean sebenarnya (`1`, `"true"` ditolak dengan 422). Mencatat satu baris audit `settings.update` dengan `detail = {key: "offline_mode", changes: {enabled: {from, to}}}`. Bila nilainya tidak berubah, respons tetap 200 dan tidak ada baris audit.
+- Izin: `settings.manage` (hanya Admin).
 
 ## Perilaku API
 

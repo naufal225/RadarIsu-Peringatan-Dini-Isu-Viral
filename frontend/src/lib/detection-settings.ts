@@ -19,6 +19,13 @@ export type DetectionSettings = {
   min_accounts_cluster: number;
   young_account_days: number;
   impersonation_threshold: number;
+  spike_current_window_minutes: number;
+  spike_sample_limit: number;
+  synchronized_window_minutes: number;
+  synchronized_ratio: number;
+  impersonation_window_hours: number;
+  cooldown_minutes: number;
+  coordination_max_posts: number;
   weights: Record<WeightKey, number>;
   severity_cutoffs: { medium: number; high: number };
   sensitivity_z_offset: Record<Sensitivity, number>;
@@ -49,6 +56,13 @@ export const FIELD_RANGES: Record<string, Range> = {
   min_accounts_cluster: { min: 2, max: 1000, integer: true, step: 1 },
   young_account_days: { min: 1, max: 365, integer: true, step: 1 },
   impersonation_threshold: { min: 0.3, max: 1, integer: false, step: 0.05 },
+  spike_current_window_minutes: { min: 15, max: 180, integer: true, step: 1 },
+  spike_sample_limit: { min: 1, max: 50, integer: true, step: 1 },
+  synchronized_window_minutes: { min: 1, max: 60, integer: true, step: 1 },
+  synchronized_ratio: { min: 0.5, max: 1, integer: false, step: 0.05 },
+  impersonation_window_hours: { min: 1, max: 168, integer: true, step: 1 },
+  cooldown_minutes: { min: 0, max: 10080, integer: true, step: 1 },
+  coordination_max_posts: { min: 100, max: 20000, integer: true, step: 100 },
   "weights.spike": { min: 0, max: 100, integer: true, step: 1 },
   "weights.anomaly": { min: 0, max: 100, integer: true, step: 1 },
   "weights.sentiment": { min: 0, max: 100, integer: true, step: 1 },
@@ -101,6 +115,27 @@ export function validateDetection(settings: DetectionSettings): string[] {
 /** z needed to trigger a spike for a topic of the given sensitivity (PRD §10.5 step 4). */
 export function effectiveZ(settings: DetectionSettings, sensitivity: Sensitivity): number {
   return Math.max(MIN_EFFECTIVE_Z, settings.z_threshold + settings.sensitivity_z_offset[sensitivity]);
+}
+
+export type OfflineModeResponse = {
+  data: {
+    key: string;
+    value: { enabled: boolean };
+    updated_at: string | null;
+    updated_by: { id: number; name: string } | null;
+  };
+};
+
+export type ImpersonationPreview = { score: number; severity: Severity; similarityPoints: number; youngPoints: number };
+
+/** Impersonation score (PRD §10.7): round(similarity × 70) + 30 for a young account; severity uses the same cutoffs. */
+export function previewImpersonation(settings: DetectionSettings, similarity: number, young: boolean): ImpersonationPreview {
+  const similarityPoints = clamp01(similarity) * 70;
+  const youngPoints = young ? 30 : 0;
+  const score = Math.round(similarityPoints) + youngPoints;
+  const { medium, high } = settings.severity_cutoffs;
+
+  return { score, severity: score >= high ? "high" : score >= medium ? "medium" : "low", similarityPoints, youngPoints };
 }
 
 export type PreviewInput = {
