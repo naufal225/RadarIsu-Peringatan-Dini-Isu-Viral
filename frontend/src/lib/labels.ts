@@ -5,6 +5,7 @@ import { detectionUi } from "./labels/detection";
 import { settingsUi } from "./labels/settings";
 import { coordinationUi } from "./labels/coordination";
 import { impersonationUi } from "./labels/impersonation";
+import { labelingUi } from "./labels/labeling";
 import { replayErrorCodes, replayUi } from "./labels/replay";
 import { topicsUi } from "./labels/topics";
 import { bUi } from "./labels/b";
@@ -139,9 +140,11 @@ export const ui = {
     settings: settingsUi.title,
     topics: "Topik",
     replay: replayUi.title,
+    labeling: labelingUi.title,
   },
   settings: settingsUi,
   replay: replayUi,
+  labeling: labelingUi,
   coordination: coordinationUi,
   impersonation: impersonationUi,
   topics: topicsUi,
