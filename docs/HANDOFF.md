@@ -4,6 +4,14 @@ Papan pengumuman untuk perubahan yang menyentuh domain lain, perubahan izin, dan
 
 ---
 
+## 2026-10-26: F14-b Evaluasi (branch `feat/c-f14b-evaluasi`)
+
+- **Untuk Rekishi (reviewer F14):** `EvaluationController` kini berisi `runs` dan `run`; logika ada di `Services/Evaluation/{EvaluationCalculator,EvaluationService}` dan perintah `radarisu:evaluate`. `EvaluationRun` mendapat relasi dan factory. Tidak ada migrasi: tabel `evaluation_runs` dari skema awal.
+- **Untuk semua pemilik:** tidak ada perubahan di file domain lain. `GET /evaluation/runs` membuka semua peran tetapi hanya mengembalikan agregat.
+- Alur kalibrasi: lihat `docs/DETECTION_SETTINGS.md` bagian "Kalibrasi dengan Evaluasi". Demo: `DemoScenarioSeeder` lalu `radarisu:replay {id} --sync` lalu `radarisu:evaluate --scenario={id}`.
+
+---
+
 ## 2026-10-26: F14-a Pelabelan data (branch `feat/c-f14a-pelabelan`)
 
 - **Untuk Rekishi (reviewer F14):** pelabelan dipisah dari `EvaluationController` ke `LabelingController` (sesuai pola `Labeling*` di CODEOWNERS). `EvaluationController` kini hanya berisi stub `runs` dan `run` untuk F14-b. Rute `labeling/posts` menunjuk ke controller baru; URI, metode, dan middleware tidak berubah.
