@@ -1,10 +1,10 @@
 import { RequirePermission } from "@/components/require-permission";
-import { SourcesPanel } from "./sources-panel";
+import { SourcesData } from "./sources-data";
 
 export default function AdminSourcesPage() {
   return (
     <RequirePermission permission="sources.view">
-      <SourcesPanel />
+      <SourcesData />
     </RequirePermission>
   );
 }
