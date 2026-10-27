@@ -1,5 +1,6 @@
 // UI label map (PRD §14). Code identifiers stay English; every user-facing string comes from here.
 
+import { auditUi } from "./labels/audit";
 import { authUi } from "./labels/auth";
 import { detectionUi } from "./labels/detection";
 import { settingsUi } from "./labels/settings";
@@ -218,21 +219,8 @@ export const ui = {
       "Header wajib: text, account_handle, posted_at. Opsional: external_id, account_display_name, account_created_at. Waktu dalam ISO 8601 dengan zona waktu. Maks. 10 MB / 50.000 baris.",
     ingestLater: "Penarikan terjadwal RSS/YouTube aktif mulai Fase 3; saat ini hanya uji koneksi.",
   },
-  audit: {
-    title: "Audit log",
-    time: "Waktu",
-    user: "Pengguna",
-    action: "Aksi",
-    object: "Objek",
-    ip: "IP",
-    detail: "Detail",
-    allUsers: "Semua pengguna",
-    allActions: "Semua aksi",
-    from: "Dari tanggal",
-    to: "Sampai tanggal",
-    filter: "Terapkan filter",
-    system: "Sistem",
-  },
+  audit: auditUi,
+
   adminStatus: {
     title: "Status sistem",
     sources: "Kesehatan sumber",

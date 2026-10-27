@@ -1,10 +1,10 @@
 import { RequirePermission } from "@/components/require-permission";
-import { AuditPanel } from "./audit-panel";
+import { AuditData } from "./audit-data";
 
 export default function AdminAuditPage() {
   return (
     <RequirePermission permission="audit.view">
-      <AuditPanel />
+      <AuditData />
     </RequirePermission>
   );
 }
