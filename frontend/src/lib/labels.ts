@@ -10,6 +10,7 @@ import { evaluationErrorCodes, evaluationUi } from "./labels/evaluation";
 import { labelingUi } from "./labels/labeling";
 import { replayErrorCodes, replayUi } from "./labels/replay";
 import { chartUi, confirmUi, filterUi, navGroupLabels, navItemLabels, paginationUi, shellUi, simulationUi, stateUi, styleguideUi, tableUi, previewUi } from "./labels/shell";
+import { sourcesUi } from "./labels/sources";
 import { topicsUi } from "./labels/topics";
 import { bUi } from "./labels/b";
 import { dashboardUi } from "./labels/dashboard";
@@ -110,6 +111,7 @@ export const errorCodeLabels = {
   connection_test_not_supported: "Uji koneksi hanya untuk sumber RSS dan YouTube",
   ...replayErrorCodes,
   ...evaluationErrorCodes,
+  backend_unavailable: authUi.login.backendUnavailable,
 } as const;
 
 /** Indonesian description of an API error code; unknown codes are shown as-is. */
@@ -130,6 +132,7 @@ export const ui = {
   logout: authUi.logout,
   loading: "Memuat…",
   forbidden: authUi.forbidden,
+  backendUnavailable: authUi.backendUnavailable,
   dashboard: dashboardUi,
   nav: {
     dashboard: "Dasbor",
@@ -188,37 +191,8 @@ export const ui = {
     empty: "Belum ada data.",
   },
   users: authUi.users,
-  sources: {
-    title: "Sumber data",
-    type: "Tipe",
-    name: "Nama",
-    url: "URL feed RSS",
-    maxItems: "Maks. item per tarikan",
-    videoIds: "ID video YouTube (pisahkan dengan koma atau baris baru)",
-    interval: "Interval tarik (menit)",
-    everyMinutes: (minutes: number) => `tiap ${minutes} menit`,
-    file: "File",
-    status: "Status",
-    lastChecked: "Terakhir dicek",
-    lastError: "Galat terakhir",
-    rawItems: "Item mentah",
-    newSource: "Tambah sumber",
-    test: "Uji koneksi",
-    testing: "Menguji…",
-    upload: "Unggah CSV",
-    uploading: "Mengunggah…",
-    importHistory: "Riwayat impor",
-    importResult: "Hasil impor",
-    total: "Total baris",
-    success: "Berhasil",
-    failed: "Gagal",
-    row: "Baris",
-    problem: "Masalah",
-    errorsTruncated: "Hanya 200 baris bermasalah pertama yang ditampilkan.",
-    csvFormat:
-      "Header wajib: text, account_handle, posted_at. Opsional: external_id, account_display_name, account_created_at. Waktu dalam ISO 8601 dengan zona waktu. Maks. 10 MB / 50.000 baris.",
-    ingestLater: "Penarikan terjadwal RSS/YouTube aktif mulai Fase 3; saat ini hanya uji koneksi.",
-  },
+  sources: sourcesUi,
+
   audit: auditUi,
 
   adminStatus: {

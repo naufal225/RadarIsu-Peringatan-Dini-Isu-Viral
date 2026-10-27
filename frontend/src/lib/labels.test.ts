@@ -113,7 +113,9 @@ describe("label map", () => {
       "empty_scenario", "not_running", "heartbeat_lost", "action_failed",
     ];
     const evaluationCodes = ["scenario_not_replayed"];
-    expect(keys(errorCodeLabels)).toEqual([...backendCodes, ...replayCodes, ...evaluationCodes].sort());
+    // BFF: Laravel unreachable (503).
+    const bffCodes = ["backend_unavailable"];
+    expect(keys(errorCodeLabels)).toEqual([...backendCodes, ...replayCodes, ...evaluationCodes, ...bffCodes].sort());
   });
 
   it("describes error codes, keeping the detail after the colon", () => {
