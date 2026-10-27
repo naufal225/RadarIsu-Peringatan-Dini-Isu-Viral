@@ -12,4 +12,17 @@ Tabel per wilayah: komponen atau halaman, field yang dibutuhkan, ada atau tidak,
 | Menu per izin | daftar izin | ya | `GET /auth/me` (`permissions`) | `useCan` |
 | `/login` | status 401/422/429 | ya (422 untuk kredensial salah) | `POST /auth/login` via BFF | Semua kegagalan kredensial memakai satu pesan umum |
 
+## `/admin/replay` (Naufal, F11)
+
+Sumber: `ReplayController` dan `ReplayScenarioResource` (nyata). Tipe: `lib/api-types/replay.ts`; fixture: `fixtures/replay.ts`.
+
+| Komponen / halaman | Field yang dibutuhkan | Ada? | Endpoint | Tindakan |
+|---|---|---|---|---|
+| Daftar skenario | `name`, `description`, `total_rows`, `status`, `progress_rows` | ya | `GET /replay/scenarios` | Tabel + bilah progres; setiap baris `SimBadge` (semua data Replay simulasi) |
+| Jam data | `meta.clock_now` | ya, `null` bila tidak ada Replay berjalan | `GET /replay/scenarios` | `SimulationBanner` dengan "Jam data" hanya bila `clock_now` ada. Data nyata: skenario bisa `running` dengan `clock_now = null` sebelum pekerja antrean mengambil job; banner tidak tampil dan halaman tidak mengarang jam |
+| Kontrol | `default_speed_factor`, `speed_factor`, `run_number`, `virtual_anchor_at`, `started_at`, `finished_at`, `error` | ya | `GET /replay/scenarios` | `error` berupa kode (`heartbeat_lost`) atau pesan galat mentah; kode dilabeli, pesan mentah tampil apa adanya |
+| Mulai/Hentikan | 409 `already_running`, `another_running`, `empty_scenario`, `not_running` | ya | `POST /replay/scenarios/{id}/start`, `/stop` | `ConfirmDialog`, kode tampil di bawah tombol |
+| Unggah | 422 `errors.file` (kode berkas), `errors.rows` (`baris:kode`, maks. 50), galat per bidang | ya | `POST /replay/scenarios` | Pesan di bawah bidang dan tabel baris bermasalah |
+| Polling | status `running` | ya | `GET /replay/scenarios` | Muat ulang tiap 2 detik hanya selama ada skenario `running` |
+
 Bagian Kadavi, Rekishi, dan halaman Naufal lain ditambahkan oleh pemilik masing-masing.
