@@ -91,4 +91,15 @@ Sumber: `TopicController`, `TopicSpikeController`, `OfficialAccountController` (
 | Pin alert di grafik | alert per topik | **tidak di endpoint ini** | — | Tidak ada pin. `/alerts` tidak menyediakan filter topik untuk grafik ini |
 | Akun resmi | `handle`, `display_name`, `note` | ya; global, **tidak per topik** | `GET/POST/DELETE /official-accounts` | Ditampilkan di `/topics`, bukan tab di detail (lihat laporan); hapus memakai `ConfirmDialog` |
 
+## `/labeling` (Naufal, F14-a)
+
+Sumber: `LabelingController`, `LabelingPostResource` (nyata; `docs/CONTRACTS.md` §2.8). Tipe: `lib/api-types/labeling.ts`; fixture: `fixtures/labeling.ts`.
+
+| Komponen / halaman | Field yang dibutuhkan | Ada? | Endpoint | Tindakan |
+|---|---|---|---|---|
+| Penghitung kemajuan | `meta.progress.{labeled, organic, anomalous, target}` | ya; dihitung atas **seluruh** posting berlabel, bukan hasil filter; `target` tetap 200 | `GET /labeling/posts` | "n dari ±200 diberi label"; bilah dibatasi 100% walau n > 200 |
+| Kartu posting | `text`, `account.{handle, display_name}` (bisa `null`), `posted_at`, `is_simulated`, `label_manual`, `topics` | ya | `GET /labeling/posts` | Teks mono ter-escape, `<Waktu>`, `SimBadge` |
+| Filter | `status` (all/unlabeled/labeled), `is_simulated` | ya; paginasi 25 | `GET /labeling/posts` | Bawaan "Belum berlabel"; kosong → "Semua posting sudah berlabel" |
+| Beri/kosongkan label | `{label_manual: organic|anomalous|null}` | ya | `PUT /labeling/posts/{id}` | Antrean dan penghitung dimuat ulang dari server setelah simpan |
+
 Bagian Kadavi, Rekishi, dan halaman Naufal lain ditambahkan oleh pemilik masing-masing.
