@@ -1,11 +1,13 @@
+import { Lock } from "lucide-react";
 import { ui } from "@/lib/labels";
 
 export function Forbidden() {
   return (
-    <section className="mx-auto max-w-md py-16 text-center">
-      <p className="text-sm font-semibold text-red-600">403</p>
-      <h1 className="mt-2 text-xl font-semibold">{ui.forbidden.title}</h1>
-      <p className="mt-2 text-sm text-neutral-600">{ui.forbidden.body}</p>
+    <section className="mx-auto flex max-w-md flex-col items-center gap-2 rounded-control border border-line bg-panel px-6 py-10 text-center">
+      <Lock aria-hidden="true" className="size-6 text-sev-high" />
+      <p className="text-table font-semibold text-sev-high">403</p>
+      <h1 className="text-section font-semibold text-ink">{ui.forbidden.title}</h1>
+      <p className="text-sm text-ink-muted">{ui.forbidden.body}</p>
     </section>
   );
 }
