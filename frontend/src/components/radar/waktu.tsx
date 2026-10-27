@@ -29,7 +29,7 @@ export function Waktu({
 
   if (utc === "inline") {
     return (
-      <time dateTime={iso} className={cn("block font-mono text-table", className)}>
+      <time dateTime={iso} className={cn("block whitespace-nowrap font-mono text-table", className)}>
         {wib}
         <span className="block text-caption text-ink-muted">{utcText}</span>
       </time>
@@ -39,7 +39,7 @@ export function Waktu({
   // Tooltip memakai CSS (hover dan fokus), jadi bekerja di keyboard dan tidak butuh JavaScript klien.
   return (
     <span className="group relative inline-block">
-      <time dateTime={iso} tabIndex={0} className={cn("font-mono text-table", className)} aria-label={`${wib} (${utcText})`}>
+      <time dateTime={iso} tabIndex={0} className={cn("whitespace-nowrap font-mono text-table", className)} aria-label={`${wib} (${utcText})`}>
         {wib}
       </time>
       <span

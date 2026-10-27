@@ -141,3 +141,15 @@ export const filterUi = {
   clear: "Bersihkan filter",
   all: "Semua",
 } as const;
+
+/** Judul kasus di halaman /dev/preview/<domain>. */
+export const previewUi = {
+  title: (domain: string) => `Pratinjau: ${domain}`,
+  subtitle: "Tampilan halaman dengan data contoh untuk setiap state. Hanya ada di mode pengembangan.",
+  normal: "Berisi data",
+  empty: "Kosong",
+  emptyFiltered: "Kosong dengan filter aktif",
+  loading: "Memuat",
+  error: "Galat jaringan atau server",
+  invalid: "Isian tidak valid (422)",
+} as const;
