@@ -1,10 +1,10 @@
 import { RequirePermission } from "@/components/require-permission";
-import { ReplayPanel } from "./replay-panel";
+import { ReplayData } from "./replay-data";
 
 export default function AdminReplayPage() {
   return (
     <RequirePermission permission="replay.manage">
-      <ReplayPanel />
+      <ReplayData />
     </RequirePermission>
   );
 }

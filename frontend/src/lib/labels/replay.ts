@@ -21,6 +21,8 @@ export const replayErrorCodes = {
   another_running: "Skenario lain sedang berjalan; hentikan dulu",
   empty_scenario: "Skenario tidak punya baris",
   not_running: "Skenario tidak sedang berjalan",
+  heartbeat_lost: "Pekerja antrean replay berhenti mengirim detak; putaran ditutup otomatis",
+  action_failed: "Aksi gagal. Coba lagi.",
 } as const;
 
 export const replayUi = {
@@ -59,6 +61,23 @@ export const replayUi = {
   stopConfirm: "Hentikan Replay yang sedang berjalan?",
   started_ok: "Replay dimulai.",
   stopped_ok: "Replay dihentikan.",
+  subtitle: "Putar ulang skenario simulasi melalui jalur data yang sama dengan sumber langsung.",
+  select: "Pilih",
+  selected: "Terpilih",
+  controls: "Kontrol skenario",
+  noSelection: "Pilih skenario di tabel untuk memulai atau menghentikannya.",
+  tableCaption: "Daftar skenario Replay",
+  dataClockNote: "Selama Replay berjalan, waktu data bisa berada di depan jam laptop.",
+  anotherRunningHint: "Skenario lain sedang berjalan. Hentikan dulu sebelum memulai yang ini.",
+  invalidSpeed: "Kecepatan harus bilangan bulat 1 sampai 100.000",
+  confirmStartTitle: (name: string) => `Mulai Replay "${name}"?`,
+  confirmStartBody: (speed: string) =>
+    `Data skenario akan dialirkan dengan kecepatan ${speed}× dan diproses seperti data nyata, dengan tanda simulasi. Detektor memakai jam data virtual sampai Replay selesai.`,
+  confirmStopTitle: (name: string) => `Hentikan Replay "${name}"?`,
+  confirmStopBody: "Baris yang sudah masuk tetap tersimpan. Jam data kembali ke jam sebenarnya.",
+  confirmStart: "Mulai Replay",
+  confirmStop: "Hentikan Replay",
+  times2: { anchor: "Jangkar virtual", started: "Mulai", finished: "Berhenti" },
   upload: {
     title: "Unggah skenario",
     file: "File CSV skenario",
