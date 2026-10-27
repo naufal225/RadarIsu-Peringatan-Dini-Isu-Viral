@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import type { Permission } from "@/lib/permissions";
 import { getMe } from "@/lib/server-api";
+import { BackendUnavailable } from "./backend-unavailable";
 import { Forbidden } from "./forbidden";
 
 /**
@@ -9,6 +10,7 @@ import { Forbidden } from "./forbidden";
  */
 export async function RequirePermission({ permission, children }: { permission: Permission; children: ReactNode }) {
   const result = await getMe();
+  if (result.status === "unavailable") return <BackendUnavailable />;
   if (result.status !== "ok" || !result.me.permissions.includes(permission)) return <Forbidden />;
 
   return <>{children}</>;

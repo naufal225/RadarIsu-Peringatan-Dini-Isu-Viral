@@ -18,8 +18,14 @@ export const authUi = {
     invalidCredentials: "Email atau kata sandi tidak sesuai",
     throttled: "Terlalu banyak percobaan. Coba lagi beberapa saat.",
     genericError: "Gagal masuk. Coba lagi.",
+    backendUnavailable: "Server RadarIsu tidak dapat dihubungi. Pastikan layanan backend berjalan, lalu coba lagi.",
   },
   logout: "Keluar",
+  backendUnavailable: {
+    title: "Server tidak dapat dihubungi",
+    body: "Layanan backend RadarIsu tidak menjawab. Pastikan layanan berjalan, lalu muat ulang halaman ini.",
+    retry: "Muat ulang",
+  },
   forbidden: {
     title: "Akses ditolak",
     body: "Peran Anda tidak memiliki izin untuk membuka halaman ini.",
