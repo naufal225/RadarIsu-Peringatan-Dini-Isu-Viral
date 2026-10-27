@@ -53,4 +53,15 @@ Sumber: `SourceController`, `SourceResource`, `ImportBatchResource` (nyata). Tip
 | Impor CSV | ringkasan `total/success/failed_rows`, `errors[{row, message}]` (maks. 200) | ya; galat level berkas 422 `errors.file` | `POST /sources/{id}/import` | Ringkasan + tabel baris bermasalah di dialog |
 | Riwayat impor | daftar batch | ya, paginasi 50 | `GET /sources/{id}/imports` | Halaman pertama saja, di dialog impor |
 
+## `/admin/users` (Naufal, F12) · Polos
+
+Sumber: `UserController`, `UserResource` (nyata). Tipe: `lib/api-types/users.ts`; fixture: `fixtures/users.ts`.
+
+| Komponen / halaman | Field yang dibutuhkan | Ada? | Endpoint | Tindakan |
+|---|---|---|---|---|
+| Tabel pengguna | `name`, `email`, `role` (slug), `is_active`, `last_login_at` | ya; paginasi 50, urut nama | `GET /users` | `DataTable` + `Pagination`; `last_login_at = null` → "Belum pernah" |
+| Tambah | `name`, `email`, `password` (min. 10), `role` | ya; akun baru selalu aktif | `POST /users` | Dialog |
+| Ubah | `name`, `role`, `is_active` | ya; email dan kata sandi tidak bisa diubah lewat API ini | `PATCH /users/{id}` | Dialog; email tampil sebagai teks |
+| Pesan 422 | teks per bidang | **bahasa Inggris** (`APP_LOCALE=en`, tanpa berkas terjemahan) | `POST`/`PATCH /users` | UI menampilkan pesan Indonesia per bidang (`ui.users.fieldErrors`), bukan teks server. Penonaktifan atau ganti peran akun sendiri ditolak server (PRD §8.4); tombolnya tidak disembunyikan |
+
 Bagian Kadavi, Rekishi, dan halaman Naufal lain ditambahkan oleh pemilik masing-masing.

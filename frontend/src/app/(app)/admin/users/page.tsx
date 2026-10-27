@@ -1,10 +1,10 @@
 import { RequirePermission } from "@/components/require-permission";
-import { UsersPanel } from "./users-panel";
+import { UsersData } from "./users-data";
 
 export default function AdminUsersPage() {
   return (
     <RequirePermission permission="users.view">
-      <UsersPanel />
+      <UsersData />
     </RequirePermission>
   );
 }
