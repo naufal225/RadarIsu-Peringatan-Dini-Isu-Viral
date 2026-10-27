@@ -103,3 +103,32 @@ export function summarize(rows: HourlyMetric[]): MetricsSummary {
 export function errorCodes(body: { errors?: Record<string, string[]> } | null): string[] {
   return [...new Set(Object.values(body?.errors ?? {}).flat())];
 }
+
+export type MetricsRange = "24h" | "7d";
+
+/** Rows shown for a range: the API's default 7 days, or its last 24 hours. Never invents data. */
+export function rowsForRange(rows: HourlyMetric[], range: MetricsRange): HourlyMetric[] {
+  return range === "24h" ? rows.slice(-24) : rows;
+}
+
+/**
+ * Spike reference lines for the chart, only when the server says the baseline is long enough:
+ * mean and std of the baseline, and the per-hour rate at which the detector fires (never computed here).
+ */
+export function spikeReference(spike: {
+  has_sufficient_baseline: boolean;
+  mean: number;
+  std: number;
+  threshold_rate: number;
+}): { baseline?: { mean: number; std: number }; threshold?: number } {
+  if (!spike.has_sufficient_baseline) return {};
+  return { baseline: { mean: spike.mean, std: spike.std }, threshold: spike.threshold_rate };
+}
+
+/** The window the detector looked at when it fired: the last `minutes` before `asOf`. Null when it did not fire. */
+export function spikeWindow(triggered: boolean, asOf: string, minutes: number): { start: string; end: string } | null {
+  if (!triggered) return null;
+  const end = Date.parse(asOf);
+  if (Number.isNaN(end)) return null;
+  return { start: new Date(end - minutes * 60_000).toISOString(), end: new Date(end).toISOString() };
+}
