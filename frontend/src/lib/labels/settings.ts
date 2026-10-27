@@ -132,6 +132,10 @@ export const settingsUi = {
     sensitivity_z_offset: "Urutan offset harus Rendah ≥ Sedang ≥ Tinggi.",
   } as Record<string, string>,
   weightsTotal: (total: number) => `Jumlah bobot: ${total} dari 100`,
+  weightsWarning: "Jumlah bobot harus tepat 100; server akan menolak bila tidak.",
+  outOfRange: (min: string, max: string, integer: boolean) => `Isi ${integer ? "bilangan bulat " : ""}antara ${min} dan ${max}.`,
+  serverRejected: "Server menolak nilai ini. Periksa rentang dan aturan di bawah.",
+  lastUpdatedBy: (name: string) => `Terakhir diubah oleh ${name} pada`,
   preview: {
     title: "Pratinjau rumus skor",
     intro:
@@ -178,6 +182,7 @@ export const settingsUi = {
     save: "Simpan Mode Offline",
     saved: "Mode Offline disimpan.",
     lastUpdated: (name: string, when: string) => `Terakhir diubah oleh ${name} pada ${when}.`,
+    lastUpdatedBy: (name: string) => `Terakhir diubah oleh ${name} pada`,
     neverUpdated: "Belum pernah diubah dari nilai awal.",
   },
 } as const;
