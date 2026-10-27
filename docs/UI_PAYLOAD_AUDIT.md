@@ -77,4 +77,18 @@ Sumber: `SettingController` (nyata; bentuk di `docs/CONTRACTS.md` §3.4–3.5). 
 | Mode Offline | `value.enabled` | ya | `GET/PUT /settings/offline-mode` | Kotak centang + simpan |
 | Pratinjau skor | — | dihitung di klien dari isian | — | Rumus PRD §10.8 dan §10.7 dengan contoh masukan; bukan perhitungan ulang alert nyata |
 
+## `/topics` dan `/topics/[id]` (Naufal, F2, F3)
+
+Sumber: `TopicController`, `TopicSpikeController`, `OfficialAccountController` (nyata). Tipe: `lib/api-types/topics.ts` (dari `lib/topics.ts` dan `lib/spike.ts`); fixture: `fixtures/topics.ts`.
+
+| Komponen / halaman | Field yang dibutuhkan | Ada? | Endpoint | Tindakan |
+|---|---|---|---|---|
+| Daftar topik | `name`, `category`, `sensitivity`, `keywords`, `is_active`, `is_template` | ya; tanpa paginasi, templat ikut dalam daftar | `GET /topics` | Dua tabel: topik dan templat |
+| Buat dari templat | 422 `keyword_has_placeholder` pada `keywords.N`, `keywords_unmatchable` pada `keywords` | ya | `POST /topics` | Pesan di bawah bidang kata kunci; isian `[ ]` diberi penanda putus-putus. Tombol simpan tetap aktif, server yang menolak |
+| Detail: tidak ada endpoint `GET /topics/{id}` | topik tunggal | **tidak** | `GET /topics` | Detail mengambil seluruh daftar lalu memilih id. 404 netral bila id tidak ada (atau `metrics` menjawab 404) |
+| Grafik volume | `data[].hour`, `volume`; `meta.from/to/has_simulated_data` | ya; rentang bawaan 7 hari data terakhir, `from`/`to` berupa tanggal (maks. 31 hari) | `GET /topics/{id}/metrics` | `SignalChart`; "24 jam" adalah 24 jam terakhir dari respons 7 hari (tidak ada parameter jam). Tanpa posting di rentang: "Belum ada data metrik untuk rentang ini" |
+| Baseline dan ambang di grafik | `mean`, `std`, `threshold_rate`, `has_sufficient_baseline` | ya | `GET /topics/{id}/spike-baseline` | Digambar hanya bila baseline cukup; tidak dihitung di klien. Jendela disorot hanya bila lonjakan terpicu |
+| Pin alert di grafik | alert per topik | **tidak di endpoint ini** | — | Tidak ada pin. `/alerts` tidak menyediakan filter topik untuk grafik ini |
+| Akun resmi | `handle`, `display_name`, `note` | ya; global, **tidak per topik** | `GET/POST/DELETE /official-accounts` | Ditampilkan di `/topics`, bukan tab di detail (lihat laporan); hapus memakai `ConfirmDialog` |
+
 Bagian Kadavi, Rekishi, dan halaman Naufal lain ditambahkan oleh pemilik masing-masing.
