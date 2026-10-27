@@ -30,7 +30,7 @@ Pelanggaran aturan ini ditolak saat review.
 4. **Satu warna, satu makna:** merah/amber/abu-biru hanya untuk severity (merah juga untuk galat); zaitun hanya untuk merek dan interaksi; biru `--sim` hanya untuk simulasi.
 5. Severity dan status **tidak pernah hanya warna**: selalu ikon + teks.
 6. Status alur kerja (Baru, Ditinjau, dst.) **monokrom**: kontur, ikon, teks.
-7. **Tanpa dependensi UI baru** tanpa dicatat di `docs/HANDOFF.md` (alasan + ukuran). Yang sudah disetujui PRD §12.1: shadcn/ui, TanStack Query, react-hook-form, zod, Recharts, lucide-react.
+7. **Tanpa dependensi UI baru** tanpa dicatat di `docs/HANDOFF.md` (alasan + ukuran). Yang sudah disetujui PRD §12.1: shadcn/ui, TanStack Query, react-hook-form, zod, Recharts, lucide-react. **Keputusan 2026-10-27:** yang dipasang hanya Recharts, `lucide-react`, dan font `@fontsource-variable/*`. shadcn/ui, TanStack Query, react-hook-form, dan zod tidak dipakai; halaman memakai `lib/use-api-data.ts`, dan komponen dasar (Button, Field, ConfirmDialog berbasis `<dialog>`) ada di `components/radar/`.
 8. Teks postingan dari sumber luar selalu di-escape. `dangerouslySetInnerHTML` dilarang.
 9. String yang dibaca pengguna hanya lewat `frontend/src/lib/labels.ts` dan `lib/labels/{domain}.ts`.
 10. UI bergantung pada **izin** (`useCan`, `<Can>`), bukan nama peran. Server tetap penentu akhir.
@@ -214,7 +214,8 @@ type AlertAction = 'take'|'escalate'|'false_positive'|'close'|'approve'|'return'
 | `PageHeader` | `{ title, subtitle?, meta?, actions? }`. Judul serif 24 |
 | `Section` | `{ title, description?, actions?, children }`. Panel putih bergaris |
 | `Stat` | `{ label, value, hint? }`. Angka besar polos di panel, **bukan kartu berwarna** |
-| `ConfirmDialog` | `{ title, description, confirmLabel, destructive?, onConfirm, pending? }` |
+| `ConfirmDialog` | `{ open, title, description, confirmLabel, destructive?, onConfirm, onClose, pending? }`. Elemen `<dialog>` bawaan (fokus terkurung, Escape menutup kecuali `pending`) |
+| `Button`, `Field`, `FieldError`, `controlClass`, `FilterBar`, `FilterField`, `NotImplemented` | Tambahan fondasi di `components/radar/` (`button.tsx`, `form.tsx`, `filter-bar.tsx`, `states.tsx`) |
 
 ### Grafik (`components/charts/signal-chart.tsx`, pemilik fondasi)
 

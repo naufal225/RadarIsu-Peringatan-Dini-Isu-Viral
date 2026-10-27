@@ -99,6 +99,13 @@ git log --oneline main..HEAD       # harus KOSONG
 
 Pesan commit dan judul PR untuk pekerjaan UI di branch fitur lama diawali `ui:` supaya terpisah jelas dari riwayat fitur.
 
+### Catatan keadaan repo (audit Tahap 0, 2026-10-27)
+
+- `components/ui.tsx` (lapisan lama, 18 pemakai) tetap ada sampai `feat/ui-integration`. Komponen baru ada di `components/radar/`; folder `components/ui/` (shadcn) tidak dibuat.
+- Halaman lama berbentuk `*-panel.tsx` (komponen klien yang memuat data sendiri) memakai `useApiData`. Saat sebuah halaman dikerjakan ulang, pecah menjadi `page.tsx` + `*-view.tsx`; TanStack Query tidak dipakai.
+- Tes komponen memakai `renderToString` (lingkungan Vitest `node`, tanpa jsdom atau testing-library). Perilaku klien diuji lewat logika murni.
+- Pelanggaran aturan keras yang sudah ada di `main` (hex, gradien, `emerald-*`, `dark:`) dibereskan oleh pemilik halamannya di tahap 2, bukan di fondasi.
+
 ### Alur git setiap tugas
 
 ```bash
