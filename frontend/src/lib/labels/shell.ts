@@ -107,5 +107,37 @@ export const styleguideUi = {
   filter: "Filter contoh",
   filterSeverity: "Severity",
   all: "Semua",
+  charts: "Grafik sinyal",
+  chartFull: "Dengan baseline, ambang, jendela, dan pin",
+  chartNoBaseline: "Tanpa baseline dan ambang (hanya volume dan rata-rata rentang)",
+  chartWindowOnly: "Hanya jendela, tanpa pin",
+  chartCompact: "Varian ringkas",
+  chartEmpty: "Kosong",
+  chartLoading: "Memuat",
+  chartError: "Galat",
+  filterStatus: "Status",
   buttons: { primary: "Utama", secondary: "Sekunder", destructive: "Hapus", pending: "Memproses", disabled: "Nonaktif" },
+} as const;
+
+/** Teks SignalChart (Design System §9, grafik). */
+export const chartUi = {
+  empty: "Belum ada data metrik untuk rentang ini",
+  volume: "Volume per jam",
+  volumeShort: "Volume",
+  referenceRange: "Rata-rata rentang ini (bukan baseline deteksi)",
+  referenceBaseline: "Rata-rata baseline deteksi",
+  threshold: "Ambang deteksi",
+  window: "Jendela lonjakan",
+  markers: "Penanda alert",
+  droppedMarkers: (n: number) => `${n} penanda di luar rentang tidak ditampilkan`,
+  viewAsTable: "Lihat data sebagai tabel",
+  tableCaption: "Volume per jam",
+  columns: { wib: "Jam (WIB)", utc: "Jam (UTC)", volume: "Volume", marker: "Penanda" },
+  summary: (count: number, peak: string, at: string) => `Grafik volume per jam, ${count} titik. Puncak ${peak} pada ${at}.`,
+  summaryNone: "Grafik volume per jam tanpa data.",
+} as const;
+
+export const filterUi = {
+  clear: "Bersihkan filter",
+  all: "Semua",
 } as const;

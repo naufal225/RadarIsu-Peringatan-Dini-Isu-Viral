@@ -1,4 +1,7 @@
 import type { ReactNode } from "react";
+import { X } from "lucide-react";
+import { ui } from "@/lib/labels";
+import { Button } from "./button";
 import { controlClass } from "./form";
 
 /** Bilah filter di atas tabel: kontrol sejajar, membungkus di layar sempit. */
@@ -17,6 +20,47 @@ export function FilterField({ label, children }: { label: string; children: Reac
       {label}
       {children}
     </label>
+  );
+}
+
+export type FilterOption = { value: string; label: string };
+
+/** Pilihan tunggal dengan opsi "Semua" (nilai kosong). */
+export function FilterSelect({
+  label,
+  value,
+  options,
+  onChange,
+  allLabel = ui.filters.all,
+}: {
+  label: string;
+  value: string;
+  options: readonly FilterOption[];
+  onChange: (value: string) => void;
+  allLabel?: string;
+}) {
+  return (
+    <FilterField label={label}>
+      <select value={value} onChange={(event) => onChange(event.target.value)} className={controlClass}>
+        <option value="">{allLabel}</option>
+        {options.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+    </FilterField>
+  );
+}
+
+/** Tombol "Bersihkan filter"; tidak tampil bila tidak ada filter aktif. */
+export function ClearFilters({ active, onClear }: { active: boolean; onClear: () => void }) {
+  if (!active) return null;
+  return (
+    <Button onClick={onClear}>
+      <X aria-hidden="true" className="size-4" />
+      {ui.filters.clear}
+    </Button>
   );
 }
 

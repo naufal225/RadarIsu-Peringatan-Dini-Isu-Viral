@@ -104,7 +104,7 @@ describe("simulation markers", () => {
 
 /** Guard Design System §2: no colour literals, gradients or dark variants in foundation code. */
 describe("foundation code obeys the token rules", () => {
-  const roots = ["components/radar", "components/shell"].map((p) => join(__dirname, "../..", p));
+  const roots = ["components/radar", "components/shell", "components/charts"].map((p) => join(__dirname, "../..", p));
   const files = roots.flatMap((root) => collect(root)).filter((f) => /\.(tsx?|css)$/.test(f) && !/\.test\./.test(f));
 
   function collect(dir: string): string[] {

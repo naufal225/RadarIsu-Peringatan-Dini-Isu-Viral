@@ -4,7 +4,8 @@ import { useState } from "react";
 import { Button } from "@/components/radar/button";
 import { ConfirmDialog } from "@/components/radar/confirm-dialog";
 import { DataTable, type DataTableColumn } from "@/components/radar/data-table";
-import { FilterBar, FilterField } from "@/components/radar/filter-bar";
+import { SignalChart } from "@/components/charts/signal-chart";
+import { ClearFilters, FilterBar, FilterSelect } from "@/components/radar/filter-bar";
 import { controlClass, Field } from "@/components/radar/form";
 import { PageHeader } from "@/components/radar/page-header";
 import { Pagination } from "@/components/radar/pagination";
@@ -18,8 +19,9 @@ import { StatusChip } from "@/components/radar/status-chip";
 import { Waktu } from "@/components/radar/waktu";
 import { Forbidden } from "@/components/forbidden";
 import { ALL_SEVERITIES, ALL_STATUSES, SAMPLE_ROWS, SAMPLE_TIME, type SampleRow } from "@/fixtures/common";
+import { SIGNAL_BASELINE, SIGNAL_MARKERS, SIGNAL_SERIES, SIGNAL_THRESHOLD, SIGNAL_WINDOW } from "@/fixtures/signal";
 import { formatInteger } from "@/lib/format";
-import { ui } from "@/lib/labels";
+import { severityLabels, alertStatusLabels, ui } from "@/lib/labels";
 
 const copy = ui.styleguide;
 
@@ -65,6 +67,8 @@ const COLUMNS: DataTableColumn<SampleRow>[] = [
 export function StyleguideView() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [page, setPage] = useState(1);
+  const [severityFilter, setSeverityFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
 
   return (
     <>
@@ -141,16 +145,25 @@ export function StyleguideView() {
 
       <Section title={copy.feedback}>
         <FilterBar label={copy.filter}>
-          <FilterField label={copy.filterSeverity}>
-            <select className={controlClass} defaultValue="">
-              <option value="">{copy.all}</option>
-              {ALL_SEVERITIES.map((severity) => (
-                <option key={severity} value={severity}>
-                  {severity}
-                </option>
-              ))}
-            </select>
-          </FilterField>
+          <FilterSelect
+            label={copy.filterSeverity}
+            value={severityFilter}
+            onChange={setSeverityFilter}
+            options={ALL_SEVERITIES.map((value) => ({ value, label: severityLabels[value] }))}
+          />
+          <FilterSelect
+            label={copy.filterStatus}
+            value={statusFilter}
+            onChange={setStatusFilter}
+            options={ALL_STATUSES.map((value) => ({ value, label: alertStatusLabels[value] }))}
+          />
+          <ClearFilters
+            active={severityFilter !== "" || statusFilter !== ""}
+            onClear={() => {
+              setSeverityFilter("");
+              setStatusFilter("");
+            }}
+          />
         </FilterBar>
         <div className="mb-4 flex flex-wrap items-center gap-3">
           <Button variant="primary">{copy.buttons.primary}</Button>
@@ -184,6 +197,43 @@ export function StyleguideView() {
           <Stat label={copy.statLabel} value={formatInteger(12)} />
         </div>
         <Pagination page={page} perPage={25} total={130} onPageChange={setPage} />
+      </Section>
+
+      <Section title={copy.charts}>
+        <div className="space-y-8">
+          <div>
+            <h3 className="mb-2 text-table font-medium text-ink-muted">{copy.chartFull}</h3>
+            <SignalChart series={SIGNAL_SERIES} baseline={SIGNAL_BASELINE} threshold={SIGNAL_THRESHOLD} window={SIGNAL_WINDOW} markers={SIGNAL_MARKERS} />
+          </div>
+          <div>
+            <h3 className="mb-2 text-table font-medium text-ink-muted">{copy.chartNoBaseline}</h3>
+            <SignalChart series={SIGNAL_SERIES} />
+          </div>
+          <div>
+            <h3 className="mb-2 text-table font-medium text-ink-muted">{copy.chartWindowOnly}</h3>
+            <SignalChart series={SIGNAL_SERIES} window={SIGNAL_WINDOW} />
+          </div>
+          <div>
+            <h3 className="mb-2 text-table font-medium text-ink-muted">{copy.chartCompact}</h3>
+            <div className="max-w-sm">
+              <SignalChart series={SIGNAL_SERIES} variant="compact" markers={SIGNAL_MARKERS} />
+            </div>
+          </div>
+          <div className="grid gap-4 md:grid-cols-3">
+            <div>
+              <h3 className="mb-2 text-table font-medium text-ink-muted">{copy.chartEmpty}</h3>
+              <SignalChart series={[]} />
+            </div>
+            <div>
+              <h3 className="mb-2 text-table font-medium text-ink-muted">{copy.chartLoading}</h3>
+              <SignalChart series={[]} loading />
+            </div>
+            <div>
+              <h3 className="mb-2 text-table font-medium text-ink-muted">{copy.chartError}</h3>
+              <SignalChart series={[]} error={{ onRetry: () => undefined }} />
+            </div>
+          </div>
+        </div>
       </Section>
 
       <Section title={copy.skeletons}>
