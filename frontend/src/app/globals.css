@@ -1,26 +1,123 @@
 @import "tailwindcss";
 
+/*
+ * Token RadarIsu (docs/UI_DESIGN_SYSTEM.md §3). Satu-satunya tempat nilai warna ditulis.
+ * Komponen hanya memakai kelas utilitas dari @theme di bawah (bg-paper, text-ink, ...).
+ * Tema terang saja; tidak ada varian gelap.
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --paper: #f5f4ee;
+  --panel: #ffffff;
+  --line: #e1ded3;
+  --line-input: #8a9285;
+  --hover: #f0eee5;
+  --ink: #1b2418;
+  --ink-muted: #566052;
+  --brand: #3b4a2f;
+  --brand-fg: #ffffff;
+  --brand-tint: #e7ebdf;
+  --sidebar: #26301f;
+  --sidebar-fg: #e8ece2;
+  --sidebar-muted: #b5bfaa;
+  --sev-high: #b42318;
+  --sev-high-bg: #fdecea;
+  --sev-medium: #b54708;
+  --sev-medium-bg: #fef0dc;
+  --sev-low: #5b6676;
+  --sev-low-bg: #eef0f3;
+  --sim: #1e5a96;
+  --sim-bg: #e6eff8;
+  --viz-1: #26301f;
+  --viz-2: #4b5e3a;
+  --viz-3: #7a8c66;
+  --viz-4: #a3b08f;
+  --chart-volume: #3b4a2f;
+  --chart-grid: #e1ded3;
+  --chart-ref: #566052;
+  --radius: 6px;
+
+  /* Alias untuk grafik lama yang masih membaca nama bawaan; hapus setelah halaman bermigrasi. */
+  --background: var(--paper);
+  --foreground: var(--ink);
+  --border: var(--line);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-paper: var(--paper);
+  --color-panel: var(--panel);
+  --color-line: var(--line);
+  --color-line-input: var(--line-input);
+  --color-hover: var(--hover);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-brand: var(--brand);
+  --color-brand-fg: var(--brand-fg);
+  --color-brand-tint: var(--brand-tint);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-fg: var(--sidebar-fg);
+  --color-sidebar-muted: var(--sidebar-muted);
+  --color-sev-high: var(--sev-high);
+  --color-sev-high-bg: var(--sev-high-bg);
+  --color-sev-medium: var(--sev-medium);
+  --color-sev-medium-bg: var(--sev-medium-bg);
+  --color-sev-low: var(--sev-low);
+  --color-sev-low-bg: var(--sev-low-bg);
+  --color-sim: var(--sim);
+  --color-sim-bg: var(--sim-bg);
+  --color-viz-1: var(--viz-1);
+  --color-viz-2: var(--viz-2);
+  --color-viz-3: var(--viz-3);
+  --color-viz-4: var(--viz-4);
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Source Serif 4 Variable", ui-serif, Georgia, serif;
+  --font-mono: "JetBrains Mono Variable", ui-monospace, "Cascadia Mono", monospace;
+  --text-title: 24px;
+  --text-title--line-height: 32px;
+  --text-lead: 20px;
+  --text-lead--line-height: 28px;
+  --text-section: 16px;
+  --text-section--line-height: 24px;
+  --text-table: 13px;
+  --text-table--line-height: 20px;
+  --text-caption: 12px;
+  --text-caption--line-height: 16px;
+  --text-metric: 32px;
+  --text-metric--line-height: 36px;
+  --radius-control: var(--radius);
+  --radius-badge: 4px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  background: var(--paper);
+  color-scheme: light;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 20px;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Cincin fokus: 2 px --brand, offset 2 px (Design System §3.4). */
+:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+/* Di atas latar gelap (sidebar) cincin memakai warna terang agar tetap terlihat. */
+.on-dark :focus-visible {
+  outline-color: var(--sidebar-fg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
