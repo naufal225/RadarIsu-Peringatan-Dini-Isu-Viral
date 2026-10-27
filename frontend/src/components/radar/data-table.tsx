@@ -27,6 +27,8 @@ export type DataTableProps<T> = {
   rowHref?: (row: T) => string;
   /** Left 3 px bar by severity. */
   rowSeverity?: (row: T) => Severity | null;
+  /** Selected row: --brand-tint background and a --brand bar on the left (Design System §11). */
+  rowSelected?: (row: T) => boolean;
   loading?: boolean;
   /** Shown when `rows` is empty and nothing is loading or failed. */
   empty?: ReactNode;
@@ -47,7 +49,7 @@ const ALIGN = { left: "text-left", right: "text-right", center: "text-center" } 
  * Tabel padat (baris 40 px). Pengurutan dan paginasi dilakukan server; tabel hanya menampilkan.
  * Kolom pertama menjadi tautan (keyboard) dan seluruh baris bisa diklik bila `rowHref` ada.
  */
-export function DataTable<T>({ columns, rows, getRowKey, rowHref, rowSeverity, loading, empty, error, caption }: DataTableProps<T>) {
+export function DataTable<T>({ columns, rows, getRowKey, rowHref, rowSeverity, rowSelected, loading, empty, error, caption }: DataTableProps<T>) {
   const router = useRouter();
 
   if (error) return <ErrorState {...error} />;
@@ -77,11 +79,13 @@ export function DataTable<T>({ columns, rows, getRowKey, rowHref, rowSeverity, l
           {rows.map((row) => {
             const href = rowHref?.(row);
             const severity = rowSeverity?.(row) ?? null;
+            const selected = rowSelected?.(row) ?? false;
             return (
               <tr
                 key={getRowKey(row)}
                 onClick={href ? (event) => openRow(event, href) : undefined}
-                className={cn("h-10 hover:bg-hover", href && "cursor-pointer")}
+                aria-selected={rowSelected ? selected : undefined}
+                className={cn("h-10", selected ? "bg-brand-tint" : "hover:bg-hover", href && "cursor-pointer")}
               >
                 {columns.map((column, index) => {
                   const content = column.cell(row);
@@ -94,6 +98,8 @@ export function DataTable<T>({ columns, rows, getRowKey, rowHref, rowSeverity, l
                         column.mono && "font-mono",
                         index === 0 && "max-md:sticky max-md:left-0 max-md:bg-panel",
                         index === 0 && severity && cn("border-l-3", SEVERITY_BAR[severity]),
+                        index === 0 && !severity && selected && "border-l-3 border-l-brand",
+                        index === 0 && selected && "max-md:bg-brand-tint",
                       )}
                     >
                       {index === 0 && href ? (

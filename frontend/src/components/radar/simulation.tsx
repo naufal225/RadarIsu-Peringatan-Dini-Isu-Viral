@@ -26,7 +26,7 @@ export function SimulationBanner({ dataClock }: { dataClock?: string | Date | nu
 /** Lencana kecil per baris, kartu, atau pin yang memuat data `is_simulated`. */
 export function SimBadge() {
   return (
-    <span className="inline-flex items-center gap-1 rounded-badge border border-sim bg-sim-bg px-1.5 py-0.5 text-caption font-medium text-sim">
+    <span className="inline-flex items-center gap-1 whitespace-nowrap rounded-badge border border-sim bg-sim-bg px-1.5 py-0.5 text-caption font-medium text-sim">
       <FlaskConical aria-hidden="true" className="size-3" />
       {ui.simulation.badge}
     </span>
