@@ -4,6 +4,14 @@ Papan pengumuman untuk perubahan yang menyentuh domain lain, perubahan izin, dan
 
 ---
 
+## 2026-10-27: BFF menjawab 503 bila Laravel tidak bisa dihubungi (branch `feat/ui-admin-sources`)
+
+- **Untuk semua pemilik halaman:** sebelumnya, bila Laravel mati atau tidak terjangkau, `POST /api/auth/login` dan semua `/api/*` gagal dengan 500 tanpa isi ("Internal Server Error"). Sekarang BFF menjawab **503** `{"message":"backend_unavailable","errors":{"server":["backend_unavailable"]}}`. Kode `backend_unavailable` sudah punya label di `errorCodeLabels`, jadi `describeErrorCode` menampilkannya. Halaman login menampilkan "Server RadarIsu tidak dapat dihubungi…".
+- `getMe()` kini bisa mengembalikan `{status: "unavailable"}`; layout `(app)`, `RequirePermission`, dan `/` menampilkan layar "Server tidak dapat dihubungi" alih-alih halaman galat Next.
+- Tidak ada perubahan kontrak bila Laravel menjawab (status dan isi tetap diteruskan apa adanya).
+
+---
+
 ## 2026-10-27: Fondasi UI (branch `feat/ui-foundation`)
 
 - **Untuk semua pemilik halaman:** komponen fondasi ada di `components/radar/` (SeverityBadge, StatusChip, Waktu, DataTable, Pagination, EmptyState/ErrorState/NotAvailable/NotImplemented, skeleton, SimulationBanner/SimBadge, PageHeader, Section, Stat, FilterBar, ConfirmDialog, Button, Field/controlClass), shell di `components/shell/`, format di `lib/format/{time,number}.ts`. Lihat `/dev/styleguide` (hanya mode pengembangan). Warna hanya lewat kelas token (`bg-paper`, `text-ink`, `border-line`, `text-sev-high`, ...); ukuran teks lewat `text-title|lead|section|table|caption|metric`.

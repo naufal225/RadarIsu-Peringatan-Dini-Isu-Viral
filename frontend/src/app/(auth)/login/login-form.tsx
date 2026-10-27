@@ -44,7 +44,9 @@ export function LoginForm() {
         ? ui.login.invalidCredentials
         : response?.status === 429
           ? ui.login.throttled
-          : ui.login.genericError,
+          : response?.status === 503
+            ? ui.login.backendUnavailable
+            : ui.login.genericError,
     );
   }
 

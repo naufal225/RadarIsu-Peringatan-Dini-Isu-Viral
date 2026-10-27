@@ -1,14 +1,20 @@
 import { cookies } from "next/headers";
-import { laravelFetch } from "@/lib/server-api";
+import { BackendUnavailableError, backendUnavailableResponse, laravelFetch } from "@/lib/server-api";
 import { TOKEN_COOKIE, tokenCookieOptions } from "@/lib/session";
 
 // POST /api/auth/login: exchanges credentials for a Sanctum token and stores it in the httpOnly rd_token cookie.
 export async function POST(request: Request): Promise<Response> {
-  const upstream = await laravelFetch("auth/login", undefined, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: await request.text(),
-  });
+  let upstream: Response;
+  try {
+    upstream = await laravelFetch("auth/login", undefined, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: await request.text(),
+    });
+  } catch (error) {
+    if (error instanceof BackendUnavailableError) return backendUnavailableResponse();
+    throw error;
+  }
 
   const body = await upstream.json().catch(() => null);
 

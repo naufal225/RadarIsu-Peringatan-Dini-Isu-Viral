@@ -41,4 +41,16 @@ Sumber: `AuditLogController::auditLogs` (nyata, bukan stub). 50 baris per halama
 | Paginasi | `meta.current_page/last_page/per_page/total` | ya | `GET /audit-logs` | `Pagination` |
 | Peramban dan IP pengguna asli | `user_agent`, `ip_address` | **isi tidak akurat** | `GET /audit-logs` | Data nyata menunjukkan `user_agent = "node"` dan IP `127.0.0.1` karena BFF Next (`app/api/[...path]`) memanggil Laravel dari server tanpa meneruskan `User-Agent` dan `X-Forwarded-For`. UI menampilkan apa adanya. Perbaikan ada di BFF (F12, Naufal) dan pengaturan proxy tepercaya Laravel; dicatat untuk tugas terpisah |
 
+## `/admin/sources` (Naufal, F1) · Polos
+
+Sumber: `SourceController`, `SourceResource`, `ImportBatchResource` (nyata). Tipe: `lib/api-types/sources.ts`; fixture: `fixtures/sources.ts`.
+
+| Komponen / halaman | Field yang dibutuhkan | Ada? | Endpoint | Tindakan |
+|---|---|---|---|---|
+| Tabel sumber | `name`, `type`, `last_status`, `last_fetched_at`, `interval_minutes`, `is_active`, `raw_items_count`, `last_error`, `is_simulated` | ya; daftar tidak berpaginasi | `GET /sources` | `DataTable`; sumber `replay` diberi `SimBadge` dan tanpa aksi (dibuat Replay) |
+| Uji koneksi | sumber terbaru setelah uji | ya, selalu 200; galat jaringan masuk `last_status`/`last_error` | `POST /sources/{id}/test` | Hasil tampil sebagai data di baris, bukan galat. 422 `connection_test_not_supported`/`offline_mode_enabled` tampil sebagai pesan baris |
+| Form tambah/ubah | `name`, `is_active`, `config.url`, `config.max_items`, `config.video_ids`, `interval_minutes` | ya; `type` dilarang saat ubah | `POST /sources`, `PATCH /sources/{id}` | Kunci 422 `config.*` dipetakan ke bidangnya |
+| Impor CSV | ringkasan `total/success/failed_rows`, `errors[{row, message}]` (maks. 200) | ya; galat level berkas 422 `errors.file` | `POST /sources/{id}/import` | Ringkasan + tabel baris bermasalah di dialog |
+| Riwayat impor | daftar batch | ya, paginasi 50 | `GET /sources/{id}/imports` | Halaman pertama saja, di dialog impor |
+
 Bagian Kadavi, Rekishi, dan halaman Naufal lain ditambahkan oleh pemilik masing-masing.

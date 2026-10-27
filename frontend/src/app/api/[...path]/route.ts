@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import type { NextRequest } from "next/server";
-import { laravelFetch } from "@/lib/server-api";
+import { BackendUnavailableError, backendUnavailableResponse, laravelFetch } from "@/lib/server-api";
 import { TOKEN_COOKIE } from "@/lib/session";
 
 // BFF proxy (PRD §7, §12.1): /api/* → ${LARAVEL_URL}/api/v1/* with the bearer token from the httpOnly cookie.
@@ -23,11 +23,17 @@ async function forward(request: NextRequest, ctx: RouteContext<"/api/[...path]">
   if (contentType) headers.set("Content-Type", contentType);
 
   const hasBody = request.method !== "GET" && request.method !== "HEAD";
-  const upstream = await laravelFetch(
-    path.map(encodeURIComponent).join("/") + request.nextUrl.search,
-    token,
-    { method: request.method, headers, body: hasBody ? await request.arrayBuffer() : undefined },
-  );
+  let upstream: Response;
+  try {
+    upstream = await laravelFetch(
+      path.map(encodeURIComponent).join("/") + request.nextUrl.search,
+      token,
+      { method: request.method, headers, body: hasBody ? await request.arrayBuffer() : undefined },
+    );
+  } catch (error) {
+    if (error instanceof BackendUnavailableError) return backendUnavailableResponse();
+    throw error;
+  }
 
   if (upstream.status === 401) cookieStore.delete(TOKEN_COOKIE);
 

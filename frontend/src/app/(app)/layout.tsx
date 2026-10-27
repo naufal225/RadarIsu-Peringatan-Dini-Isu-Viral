@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { Suspense, type ReactNode } from "react";
 import { PermissionsProvider } from "@/components/permissions-provider";
+import { BackendUnavailable } from "@/components/backend-unavailable";
 import { AppShell } from "@/components/shell/app-shell";
 import { ui } from "@/lib/labels";
 import { getMe } from "@/lib/server-api";
@@ -16,6 +17,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
 
 async function AuthenticatedShell({ children }: { children: ReactNode }) {
   const result = await getMe();
+  if (result.status === "unavailable") return <BackendUnavailable />;
   if (result.status !== "ok") redirect("/login");
 
   return (

@@ -1,12 +1,14 @@
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
+import { BackendUnavailable } from "@/components/backend-unavailable";
 import { homePath } from "@/components/shell/nav-config";
 import { getMe } from "@/lib/server-api";
 import { hasPermission } from "@/lib/permissions";
 
 // Halaman awal menurut izin (Design System §7): admin tidak punya dashboard.view, jadi ke status sistem.
-async function Landing(): Promise<never> {
+async function Landing() {
   const result = await getMe();
+  if (result.status === "unavailable") return <BackendUnavailable />;
   if (result.status !== "ok") redirect("/login");
 
   redirect(homePath((permission) => hasPermission(result.me.permissions, permission)));
