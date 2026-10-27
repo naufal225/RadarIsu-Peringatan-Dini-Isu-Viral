@@ -1,10 +1,10 @@
 import { RequirePermission } from "@/components/require-permission";
-import { SettingsPanel } from "./settings-panel";
+import { SettingsData } from "./settings-data";
 
 export default function AdminSettingsPage() {
   return (
     <RequirePermission permission="settings.manage">
-      <SettingsPanel />
+      <SettingsData />
     </RequirePermission>
   );
 }

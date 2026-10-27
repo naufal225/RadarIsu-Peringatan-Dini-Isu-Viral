@@ -169,3 +169,15 @@ export function previewScore(settings: DetectionSettings, input: PreviewInput): 
 
   return { components, score, severity };
 }
+
+/** Field paths flagged by a 422 (`weights.spike`, `weights`, ...) or by the client rules, for the field with `path`. */
+export function isFieldInvalid(invalid: ReadonlySet<string>, path: string): boolean {
+  return invalid.has(path) || invalid.has(path.split(".")[0]);
+}
+
+/** True when `path` alone is outside its allowed range (independent of the cross-field rules). */
+export function isOutOfRange(settings: DetectionSettings, path: string): boolean {
+  const range = FIELD_RANGES[path];
+  const value = getPath(settings, path);
+  return !range || !Number.isFinite(value) || value < range.min || value > range.max || (range.integer && !Number.isInteger(value));
+}

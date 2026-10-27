@@ -64,4 +64,17 @@ Sumber: `UserController`, `UserResource` (nyata). Tipe: `lib/api-types/users.ts`
 | Ubah | `name`, `role`, `is_active` | ya; email dan kata sandi tidak bisa diubah lewat API ini | `PATCH /users/{id}` | Dialog; email tampil sebagai teks |
 | Pesan 422 | teks per bidang | **bahasa Inggris** (`APP_LOCALE=en`, tanpa berkas terjemahan) | `POST`/`PATCH /users` | UI menampilkan pesan Indonesia per bidang (`ui.users.fieldErrors`), bukan teks server. Penonaktifan atau ganti peran akun sendiri ditolak server (PRD §8.4); tombolnya tidak disembunyikan |
 
+## `/admin/settings` (Naufal, F15)
+
+Sumber: `SettingController` (nyata; bentuk di `docs/CONTRACTS.md` §3.4–3.5). Tipe: `lib/api-types/settings.ts` (dari `lib/detection-settings.ts`); fixture: `fixtures/settings.ts` (nilai awal PRD §9.6).
+
+| Komponen / halaman | Field yang dibutuhkan | Ada? | Endpoint | Tindakan |
+|---|---|---|---|---|
+| Form per kelompok | 16 ambang + `weights`, `severity_cutoffs`, `sensitivity_z_offset` | ya; PUT mengganti seluruh nilai | `GET/PUT /settings/detection` | `Section` per kelompok, teks bantu per bidang dari `labels/settings.ts` |
+| Total bobot | jumlah `weights` | dihitung dari isian | — | Ditampilkan langsung; peringatan bila ≠ 100. Server tetap memvalidasi |
+| Pesan 422 | nama bidang (`weights`, `severity_cutoffs.medium`, …) | ya; isi pesan berbahasa Inggris | `PUT /settings/detection` | UI memakai nama bidangnya saja: aturan antar-bidang punya teks sendiri, bidang lain "Server menolak nilai ini" |
+| Terakhir diubah | `updated_at`, `updated_by.name` | ya; `null` bila belum pernah diubah | keduanya | `<Waktu>` |
+| Mode Offline | `value.enabled` | ya | `GET/PUT /settings/offline-mode` | Kotak centang + simpan |
+| Pratinjau skor | — | dihitung di klien dari isian | — | Rumus PRD §10.8 dan §10.7 dengan contoh masukan; bukan perhitungan ulang alert nyata |
+
 Bagian Kadavi, Rekishi, dan halaman Naufal lain ditambahkan oleh pemilik masing-masing.
