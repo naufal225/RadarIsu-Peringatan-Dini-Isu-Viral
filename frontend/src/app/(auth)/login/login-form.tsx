@@ -2,6 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useSyncExternalStore, type FormEvent } from "react";
+import { Button } from "@/components/radar/button";
+import { controlClass, FieldError } from "@/components/radar/form";
 import { ui } from "@/lib/labels";
 
 const noopSubscribe = () => () => {};
@@ -30,14 +32,15 @@ export function LoginForm() {
     }).catch(() => null);
 
     if (response?.ok) {
-      router.replace("/dashboard");
+      // "/" memilih halaman awal menurut izin (admin ke status sistem, lainnya ke dasbor).
+      router.replace("/");
       router.refresh();
       return;
     }
 
     setPending(false);
     setError(
-      response?.status === 422
+      response?.status === 422 || response?.status === 401
         ? ui.login.invalidCredentials
         : response?.status === 429
           ? ui.login.throttled
@@ -52,37 +55,29 @@ export function LoginForm() {
     <form method="post" onSubmit={onSubmit}>
       <fieldset disabled={!hydrated} className="space-y-4">
         <label className="block text-sm">
-          <span className="mb-1 block font-medium">{ui.login.email}</span>
+          <span className="mb-1 block font-medium text-ink">{ui.login.email}</span>
           <input
             name="email"
             type="email"
             required
             autoComplete="username"
-            className="w-full rounded-md border border-neutral-300 px-3 py-2"
+            className={controlClass}
           />
         </label>
         <label className="block text-sm">
-          <span className="mb-1 block font-medium">{ui.login.password}</span>
+          <span className="mb-1 block font-medium text-ink">{ui.login.password}</span>
           <input
             name="password"
             type="password"
             required
             autoComplete="current-password"
-            className="w-full rounded-md border border-neutral-300 px-3 py-2"
+            className={controlClass}
           />
         </label>
-        {error && (
-          <p role="alert" className="text-sm text-red-600">
-            {error}
-          </p>
-        )}
-        <button
-          type="submit"
-          disabled={pending}
-          className="w-full rounded-md bg-neutral-900 px-3 py-2 text-sm font-medium text-white disabled:opacity-50"
-        >
+        {error && <FieldError>{error}</FieldError>}
+        <Button type="submit" variant="primary" pending={pending} className="w-full">
           {pending ? ui.login.submitting : ui.login.submit}
-        </button>
+        </Button>
       </fieldset>
     </form>
   );
