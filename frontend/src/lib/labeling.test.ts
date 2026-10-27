@@ -26,7 +26,7 @@ describe("labelingPercent", () => {
 
 describe("labeling labels", () => {
   it("formats progress in Indonesian", () => {
-    expect(labelingUi.progress(12, 200)).toBe("12 dari ±200 posting berlabel");
-    expect(labelingUi.breakdown(7, 5)).toBe("Organik 7, Tidak Wajar 5");
+    expect(labelingUi.progress("12", "200")).toBe("12 dari ±200 diberi label");
+    expect(labelingUi.breakdown("7", "5")).toBe("Organik 7, Tidak Wajar 5");
   });
 });
