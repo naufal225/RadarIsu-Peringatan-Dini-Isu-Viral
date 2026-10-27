@@ -8,7 +8,7 @@ import { impersonationUi } from "./labels/impersonation";
 import { evaluationErrorCodes, evaluationUi } from "./labels/evaluation";
 import { labelingUi } from "./labels/labeling";
 import { replayErrorCodes, replayUi } from "./labels/replay";
-import { confirmUi, navGroupLabels, navItemLabels, paginationUi, shellUi, simulationUi, stateUi, styleguideUi, tableUi } from "./labels/shell";
+import { chartUi, confirmUi, filterUi, navGroupLabels, navItemLabels, paginationUi, shellUi, simulationUi, stateUi, styleguideUi, tableUi } from "./labels/shell";
 import { topicsUi } from "./labels/topics";
 import { bUi } from "./labels/b";
 import { dashboardUi } from "./labels/dashboard";
@@ -152,6 +152,8 @@ export const ui = {
   confirm: confirmUi,
   pagination: paginationUi,
   table: tableUi,
+  chart: chartUi,
+  filters: filterUi,
   styleguide: styleguideUi,
   settings: settingsUi,
   replay: replayUi,
