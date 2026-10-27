@@ -110,7 +110,7 @@ describe("label map", () => {
     const replayCodes = [
       "invalid_rows", "no_rows", "no_incident_rows", "baseline_after_incident", "invalid_offset_seconds",
       "invalid_phase", "invalid_label_manual", "invalid_account_age_days", "already_running", "another_running",
-      "empty_scenario", "not_running",
+      "empty_scenario", "not_running", "heartbeat_lost", "action_failed",
     ];
     const evaluationCodes = ["scenario_not_replayed"];
     expect(keys(errorCodeLabels)).toEqual([...backendCodes, ...replayCodes, ...evaluationCodes].sort());
