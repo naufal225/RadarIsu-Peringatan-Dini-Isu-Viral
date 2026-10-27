@@ -10,12 +10,13 @@ export const roleLabels = {
 export const authUi = {
   login: {
     title: "Masuk ke RadarIsu",
+    subtitle: "Sistem peringatan dini isu di ruang siber sosial",
     email: "Email",
     password: "Kata sandi",
     submit: "Masuk",
     submitting: "Memproses…",
-    invalidCredentials: "Email atau kata sandi salah, atau akun nonaktif.",
-    throttled: "Terlalu banyak percobaan. Coba lagi dalam satu menit.",
+    invalidCredentials: "Email atau kata sandi tidak sesuai",
+    throttled: "Terlalu banyak percobaan. Coba lagi beberapa saat.",
     genericError: "Gagal masuk. Coba lagi.",
   },
   logout: "Keluar",

@@ -8,6 +8,7 @@ import { impersonationUi } from "./labels/impersonation";
 import { evaluationErrorCodes, evaluationUi } from "./labels/evaluation";
 import { labelingUi } from "./labels/labeling";
 import { replayErrorCodes, replayUi } from "./labels/replay";
+import { confirmUi, navGroupLabels, navItemLabels, paginationUi, shellUi, simulationUi, stateUi, styleguideUi, tableUi } from "./labels/shell";
 import { topicsUi } from "./labels/topics";
 import { bUi } from "./labels/b";
 import { dashboardUi } from "./labels/dashboard";
@@ -143,6 +144,15 @@ export const ui = {
     labeling: labelingUi.title,
     evaluation: evaluationUi.title,
   },
+  shell: shellUi,
+  navGroups: navGroupLabels,
+  navItems: navItemLabels,
+  simulation: simulationUi,
+  state: stateUi,
+  confirm: confirmUi,
+  pagination: paginationUi,
+  table: tableUi,
+  styleguide: styleguideUi,
   settings: settingsUi,
   replay: replayUi,
   labeling: labelingUi,

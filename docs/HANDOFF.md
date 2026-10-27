@@ -4,6 +4,21 @@ Papan pengumuman untuk perubahan yang menyentuh domain lain, perubahan izin, dan
 
 ---
 
+## 2026-10-27: Fondasi UI (branch `feat/ui-foundation`)
+
+- **Untuk semua pemilik halaman:** komponen fondasi ada di `components/radar/` (SeverityBadge, StatusChip, Waktu, DataTable, Pagination, EmptyState/ErrorState/NotAvailable/NotImplemented, skeleton, SimulationBanner/SimBadge, PageHeader, Section, Stat, FilterBar, ConfirmDialog, Button, Field/controlClass), shell di `components/shell/`, format di `lib/format/{time,number}.ts`. Lihat `/dev/styleguide` (hanya mode pengembangan). Warna hanya lewat kelas token (`bg-paper`, `text-ink`, `border-line`, `text-sev-high`, ...); ukuran teks lewat `text-title|lead|section|table|caption|metric`.
+- **Dependensi baru** (disetujui PRD §12.1): `lucide-react` (ikon; 45 MB di node_modules, di-tree-shake saat build), `@fontsource-variable/inter`, `@fontsource-variable/source-serif-4`, `@fontsource-variable/jetbrains-mono` (font di-bundle, tanpa CDN; Inter 2,0 MB, Source Serif 4 2,3 MB, JetBrains Mono 0,25 MB di node_modules; browser hanya mengunduh subset yang dipakai halaman).
+- **Dependensi yang TIDAK dipasang** (keputusan Naufal 2026-10-27): shadcn/ui + Radix, `@tanstack/react-query`, `react-hook-form`, `zod` langsung. Halaman memakai `lib/use-api-data.ts` seperti sekarang; `ConfirmDialog` memakai elemen `<dialog>` bawaan; `Button` dan `Field` buatan sendiri. Tidak ada `components.json`.
+- **`components/ui.tsx` (lapisan lama) dipertahankan** sampai semua halaman bermigrasi; jangan menimpanya. Komponen baru dari `components/radar/*`. Berkas itu dihapus di `feat/ui-integration`.
+- **`lib/format.ts` menjadi `lib/format/index.ts`** (impor `@/lib/format` tetap jalan). `formatDateTime` kini WIB ("27 Okt 2026 · 14.29 WIB"). Halaman baru memakai `<Waktu>`.
+- **Alias lama di `globals.css`:** `--background`, `--foreground`, `--border` dipetakan ke token baru agar grafik lama (topik, dasbor) tetap terbaca. Hapus alias setelah halaman bermigrasi.
+- **Untuk Rekishi:** `dashboard-chart.tsx` dan `dashboard-panel.tsx` masih memakai hex, gradien, `emerald-*`, dan `dark:`. Tema gelap dihapus dari `globals.css`, jadi `dark:` kini tidak aktif. Bereskan di `feat/ui-dashboard`.
+- **Untuk Kadavi:** `alertActionLabels` belum memuat `false_positive` dan `close`; tambahkan di `lib/labels/alerts.ts`. Tipe `Severity`, `AlertStatus`, `AlertKind`, `AlertAction` ada di `components/radar/types.ts`.
+- **Perubahan perilaku:** setelah login, pengguna dikirim ke `/`, dan `app/page.tsx` memilih halaman awal menurut izin (dasbor bila punya `dashboard.view`, selain itu `/admin/status`). `app-nav.tsx` dihapus; menu ada di `components/shell/nav-config.ts`. Pesan galat login diseragamkan (satu pesan umum).
+- **Kontras token** diukur dengan rumus WCAG, bukan perkiraan: semua pasangan di Design System §3.2 lulus (terendah sev-medium di sev-medium-bg 4,84; batas kontrol 3,22). Tidak ada nilai token yang diubah.
+
+---
+
 ## 2026-10-26: F14-b Evaluasi (branch `feat/c-f14b-evaluasi`)
 
 - **Untuk Rekishi (reviewer F14):** `EvaluationController` kini berisi `runs` dan `run`; logika ada di `Services/Evaluation/{EvaluationCalculator,EvaluationService}` dan perintah `radarisu:evaluate`. `EvaluationRun` mendapat relasi dan factory. Tidak ada migrasi: tabel `evaluation_runs` dari skema awal.

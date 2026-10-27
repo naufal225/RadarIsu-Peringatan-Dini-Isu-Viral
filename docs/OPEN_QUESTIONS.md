@@ -41,6 +41,8 @@ Dicatat sesuai CLAUDE.md: konflik tidak ditebak. Keputusan dicatat di sini dan d
 35. **Evaluasi (F14-b), akun berlabel campuran.** Akun yang punya posting `organic` dan `anomalous` dihitung `anomalous` (PRD §15 hanya menulis "memiliki posting berlabel anomalous"); jumlahnya dicatat di `notes` (`mixed_label_accounts:N`).
 36. **Evaluasi, pembagi nol.** Presisi, recall, atau F1 dengan pembagi 0 dihitung 0 (bukan null) dan alasannya masuk `notes`. Cakupan skenario memakai posting dari sumber `replay` skenario itu (semua putaran, karena tiap skenario satu sumber, #28); waktu deteksi memakai putaran terakhir.
 37. **Evaluasi, waktu deteksi.** Dihitung dari alert `issue` pertama yang menandai akun `anomalous` berlabel, bukan alert pertama di topik; bisa negatif bila alert muncul sebelum awal incident. `GET /evaluation/runs` membawa `meta.scenarios` karena analis tidak boleh memanggil `/replay/scenarios`.
+38. **UI: sumber bendera simulasi dan jam data untuk admin.** `data_notice.has_simulated_data` hanya ada di `GET /dashboard/summary` (`dashboard.view`), yang tidak dimiliki admin. `SimulationBanner` sudah ada tetapi shell belum memasangnya; halaman admin memakai `SimBadge` per baris. Perlu keputusan: endpoint ringan untuk semua peran, atau banner hanya di halaman yang datanya membawa `is_simulated`.
+39. **UI: `components/ui.tsx` lawan folder `components/ui/`.** Design System menyebut folder shadcn `components/ui/`, tetapi shadcn tidak dipasang dan berkas `ui.tsx` masih dipakai 18 berkas. Diputuskan: `ui.tsx` dipertahankan sampai integrasi; komponen baru di `components/radar/`.
 
 
 ## Diputuskan 2026-10-21 (PRD v2.2, Fase 2)

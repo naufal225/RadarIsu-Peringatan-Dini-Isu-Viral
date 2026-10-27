@@ -1,7 +1,9 @@
 "use client";
 
+import { LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { Button } from "@/components/radar/button";
 import { ui } from "@/lib/labels";
 
 export function LogoutButton() {
@@ -16,13 +18,9 @@ export function LogoutButton() {
   }
 
   return (
-    <button
-      type="button"
-      onClick={logout}
-      disabled={pending}
-      className="rounded-md border border-neutral-300 px-3 py-1.5 text-sm hover:bg-neutral-100 disabled:opacity-50"
-    >
+    <Button onClick={logout} pending={pending}>
+      <LogOut aria-hidden="true" className="size-4" />
       {ui.logout}
-    </button>
+    </Button>
   );
 }
