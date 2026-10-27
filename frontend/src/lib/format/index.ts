@@ -1,12 +1,16 @@
-import { ui } from "./labels";
+import { ui } from "../labels";
+import { formatWib, parseTime } from "./time";
 
-const dateTime = new Intl.DateTimeFormat("id-ID", { dateStyle: "medium", timeStyle: "short" });
+export * from "./number";
+export * from "./time";
 
-/** Localised date-time for an ISO string from the API; empty values render as a dash. */
+/**
+ * Legacy date-time helper kept for panels that have not moved to `<Waktu>` yet. It now renders in WIB
+ * like the new component; unparseable values still pass through as-is.
+ */
 export function formatDateTime(value: string | null | undefined): string {
   if (!value) return ui.common.none;
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? value : dateTime.format(date);
+  return parseTime(value) ? formatWib(value) : value;
 }
 
 /** Number with the Indonesian decimal comma, e.g. 5.1 -> "5,1". */
