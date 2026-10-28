@@ -6,7 +6,7 @@ vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn() }), usePat
 
 import { USER_PAGE, USERS } from "@/fixtures/users";
 import { ui } from "@/lib/labels";
-import { emptyUserForm, formFromUser, userFieldErrors, userPayload, usersQuery } from "@/lib/users";
+import { emptyUserForm, formFromUser, userFieldErrors, userPayload, usersQuery, userSummary } from "@/lib/users";
 import { UsersView, type UserFormState, type UsersViewProps } from "./users-view";
 
 const noop = () => undefined;
@@ -50,6 +50,16 @@ describe("user payloads and errors", () => {
   });
 });
 
+describe("user summary", () => {
+  it("counts active accounts and roles when the whole list is on one page", () => {
+    expect(userSummary(USER_PAGE)).toEqual({ total: 4, active: 3, byRole: { admin: 1, analyst: 2, leader: 1 } });
+  });
+
+  it("gives no counts for a partial page, so they never mislead", () => {
+    expect(userSummary({ ...USER_PAGE, meta: { ...USER_PAGE.meta, last_page: 2, total: 80 } })).toBeNull();
+  });
+});
+
 describe("UsersView", () => {
   it("lists users with role labels, marks the signed-in user, and shows never-logged-in accounts", () => {
     const html = render();
@@ -75,6 +85,13 @@ describe("UsersView", () => {
     expect(create).toContain('name="password"');
     const edit = render({ form: { ...closed, open: true, mode: "edit", userId: 2, values: formFromUser(USERS[1]) } });
     expect(edit).not.toContain('name="password"');
+  });
+
+  it("shows account status with icon and text, and the role mix in the summary", () => {
+    const html = render();
+    expect(html).toContain(ui.users.inactive);
+    expect(html).toContain(ui.users.summary.active("3"));
+    expect(html).toContain(ui.users.summary.role("Analis", "2"));
   });
 
   it("states that there are no users", () => {

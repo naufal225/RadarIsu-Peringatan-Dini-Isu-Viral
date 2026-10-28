@@ -37,6 +37,19 @@ export function userFieldErrors(body: { errors?: Record<string, string[]> } | nu
   return out;
 }
 
+export type UserSummary = { total: number; active: number; byRole: Record<RoleSlug, number> };
+
+/**
+ * Active count and role mix, only when the whole list is on this page (last_page 1).
+ * A partial page would give misleading counts, so it returns null then.
+ */
+export function userSummary(page: { data: Pick<User, "role" | "is_active">[]; meta: { last_page: number; total: number } }): UserSummary | null {
+  if (page.meta.last_page !== 1) return null;
+  const byRole = { admin: 0, analyst: 0, leader: 0 } as Record<RoleSlug, number>;
+  for (const user of page.data) byRole[user.role] = (byRole[user.role] ?? 0) + 1;
+  return { total: page.meta.total, active: page.data.filter((u) => u.is_active).length, byRole };
+}
+
 export function usersQuery(page: number): string {
   return `users?per_page=50&page=${Math.max(1, page)}`;
 }

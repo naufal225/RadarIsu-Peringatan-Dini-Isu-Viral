@@ -53,6 +53,13 @@ export const authUi = {
     yes: "Ya",
     no: "Tidak",
     empty: "Belum ada pengguna.",
+    inactive: "Nonaktif",
+    summary: {
+      label: "Ringkasan pengguna",
+      total: (n: string) => `${n} pengguna`,
+      active: (n: string) => `${n} aktif`,
+      role: (role: string, n: string) => `${role} ${n}`,
+    },
     tableCaption: "Daftar pengguna",
     // Pesan 422 per bidang. Server mengirim teks bahasa Inggris, jadi UI menampilkan terjemahan menurut bidangnya.
     fieldErrors: {
