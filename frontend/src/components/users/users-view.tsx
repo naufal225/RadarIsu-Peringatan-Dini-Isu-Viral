@@ -1,17 +1,20 @@
 "use client";
 
+import { CircleCheck, CircleSlash } from "lucide-react";
 import type { FormEvent } from "react";
 import { Button } from "@/components/radar/button";
 import { DataTable, type DataTableColumn } from "@/components/radar/data-table";
 import { Dialog } from "@/components/radar/dialog";
-import { controlClass, Field, FieldError } from "@/components/radar/form";
+import { checkboxClass, controlClass, Field, FieldError } from "@/components/radar/form";
 import { PageHeader } from "@/components/radar/page-header";
 import { Pagination } from "@/components/radar/pagination";
 import { EmptyState } from "@/components/radar/states";
 import { Waktu } from "@/components/radar/waktu";
 import type { RoleSlug, User, UserPage } from "@/lib/api-types/users";
+import { cn } from "@/lib/cn";
+import { formatInteger } from "@/lib/format";
 import { roleLabels, ui } from "@/lib/labels";
-import type { UserFormValues } from "@/lib/users";
+import { userSummary, type UserFormValues } from "@/lib/users";
 
 const copy = ui.users;
 
@@ -43,7 +46,40 @@ export type UsersViewProps = {
   onFormClose: () => void;
 };
 
-/** Halaman Polos: komponen fondasi apa adanya (docs/UI_PAGES.md, /admin/users). */
+/** Status akun monokrom: ikon + teks (Design System §2 #5, #6). */
+function AccountStatus({ active }: { active: boolean }) {
+  const Icon = active ? CircleCheck : CircleSlash;
+  return (
+    <span className={cn("inline-flex items-center gap-1.5 whitespace-nowrap", active ? "text-ink" : "text-ink-muted")}>
+      <Icon aria-hidden="true" className="size-4 shrink-0" />
+      {active ? copy.active : copy.inactive}
+    </span>
+  );
+}
+
+/** Jumlah aktif dan komposisi peran, hanya bila seluruh daftar ada di halaman ini (lib/users.ts). */
+function Summary({ result }: { result: UserPage }) {
+  const summary = userSummary(result);
+  const text = copy.summary;
+  if (!summary) return <p className="mb-3 text-table text-ink-muted">{text.total(formatInteger(result.meta.total))}</p>;
+  const parts = [
+    text.total(formatInteger(summary.total)),
+    text.active(formatInteger(summary.active)),
+    ...(Object.keys(roleLabels) as RoleSlug[]).map((role) => text.role(roleLabels[role], formatInteger(summary.byRole[role]))),
+  ];
+  return (
+    <p aria-label={text.label} className="mb-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-table text-ink-muted">
+      {parts.map((part, index) => (
+        <span key={part} className="whitespace-nowrap">
+          {index > 0 && <span aria-hidden="true" className="mr-2">·</span>}
+          {part}
+        </span>
+      ))}
+    </p>
+  );
+}
+
+/** Halaman Polos dengan komponen fondasi (docs/UI_PAGES.md, /admin/users). */
 export function UsersView(props: UsersViewProps) {
   const { result, loading, failed, onRetry, canManage, currentUserId } = props;
 
@@ -52,18 +88,31 @@ export function UsersView(props: UsersViewProps) {
       id: "name",
       header: copy.name,
       cell: (u) => (
-        <span className="text-ink">
-          {u.name}
-          {u.id === currentUserId && <span className="ml-2 text-caption text-ink-muted">{`(${copy.you})`}</span>}
-        </span>
+        <div className="py-1.5">
+          <span className={cn("block font-medium", u.is_active ? "text-ink" : "text-ink-muted")}>
+            {u.name}
+            {u.id === currentUserId && <span className="ml-2 text-caption font-normal text-ink-muted">{`(${copy.you})`}</span>}
+          </span>
+          <span className="block font-mono text-caption text-ink-muted">{u.email}</span>
+        </div>
       ),
     },
-    { id: "email", header: copy.email, cell: (u) => u.email, mono: true },
-    { id: "role", header: copy.role, cell: (u) => roleLabels[u.role] },
-    { id: "active", header: copy.active, cell: (u) => (u.is_active ? copy.yes : copy.no) },
+    { id: "role", header: copy.role, cell: (u) => <span className="whitespace-nowrap">{roleLabels[u.role]}</span> },
+    { id: "status", header: copy.status, cell: (u) => <AccountStatus active={u.is_active} /> },
     { id: "login", header: copy.lastLogin, cell: (u) => (u.last_login_at ? <Waktu value={u.last_login_at} /> : <span className="text-ink-muted">{copy.never}</span>) },
   ];
-  if (canManage) columns.push({ id: "actions", header: copy.actions, cell: (u) => <Button onClick={() => props.onEdit(u)}>{copy.edit}</Button> });
+  if (canManage) {
+    columns.push({
+      id: "actions",
+      header: <span className="sr-only">{copy.actions}</span>,
+      align: "right",
+      cell: (u) => (
+        <Button size="sm" variant="ghost" onClick={() => props.onEdit(u)}>
+          {copy.edit}
+        </Button>
+      ),
+    });
+  }
 
   return (
     <>
@@ -72,6 +121,7 @@ export function UsersView(props: UsersViewProps) {
         subtitle={copy.subtitle}
         actions={canManage ? <Button variant="primary" onClick={props.onNew}>{copy.newUser}</Button> : undefined}
       />
+      {result && result.data.length > 0 && <Summary result={result} />}
       <DataTable
         columns={columns}
         rows={result?.data ?? []}
@@ -131,7 +181,7 @@ function UserFormDialog({ form, onFormChange, onFormSubmit, onFormClose }: Users
           // Tombol tidak disembunyikan untuk akun sendiri: server menolak dengan 422 dan pesannya tampil di sini.
           <div>
             <label className="flex items-center gap-2 text-sm text-ink">
-              <input type="checkbox" name="is_active" checked={values.is_active} onChange={(e) => set({ is_active: e.target.checked })} />
+              <input type="checkbox" name="is_active" checked={values.is_active} onChange={(e) => set({ is_active: e.target.checked })} className={checkboxClass} />
               {copy.isActive}
             </label>
             {errors.is_active && <FieldError>{errors.is_active}</FieldError>}
