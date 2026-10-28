@@ -39,12 +39,15 @@ function ObjectCell({ entry }: { entry: AuditEntry }) {
   if (!entry.object_type) return <span className="text-ink-muted">{copy.noDetail}</span>;
   const label = (auditObjectLabels as Record<string, string>)[entry.object_type];
   return (
-    <span className="whitespace-nowrap">
+    <span>
       {label ?? <span className="font-mono">{entry.object_type}</span>}
-      {entry.object_id !== null && <span className="ml-1 font-mono text-ink-muted">#{entry.object_id}</span>}
+      {entry.object_id !== null && <span className="ml-1 whitespace-nowrap font-mono text-ink-muted">#{entry.object_id}</span>}
     </span>
   );
 }
+
+/** Nilai sepanjang ini atau kurang ditampilkan utuh satu baris bersama kuncinya. */
+const SHORT_VALUE = 16;
 
 /**
  * Rincian: ringkasan satu baris langsung terbaca (mis. "escalated → approved"), data lengkap dan peramban
@@ -56,14 +59,14 @@ function DetailCell({ entry }: { entry: AuditEntry }) {
   if (parts.length === 0 && !text && !entry.user_agent) return <span className="text-ink-muted">{copy.noDetail}</span>;
 
   return (
-    <div className="min-w-44 max-w-md py-1.5">
+    <div className="min-w-36 max-w-md py-1.5">
       {parts.length > 0 && (
         <p className="break-words text-ink">
-          {/* Satu pasangan tidak terpotong; baris boleh pindah di antara pasangan. */}
+          {/* Pasangan bernilai pendek tidak terpotong; nilai panjang (mis. pesan galat) boleh terbungkus agar kolom tidak melebar. */}
           {parts.map((part, index) => (
             <Fragment key={`${part.key}:${index}`}>
               {index > 0 && <span className="text-ink-muted"> · </span>}
-              <span className="whitespace-nowrap">
+              <span className={part.value.length <= SHORT_VALUE ? "whitespace-nowrap" : undefined}>
                 {part.key && <span className="font-mono text-caption text-ink-muted">{part.key} </span>}
                 {part.value}
               </span>
@@ -95,7 +98,9 @@ const COLUMNS: DataTableColumn<AuditEntry>[] = [
       e.user ? (
         <>
           <span className="block text-ink">{e.user.name}</span>
-          <span className="block font-mono text-caption text-ink-muted">{e.user.email}</span>
+          <span title={e.user.email} className="block max-w-44 truncate font-mono text-caption text-ink-muted">
+            {e.user.email}
+          </span>
         </>
       ) : (
         <span className="text-ink-muted">{copy.system}</span>
