@@ -7,6 +7,10 @@ export type { ReplayListResponse, ReplayScenario, ReplayStatus } from "./api-typ
 export const MIN_SPEED = 1;
 export const MAX_SPEED = 100_000;
 
+/** CSV header of a scenario upload (ReplayScenarioImporter), in the order shown on the page. */
+export const REQUIRED_COLUMNS = ["offset_seconds", "phase", "text", "account_handle"] as const;
+export const OPTIONAL_COLUMNS = ["account_display_name", "account_age_days", "label_manual"] as const;
+
 /** How often the page reloads while a scenario runs, in milliseconds. */
 export const POLL_MS = 2000;
 

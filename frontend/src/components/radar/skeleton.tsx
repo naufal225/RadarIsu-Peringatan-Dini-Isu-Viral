@@ -7,9 +7,9 @@ function Bar({ className }: { className?: string }) {
 }
 
 /** Placeholder baris tabel; bentuknya menyerupai isi, bukan spinner layar penuh. */
-export function SkeletonRows({ rows = 5, columns = 4 }: { rows?: number; columns?: number }) {
+export function SkeletonRows({ rows = 5, columns = 4, framed = true }: { rows?: number; columns?: number; framed?: boolean }) {
   return (
-    <div role="status" aria-busy="true" className="divide-y divide-line rounded-control border border-line bg-panel">
+    <div role="status" aria-busy="true" className={cn("divide-y divide-line bg-panel", framed && "rounded-control border border-line")}>
       {Array.from({ length: rows }, (_, row) => (
         <div key={row} className="flex h-10 items-center gap-6 px-3">
           {Array.from({ length: columns }, (_, col) => (
@@ -21,9 +21,10 @@ export function SkeletonRows({ rows = 5, columns = 4 }: { rows?: number; columns
   );
 }
 
-export function SkeletonCard() {
+/** `framed={false}` di dalam Section: tanpa bingkai sendiri agar tidak ada kartu di dalam kartu. */
+export function SkeletonCard({ framed = true }: { framed?: boolean }) {
   return (
-    <div role="status" aria-busy="true" className="space-y-3 rounded-control border border-line bg-panel p-5">
+    <div role="status" aria-busy="true" className={cn("space-y-3", framed && "rounded-control border border-line bg-panel p-5")}>
       <Bar className="w-1/3" />
       <Bar className="h-8 w-1/2" />
       <Bar className="w-2/3" />
