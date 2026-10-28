@@ -7,6 +7,7 @@ vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn() }), usePat
 
 import { alertStatusLabels, severityLabels } from "@/lib/labels";
 import { DataTable } from "./data-table";
+import { Pagination } from "./pagination";
 import { SkeletonRows } from "./skeleton";
 import { SeverityBadge } from "./severity-badge";
 import { SimBadge, SimulationBanner } from "./simulation";
@@ -86,6 +87,16 @@ describe("DataTable", () => {
     expect(renderToString(<DataTable {...base} rows={[]} error={{}} />)).toContain('role="alert"');
     expect(renderToString(<DataTable {...base} rows={[]} empty={<p>Kosong khusus</p>} />)).toContain("Kosong khusus");
     expect(renderToString(<DataTable {...base} rows={[]} />)).toContain("Tidak ada data");
+  });
+});
+
+describe("Pagination", () => {
+  it("shows only the summary when everything fits on one page", () => {
+    const one = renderToString(<Pagination page={1} perPage={50} total={4} onPageChange={() => undefined} />);
+    expect(one).toContain("dari");
+    expect(one).not.toContain("<button");
+    const many = renderToString(<Pagination page={1} perPage={50} total={120} onPageChange={() => undefined} />);
+    expect(many.match(/<button/g)?.length).toBe(2);
   });
 });
 
