@@ -29,8 +29,8 @@ export const replayUi = {
   title: "Mode Replay",
   intro:
     "Memutar ulang skenario melalui jalur data yang sama dengan sumber langsung: baris baseline masuk sekaligus, baris incident dialirkan sesuai kecepatan. Semua data ditandai simulasi.",
-  workers:
-    "Replay berjalan sebagai job di antrean replay. Jalankan pekerja khusus: php artisan queue:work --queue=replay (di samping pekerja antrean utama).",
+  workers: "Replay berjalan sebagai job di antrean replay. Jalankan pekerja khusus di samping pekerja antrean utama:",
+  workersCommand: "php artisan queue:work --queue=replay",
   clockActive: (virtual: string) => `Jam data virtual: ${virtual}`,
   clockIdle: "Detektor memakai jam sebenarnya (tidak ada Replay berjalan).",
   scenarios: "Skenario",
@@ -77,7 +77,14 @@ export const replayUi = {
   confirmStopBody: "Baris yang sudah masuk tetap tersimpan. Jam data kembali ke jam sebenarnya.",
   confirmStart: "Mulai Replay",
   confirmStop: "Hentikan Replay",
-  times2: { anchor: "Jangkar virtual", started: "Mulai", finished: "Berhenti" },
+  times2: { anchor: "Jangkar virtual", started: "Mulai", finished: "Berhenti", heartbeat: "Detak pekerja terakhir" },
+  percent: (n: number) => `${n}%`,
+  incident: "Awal incident",
+  incidentAt: (seconds: string) => `Detik ke-${seconds}`,
+  speedRun: "Kecepatan dan putaran",
+  totalRows: "Total baris",
+  showRunning: "Lihat skenario yang berjalan",
+  description: "Deskripsi",
   upload: {
     title: "Unggah skenario",
     file: "File CSV skenario",
@@ -91,7 +98,18 @@ export const replayUi = {
     rowsTruncated: "Hanya 50 baris bermasalah pertama yang ditampilkan.",
     row: "Baris",
     problem: "Masalah",
-    format:
-      "Header wajib: offset_seconds, phase (baseline atau incident), text, account_handle. Opsional: account_display_name, account_age_days (umur akun saat posting), label_manual (organic atau anomalous). Baris baseline harus berakhir sebelum incident dimulai. Maks. 10 MB / 50.000 baris.",
+    format: "Format file CSV",
+    required: "Kolom wajib",
+    optional: "Kolom opsional",
+    columnNotes: {
+      offset_seconds: "detik sejak awal skenario",
+      phase: "baseline atau incident",
+      text: "isi posting",
+      account_handle: "handle akun",
+      account_display_name: "nama tampilan akun",
+      account_age_days: "umur akun saat posting, hari",
+      label_manual: "organic atau anomalous",
+    },
+    rules: ["Baris baseline harus berakhir sebelum incident dimulai.", "Maks. 10 MB atau 50.000 baris per file."],
   },
 } as const;
