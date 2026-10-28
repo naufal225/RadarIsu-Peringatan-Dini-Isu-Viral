@@ -3,7 +3,8 @@
 import { CircleCheck, TriangleAlert } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { Button } from "@/components/radar/button";
-import { controlClass, Field, FieldError } from "@/components/radar/form";
+import { ConfirmDialog } from "@/components/radar/confirm-dialog";
+import { checkboxClass, controlClass, Field, FieldError } from "@/components/radar/form";
 import { PageHeader } from "@/components/radar/page-header";
 import { Section } from "@/components/radar/section";
 import { SeverityBadge } from "@/components/radar/severity-badge";
@@ -13,6 +14,7 @@ import { Waktu } from "@/components/radar/waktu";
 import type { DetectionSettings, OfflineModeResponse, SettingsResponse } from "@/lib/api-types/settings";
 import { cn } from "@/lib/cn";
 import {
+  changedFields,
   effectiveZ,
   FIELD_RANGES,
   getPath,
@@ -114,13 +116,17 @@ export function SettingsView(props: SettingsViewProps) {
 function DetectionForm({ loaded, draft, onChange, serverFields, pending, saveFailed, saved, onSubmit, onReset }: SettingsViewProps & { loaded: SettingsResponse["data"]; draft: DetectionSettings }) {
   const clientFields = validateDetection(draft);
   const invalid = new Set([...clientFields, ...serverFields]);
-  const dirty = JSON.stringify(draft) !== JSON.stringify(loaded.value);
+  const changes = changedFields(loaded.value, draft);
+  const dirty = changes.length > 0;
+  const original = new Map(changes.map((c) => [c.path, c.from]));
+  const [confirming, setConfirming] = useState(false);
   const total = weightsTotal(draft);
   const brokenRules = [...invalid].map((field) => copy.rules[field]).filter(Boolean);
 
+  // Simpan selalu lewat konfirmasi (docs/UI_PAGES.md): perubahan memengaruhi deteksi berikutnya dan dicatat di audit.
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    onSubmit();
+    setConfirming(true);
   }
 
   return (
@@ -130,7 +136,16 @@ function DetectionForm({ loaded, draft, onChange, serverFields, pending, saveFai
           <Section key={group.title} title={group.title}>
             <div className="grid max-w-4xl gap-4 sm:grid-cols-2">
               {group.fields.map((path) => (
-                <NumberField key={path} path={path} value={getPath(draft, path)} invalid={isFieldInvalid(invalid, path)} outOfRange={isOutOfRange(draft, path)} fromServer={serverFields.includes(path)} onChange={onChange} />
+                <NumberField
+                  key={path}
+                  path={path}
+                  value={getPath(draft, path)}
+                  original={original.get(path)}
+                  invalid={isFieldInvalid(invalid, path)}
+                  outOfRange={isOutOfRange(draft, path)}
+                  fromServer={serverFields.includes(path)}
+                  onChange={onChange}
+                />
               ))}
             </div>
             {group.title === copy.groups.weights && (
@@ -144,23 +159,57 @@ function DetectionForm({ loaded, draft, onChange, serverFields, pending, saveFai
           </Section>
         ))}
 
-        <div className="mb-8 max-w-4xl space-y-3">
+        {/* Bilah simpan menempel di bawah layar selama form terlihat: halaman ini panjang (tujuh kelompok). */}
+        <div className="sticky bottom-4 z-10 mb-8 space-y-2 rounded-control border border-line bg-panel px-5 py-3">
           {brokenRules.map((rule) => (
             <FieldError key={rule}>{rule}</FieldError>
           ))}
           {saveFailed && <FieldError>{ui.common.actionError}</FieldError>}
-          {saved && !dirty && <Saved text={copy.saved} />}
-          <div className="flex flex-wrap gap-2">
-            <Button type="submit" variant="primary" pending={pending} disabled={!dirty || clientFields.length > 0}>
-              {pending ? ui.common.saving : copy.save}
-            </Button>
-            <Button onClick={onReset} disabled={pending || !dirty}>
-              {copy.reset}
-            </Button>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="min-w-0">
+              {dirty ? (
+                <p className="text-table font-medium text-ink">{copy.pendingChanges(changes.length)}</p>
+              ) : saved ? (
+                <Saved text={copy.saved} />
+              ) : (
+                <LastUpdated at={loaded.updated_at} by={loaded.updated_by} label={copy.lastUpdatedBy} />
+              )}
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Button onClick={onReset} disabled={pending || !dirty}>
+                {copy.reset}
+              </Button>
+              <Button type="submit" variant="primary" pending={pending} disabled={!dirty || clientFields.length > 0}>
+                {pending ? ui.common.saving : copy.save}
+              </Button>
+            </div>
           </div>
-          <LastUpdated at={loaded.updated_at} by={loaded.updated_by} label={copy.lastUpdatedBy} />
         </div>
       </form>
+
+      <ConfirmDialog
+        open={confirming}
+        title={copy.confirmTitle}
+        description={copy.confirmBody}
+        confirmLabel={copy.confirmSave}
+        onConfirm={() => {
+          setConfirming(false);
+          onSubmit();
+        }}
+        onClose={() => setConfirming(false)}
+      >
+        <p className="mb-1 text-table font-medium text-ink">{copy.changeList}</p>
+        <ul className="divide-y divide-line text-table">
+          {changes.map((change) => (
+            <li key={change.path} className="flex items-baseline justify-between gap-3 py-1.5">
+              <span className="text-ink">{copy.fields[change.path as FieldPath].label}</span>
+              <span className="whitespace-nowrap font-mono tabular-nums text-ink-muted">
+                {formatNumber(change.from, 0, 2)} → <span className="text-ink">{formatNumber(change.to, 0, 2)}</span>
+              </span>
+            </li>
+          ))}
+        </ul>
+      </ConfirmDialog>
 
       <FormulaPreview settings={draft} usable={clientFields.length === 0} />
     </>
@@ -170,6 +219,7 @@ function DetectionForm({ loaded, draft, onChange, serverFields, pending, saveFai
 function NumberField({
   path,
   value,
+  original,
   invalid,
   outOfRange,
   fromServer,
@@ -177,6 +227,8 @@ function NumberField({
 }: {
   path: FieldPath;
   value: number;
+  /** Stored value when this field was edited; shown so the change is visible before saving. */
+  original?: number;
   invalid: boolean;
   outOfRange: boolean;
   fromServer: boolean;
@@ -202,8 +254,9 @@ function NumberField({
         value={Number.isNaN(value) ? "" : value}
         aria-invalid={invalid}
         onChange={(e) => onChange(path, e.target.value)}
-        className={cn(controlClass, invalid && "border-sev-high")}
+        className={cn(controlClass, "font-mono", original !== undefined && !invalid && "border-brand", invalid && "border-sev-high")}
       />
+      {original !== undefined && <span className="mt-1 block text-caption font-medium text-brand">{copy.was(formatNumber(original, 0, 2))}</span>}
     </Field>
   );
 }
@@ -289,7 +342,7 @@ function FormulaPreview({ settings, usable }: { settings: DetectionSettings; usa
                 <input type="number" name="preview_similarity" min={0} max={1} step={0.01} value={similarity} onChange={(e) => setSimilarity(e.target.value === "" ? 0 : Number(e.target.value))} className={controlClass} />
               </Field>
               <label className="flex items-center gap-2 self-end pb-2 text-sm">
-                <input type="checkbox" name="preview_young" checked={young} onChange={(e) => setYoung(e.target.checked)} />
+                <input type="checkbox" name="preview_young" checked={young} onChange={(e) => setYoung(e.target.checked)} className={checkboxClass} />
                 {labels.youngAccount}
               </label>
             </div>
@@ -321,7 +374,7 @@ function OfflineSection({ loaded, enabled, onToggle, onSave, pending, saved, fai
           className="max-w-3xl space-y-3"
         >
           <label className="flex items-center gap-2 text-sm text-ink">
-            <input type="checkbox" name="enabled" checked={enabled} onChange={(e) => onToggle(e.target.checked)} />
+            <input type="checkbox" name="enabled" checked={enabled} onChange={(e) => onToggle(e.target.checked)} className={checkboxClass} />
             {offline.enabled}
           </label>
           {failed && <FieldError>{ui.common.actionError}</FieldError>}

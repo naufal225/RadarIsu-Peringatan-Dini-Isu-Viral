@@ -171,6 +171,19 @@ export function previewScore(settings: DetectionSettings, input: PreviewInput): 
 }
 
 /** Field paths flagged by a 422 (`weights.spike`, `weights`, ...) or by the client rules, for the field with `path`. */
+export type FieldChange = { path: string; from: number; to: number };
+
+/** Fields whose edited value differs from the stored one, in FIELD_RANGES order. An emptied field counts as changed. */
+export function changedFields(before: DetectionSettings, after: DetectionSettings): FieldChange[] {
+  const out: FieldChange[] = [];
+  for (const path of Object.keys(FIELD_RANGES)) {
+    const from = getPath(before, path);
+    const to = getPath(after, path);
+    if (from !== to && !(Number.isNaN(from) && Number.isNaN(to))) out.push({ path, from, to });
+  }
+  return out;
+}
+
 export function isFieldInvalid(invalid: ReadonlySet<string>, path: string): boolean {
   return invalid.has(path) || invalid.has(path.split(".")[0]);
 }
