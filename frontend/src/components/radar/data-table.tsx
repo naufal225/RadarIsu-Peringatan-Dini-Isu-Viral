@@ -35,6 +35,8 @@ export type DataTableProps<T> = {
   error?: { title?: string; description?: string; onRetry?: () => void } | null;
   /** Screen-reader caption describing the table. */
   caption: string;
+  /** false inside a `<Section flush>`: no own border, so there is no card inside a card. */
+  framed?: boolean;
 };
 
 const SEVERITY_BAR: Record<Severity, string> = {
@@ -49,12 +51,14 @@ const ALIGN = { left: "text-left", right: "text-right", center: "text-center" } 
  * Tabel padat (baris 40 px). Pengurutan dan paginasi dilakukan server; tabel hanya menampilkan.
  * Kolom pertama menjadi tautan (keyboard) dan seluruh baris bisa diklik bila `rowHref` ada.
  */
-export function DataTable<T>({ columns, rows, getRowKey, rowHref, rowSeverity, rowSelected, loading, empty, error, caption }: DataTableProps<T>) {
+export function DataTable<T>({ columns, rows, getRowKey, rowHref, rowSeverity, rowSelected, loading, empty, error, caption, framed = true }: DataTableProps<T>) {
   const router = useRouter();
 
-  if (error) return <ErrorState {...error} />;
-  if (loading) return <SkeletonRows columns={columns.length} />;
-  if (rows.length === 0) return <>{empty ?? <EmptyState title={ui.table.empty} />}</>;
+  // Tanpa bingkai, keadaan khusus diberi ruang dalam panel induk.
+  const inset = (node: ReactNode) => (framed ? node : <div className="p-5">{node}</div>);
+  if (error) return inset(<ErrorState {...error} />);
+  if (loading) return <SkeletonRows columns={columns.length} framed={framed} />;
+  if (rows.length === 0) return inset(empty ?? <EmptyState title={ui.table.empty} />);
 
   function openRow(event: MouseEvent<HTMLTableRowElement> | KeyboardEvent<HTMLTableRowElement>, href: string) {
     // Klik pada tautan, tombol, atau input di dalam baris tetap milik elemen itu.
@@ -63,7 +67,7 @@ export function DataTable<T>({ columns, rows, getRowKey, rowHref, rowSeverity, r
   }
 
   return (
-    <div className="overflow-x-auto rounded-control border border-line bg-panel">
+    <div className={cn("overflow-x-auto bg-panel", framed && "rounded-control border border-line")}>
       <table className="w-full border-collapse text-left text-table">
         <caption className="sr-only">{caption}</caption>
         <thead className="border-b border-line bg-paper text-ink-muted">

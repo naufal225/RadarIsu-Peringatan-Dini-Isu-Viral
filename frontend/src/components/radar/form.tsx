@@ -5,6 +5,13 @@ import { TriangleAlert } from "lucide-react";
 export const controlClass =
   "h-9 w-full rounded-control border border-line-input bg-panel px-3 text-sm text-ink placeholder:text-ink-muted disabled:cursor-not-allowed disabled:opacity-50";
 
+/** Input berkas: tombol pemilih bergaya kontrol sekunder. */
+export const fileInputClass =
+  "block w-full text-sm text-ink file:mr-3 file:h-9 file:cursor-pointer file:rounded-control file:border file:border-line-input file:bg-panel file:px-3 file:text-sm file:font-medium file:text-ink hover:file:bg-hover";
+
+/** Kotak centang bawaan dengan warna merek (accent-color), ukuran 16 px. */
+export const checkboxClass = "size-4 shrink-0 cursor-pointer accent-brand";
+
 /** Bidang berlabel dengan pesan galat 422 di bawahnya (ikon + teks, bukan toast). */
 export function Field({ label, error, hint, children }: { label: string; error?: string | null; hint?: string; children: ReactNode }) {
   return (
