@@ -48,4 +48,17 @@ export const sourcesUi = {
   noInterval: "—",
   yes: "Ya",
   no: "Tidak",
+  pull: "Penarikan",
+  inactive: "Nonaktif",
+  checkedAt: "Dicek",
+  videoCount: (n: number) => `${n} video`,
+  managedByReplay: "Dikelola di halaman Replay",
+  summary: {
+    label: "Ringkasan sumber data",
+    total: (n: string) => `${n} sumber`,
+    active: (n: string) => `${n} aktif`,
+    failing: (n: string) => `${n} gagal pada uji terakhir`,
+    noneFailing: "Tidak ada yang gagal pada uji terakhir",
+    rawItems: (n: string) => `${n} item mentah`,
+  },
 } as const;

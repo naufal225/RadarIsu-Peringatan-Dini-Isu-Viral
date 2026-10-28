@@ -6,7 +6,7 @@ vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn() }), usePat
 
 import { IMPORT_RESULT, SOURCE_LIST, SOURCES } from "@/fixtures/sources";
 import { ui } from "@/lib/labels";
-import { canImport, canTest, emptySourceForm, fieldErrors, formFromSource, parseVideoIds, sourcePayload } from "@/lib/sources";
+import { canImport, canTest, emptySourceForm, fieldErrors, formFromSource, parseVideoIds, sourcePayload, sourceSummary } from "@/lib/sources";
 import { SourcesView, type ImportState, type SourceFormState, type SourcesViewProps } from "./sources-view";
 
 const noop = () => undefined;
@@ -65,6 +65,16 @@ describe("source payloads", () => {
     expect(formFromSource(SOURCES[2]).video_ids).toBe("dQw4w9WgXcQ\naBcDeFgHiJk");
   });
 
+  it("summarises the whole list: active, failing, and raw items", () => {
+    expect(sourceSummary(SOURCES)).toEqual({
+      total: SOURCES.length,
+      active: SOURCES.filter((s) => s.is_active).length,
+      failing: SOURCES.filter((s) => s.last_status === "error").length,
+      rawItems: SOURCES.reduce((sum, s) => sum + s.raw_items_count, 0),
+    });
+    expect(sourceSummary([])).toEqual({ total: 0, active: 0, failing: 0, rawItems: 0 });
+  });
+
   it("tests only RSS/YouTube and imports only into CSV sources", () => {
     expect(SOURCES.filter(canTest).map((s) => s.type)).toEqual(["rss", "youtube"]);
     expect(SOURCES.filter(canImport).map((s) => s.type)).toEqual(["csv"]);
@@ -99,6 +109,12 @@ describe("SourcesView", () => {
     const importOpen = render({ imports: { ...imports, source: SOURCES[0], result: IMPORT_RESULT } });
     expect(importOpen).toContain("humas-oktober.csv");
     expect(importOpen).toContain("Kolom text kosong");
+  });
+
+  it("names failing sources in the summary and links the replay source to its page", () => {
+    const html = render();
+    expect(html).toContain(ui.sources.summary.failing("1"));
+    expect(html).toContain('href="/admin/replay"');
   });
 
   it("states that there are no sources yet", () => {

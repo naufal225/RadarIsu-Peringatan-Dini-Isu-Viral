@@ -1,12 +1,14 @@
 "use client";
 
 import { CircleCheck, CircleDashed, CircleX, type LucideIcon } from "lucide-react";
+import Link from "next/link";
 import type { FormEvent } from "react";
 import { Button } from "@/components/radar/button";
 import { DataTable, type DataTableColumn } from "@/components/radar/data-table";
 import { Dialog } from "@/components/radar/dialog";
-import { controlClass, Field, FieldError } from "@/components/radar/form";
+import { checkboxClass, controlClass, Field, FieldError, fileInputClass } from "@/components/radar/form";
 import { PageHeader } from "@/components/radar/page-header";
+import { ProblemTable } from "@/components/radar/problem-table";
 import { SimBadge } from "@/components/radar/simulation";
 import { EmptyState } from "@/components/radar/states";
 import { Waktu } from "@/components/radar/waktu";
@@ -14,7 +16,7 @@ import { CREATABLE_SOURCE_TYPES, type ImportBatch, type Source, type SourceList,
 import { cn } from "@/lib/cn";
 import { formatInteger } from "@/lib/format";
 import { describeErrorCode, sourceStatusLabels, sourceTypeLabels, ui } from "@/lib/labels";
-import { canImport, canTest, type SourceFormValues } from "@/lib/sources";
+import { canImport, canTest, sourceSummary, type SourceFormValues } from "@/lib/sources";
 
 const copy = ui.sources;
 
@@ -28,8 +30,8 @@ const STATUS: Record<SourceStatus, { icon: LucideIcon; tone: string }> = {
 function SourceStatusLabel({ status }: { status: SourceStatus }) {
   const { icon: Icon, tone } = STATUS[status];
   return (
-    <span className={cn("inline-flex items-center gap-1.5", tone)}>
-      <Icon aria-hidden="true" className="size-4" />
+    <span className={cn("inline-flex items-center gap-1.5 whitespace-nowrap", tone)}>
+      <Icon aria-hidden="true" className="size-4 shrink-0" />
       {sourceStatusLabels[status]}
     </span>
   );
@@ -79,23 +81,54 @@ export type SourcesViewProps = {
   onImportClose: () => void;
 };
 
-/** Halaman Polos: komponen fondasi apa adanya (docs/UI_PAGES.md, /admin/sources). */
+/** Ringkasan satu baris di atas tabel: fakta dari daftar (tidak dipaginasi), galat disorot dengan ikon + teks. */
+function Summary({ sources }: { sources: Source[] }) {
+  const summary = sourceSummary(sources);
+  const text = copy.summary;
+  return (
+    <p aria-label={text.label} className="mb-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-table text-ink-muted">
+      <span>{text.total(formatInteger(summary.total))}</span>
+      <span aria-hidden="true">·</span>
+      <span>{text.active(formatInteger(summary.active))}</span>
+      <span aria-hidden="true">·</span>
+      <span>{text.rawItems(formatInteger(summary.rawItems))}</span>
+      <span aria-hidden="true">·</span>
+      {summary.failing > 0 ? (
+        <span className="inline-flex items-center gap-1 font-medium text-sev-high">
+          <CircleX aria-hidden="true" className="size-3.5" />
+          {text.failing(formatInteger(summary.failing))}
+        </span>
+      ) : (
+        <span>{text.noneFailing}</span>
+      )}
+    </p>
+  );
+}
+
+/** Rincian konfigurasi satu baris (URL feed atau jumlah video), utuh di tooltip. */
+function ConfigLine({ source }: { source: Source }) {
+  const full = source.config.url ?? source.config.video_ids?.join(", ");
+  if (!full) return null;
+  return (
+    <span title={full} className="block max-w-52 truncate font-mono text-caption text-ink-muted">
+      {source.config.url ?? copy.videoCount(source.config.video_ids?.length ?? 0)}
+    </span>
+  );
+}
+
+/** Halaman Polos dengan komponen fondasi (docs/UI_PAGES.md, /admin/sources). */
 export function SourcesView(props: SourcesViewProps) {
   const { result, loading, failed, onRetry, canManage, busyId, rowNotice } = props;
+  const sources = result?.data ?? [];
 
   const columns: DataTableColumn<Source>[] = [
     {
       id: "name",
       header: copy.name,
       cell: (s) => (
-        <div className="py-1">
-          <span className="block font-medium text-ink">{s.name}</span>
-          {s.config.url && <span className="block break-all font-mono text-caption text-ink-muted">{s.config.url}</span>}
-          {s.config.video_ids && <span className="block font-mono text-caption text-ink-muted">{s.config.video_ids.join(", ")}</span>}
-          {s.last_error && <span className="block break-words text-caption text-sev-high">{copy.lastError}: {s.last_error}</span>}
-          {rowNotice?.id === s.id && (
-            <span className={cn("block text-caption", rowNotice.tone === "error" ? "text-sev-high" : "text-ink")}>{rowNotice.text}</span>
-          )}
+        <div className="py-2">
+          <span className={cn("block font-medium", s.is_active ? "text-ink" : "text-ink-muted")}>{s.name}</span>
+          <ConfigLine source={s} />
         </div>
       ),
     },
@@ -103,34 +136,75 @@ export function SourcesView(props: SourcesViewProps) {
       id: "type",
       header: copy.type,
       cell: (s) => (
-        <span className="flex flex-wrap items-center gap-2">
+        <span className="flex flex-wrap items-center gap-2 whitespace-nowrap">
           {sourceTypeLabels[s.type]}
           {s.is_simulated && <SimBadge />}
         </span>
       ),
     },
-    { id: "status", header: copy.status, cell: (s) => <SourceStatusLabel status={s.last_status} /> },
-    { id: "checked", header: copy.lastChecked, cell: (s) => <Waktu value={s.last_fetched_at} /> },
-    { id: "interval", header: copy.interval, cell: (s) => (s.interval_minutes ? copy.everyMinutes(s.interval_minutes) : copy.noInterval) },
-    { id: "active", header: copy.active, cell: (s) => (s.is_active ? copy.yes : copy.no) },
-    { id: "raw", header: copy.rawItems, cell: (s) => formatInteger(s.raw_items_count), align: "right", mono: true },
+    {
+      // Status, waktu cek, galat terakhir, dan hasil uji dalam satu kolom: satu cerita per sumber.
+      id: "status",
+      header: copy.status,
+      cell: (s) => (
+        <div className="max-w-64 py-2">
+          <span className="flex flex-wrap items-baseline gap-x-2">
+            <SourceStatusLabel status={s.last_status} />
+            {s.last_fetched_at && <Waktu value={s.last_fetched_at} className="text-caption text-ink-muted" />}
+          </span>
+          {s.last_error && (
+            <span title={s.last_error} className="mt-0.5 line-clamp-2 break-words text-caption text-sev-high">
+              {copy.lastError}: {s.last_error}
+            </span>
+          )}
+          {rowNotice?.id === s.id && (
+            <span role="status" className={cn("mt-0.5 flex items-center gap-1 text-caption", rowNotice.tone === "error" ? "text-sev-high" : "text-ink")}>
+              {rowNotice.tone === "error" ? <CircleX aria-hidden="true" className="size-3.5 shrink-0" /> : <CircleCheck aria-hidden="true" className="size-3.5 shrink-0" />}
+              {rowNotice.text}
+            </span>
+          )}
+        </div>
+      ),
+    },
+    {
+      id: "pull",
+      header: copy.pull,
+      cell: (s) => (
+        <span className="whitespace-nowrap">
+          {s.is_active ? copy.active : <span className="text-ink-muted">{copy.inactive}</span>}
+          {s.is_active && s.interval_minutes && <span className="block text-caption text-ink-muted">{copy.everyMinutes(s.interval_minutes)}</span>}
+        </span>
+      ),
+    },
+    { id: "raw", header: copy.rawItems, cell: (s) => <span className="whitespace-nowrap">{formatInteger(s.raw_items_count)}</span>, align: "right", mono: true },
   ];
 
   if (canManage) {
     columns.push({
       id: "actions",
-      header: copy.actions,
+      header: <span className="sr-only">{copy.actions}</span>,
+      align: "right",
       cell: (s) =>
-        s.type === "replay" ? null : (
-          <span className="flex flex-wrap gap-2 py-1">
+        s.type === "replay" ? (
+          <Link href="/admin/replay" className="inline-block max-w-32 text-caption text-brand underline-offset-2 hover:underline">
+            {copy.managedByReplay}
+          </Link>
+        ) : (
+          <span className="flex flex-wrap justify-end gap-1.5 py-1 xl:flex-nowrap">
             {canTest(s) && (
-              <Button onClick={() => props.onTest(s)} pending={busyId === s.id}>
+              <Button size="sm" onClick={() => props.onTest(s)} pending={busyId === s.id}>
                 {busyId === s.id ? copy.testing : copy.test}
               </Button>
             )}
-            {canImport(s) && <Button onClick={() => props.onImport(s)}>{copy.import}</Button>}
-            <Button onClick={() => props.onEdit(s)}>{copy.edit}</Button>
-            <Button onClick={() => props.onToggle(s)} disabled={busyId === s.id}>
+            {canImport(s) && (
+              <Button size="sm" onClick={() => props.onImport(s)}>
+                {copy.import}
+              </Button>
+            )}
+            <Button size="sm" variant="ghost" onClick={() => props.onEdit(s)}>
+              {copy.edit}
+            </Button>
+            <Button size="sm" variant="ghost" onClick={() => props.onToggle(s)} disabled={busyId === s.id}>
               {s.is_active ? ui.common.deactivate : ui.common.activate}
             </Button>
           </span>
@@ -147,9 +221,11 @@ export function SourcesView(props: SourcesViewProps) {
         actions={canManage ? <Button variant="primary" onClick={props.onNew}>{copy.newSource}</Button> : undefined}
       />
 
+      {sources.length > 0 && <Summary sources={sources} />}
+
       <DataTable
         columns={columns}
-        rows={result?.data ?? []}
+        rows={sources}
         getRowKey={(s) => s.id}
         loading={loading && result === null}
         error={failed ? { onRetry } : null}
@@ -212,7 +288,7 @@ function SourceFormDialog({ form, onFormChange, onFormSubmit, onFormClose }: Sou
           </Field>
         )}
         <label className="flex items-center gap-2 text-sm text-ink">
-          <input type="checkbox" name="is_active" checked={values.is_active} onChange={(e) => set({ is_active: e.target.checked })} />
+          <input type="checkbox" name="is_active" checked={values.is_active} onChange={(e) => set({ is_active: e.target.checked })} className={checkboxClass} />
           {copy.isActive}
         </label>
         {form.failed && <FieldError>{ui.common.actionError}</FieldError>}
@@ -242,7 +318,7 @@ function ImportDialog({ imports, onImportSubmit, onImportClose }: SourcesViewPro
       <form onSubmit={submit} className="space-y-3">
         <p className="text-caption text-ink-muted">{copy.csvFormat}</p>
         <Field label={copy.file} error={imports.fileErrors.length ? imports.fileErrors.map(describeErrorCode).join("; ") : null}>
-          <input name="file" type="file" accept=".csv,text/csv" required className="block text-sm text-ink" />
+          <input name="file" type="file" accept=".csv,text/csv" required className={fileInputClass} />
         </Field>
         <Button type="submit" variant="primary" pending={imports.pending}>
           {imports.pending ? copy.uploading : copy.upload}
@@ -260,27 +336,14 @@ function ImportDialog({ imports, onImportSubmit, onImportClose }: SourcesViewPro
             {formatInteger(imports.result.failed_rows)}
           </p>
           {imports.result.errors.length > 0 && (
-            <div className="overflow-x-auto rounded-control border border-line">
-              <table className="w-full text-left text-table">
-                <caption className="sr-only">{copy.problem}</caption>
-                <thead className="border-b border-line bg-paper text-ink-muted">
-                  <tr>
-                    <th scope="col" className="h-9 px-3 font-medium">{copy.row}</th>
-                    <th scope="col" className="px-3 font-medium">{copy.problem}</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-line">
-                  {imports.result.errors.map((e) => (
-                    <tr key={`${e.row}:${e.message}`} className="h-9">
-                      <td className="px-3 font-mono">{e.row}</td>
-                      <td className="px-3">{describeErrorCode(e.message)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <ProblemTable
+              caption={copy.problem}
+              rowHeader={copy.row}
+              problemHeader={copy.problem}
+              rows={imports.result.errors.map((e) => ({ key: `${e.row}:${e.message}`, row: e.row, problem: describeErrorCode(e.message) }))}
+              note={imports.result.failed_rows > imports.result.errors.length ? copy.errorsTruncated : undefined}
+            />
           )}
-          {imports.result.failed_rows > imports.result.errors.length && <p className="text-caption text-ink-muted">{copy.errorsTruncated}</p>}
         </div>
       )}
 

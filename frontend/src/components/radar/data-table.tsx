@@ -67,13 +67,14 @@ export function DataTable<T>({ columns, rows, getRowKey, rowHref, rowSeverity, r
   }
 
   return (
-    <div className={cn("overflow-x-auto bg-panel", framed && "rounded-control border border-line")}>
+    // relative: elemen absolut di dalam sel (mis. judul sr-only) tetap terkurung di wadah gulir, tidak melebarkan halaman.
+    <div className={cn("relative overflow-x-auto bg-panel", framed && "rounded-control border border-line")}>
       <table className="w-full border-collapse text-left text-table">
         <caption className="sr-only">{caption}</caption>
         <thead className="border-b border-line bg-paper text-ink-muted">
           <tr>
             {columns.map((column) => (
-              <th key={column.id} scope="col" className={cn("h-10 px-3 font-medium", ALIGN[column.align ?? "left"], column.width)}>
+              <th key={column.id} scope="col" className={cn("h-10 whitespace-nowrap px-3 font-medium", ALIGN[column.align ?? "left"], column.width)}>
                 {column.header}
               </th>
             ))}

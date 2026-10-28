@@ -58,6 +58,18 @@ export function fieldErrors(body: { errors?: Record<string, string[]> } | null):
   return out;
 }
 
+export type SourceSummary = { total: number; active: number; failing: number; rawItems: number };
+
+/** Counts over the whole list (GET /sources is not paginated): how many pull, how many failed their last check. */
+export function sourceSummary(sources: Pick<Source, "is_active" | "last_status" | "raw_items_count">[]): SourceSummary {
+  return {
+    total: sources.length,
+    active: sources.filter((s) => s.is_active).length,
+    failing: sources.filter((s) => s.last_status === "error").length,
+    rawItems: sources.reduce((sum, s) => sum + s.raw_items_count, 0),
+  };
+}
+
 /** Only RSS and YouTube can be tested; only CSV sources accept an import. */
 export function canTest(source: Pick<Source, "type">): boolean {
   return source.type === "rss" || source.type === "youtube";
