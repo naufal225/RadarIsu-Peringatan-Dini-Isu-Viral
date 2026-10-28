@@ -1,30 +1,49 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
+import {
+  ArrowRight,
+  ArrowUpRight,
+  CheckCircle2,
+  CheckSquare,
+  FileText,
+  Hash,
+  Inbox,
+  Radio,
+  RotateCw,
+  ShieldAlert,
+  Tag,
+} from "lucide-react";
 import { useCan, useMe } from "@/components/permissions-provider";
-import { Button, ErrorText, PageTitle, StatusBadge, Table, Td } from "@/components/ui";
-import { formatDateTime } from "@/lib/format";
-import { alertKindLabels, alertStatusLabels, severityLabels, ui } from "@/lib/labels";
+import { PageHeader } from "@/components/radar/page-header";
+import { Section } from "@/components/radar/section";
+import { Button } from "@/components/radar/button";
+import { SeverityBadge } from "@/components/radar/severity-badge";
+import { StatusChip } from "@/components/radar/status-chip";
+import { Waktu } from "@/components/radar/waktu";
+import { DataTable, type DataTableColumn } from "@/components/radar/data-table";
+import { SimBadge } from "@/components/radar/simulation";
+import { EmptyState, ErrorState } from "@/components/radar/states";
+import { SkeletonCard } from "@/components/radar/skeleton";
+import { cn } from "@/lib/cn";
+import { formatInteger } from "@/lib/format";
+import { formatWib } from "@/lib/format/time";
+import { alertKindLabels, ui } from "@/lib/labels";
 import {
   calculatePeakHour,
   calculateTotalVolume,
-  severityTone,
   type DashboardSummary,
   type RankedIssue,
 } from "@/lib/dashboard";
 import { useApiData } from "@/lib/use-api-data";
 import { DashboardChart } from "./dashboard-chart";
 
-const peakTimeFormat = new Intl.DateTimeFormat("id-ID", {
-  hour: "2-digit",
-  minute: "2-digit",
-  timeZone: "UTC",
-});
-
 export function DashboardPanel() {
   const me = useMe();
   const can = useCan();
   const isLeader = me.role.slug === "leader";
+  const [isReloading, setIsReloading] = useState(false);
 
   const {
     data: summaryRes,
@@ -45,333 +64,315 @@ export function DashboardPanel() {
   const totalVolume = calculateTotalVolume(trendPoints);
   const peakHour = calculatePeakHour(trendPoints);
 
-  function reloadAll() {
-    reloadSummary();
-    reloadIssues();
+  async function reloadAll() {
+    setIsReloading(true);
+    try {
+      await Promise.all([reloadSummary(), reloadIssues()]);
+    } finally {
+      setIsReloading(false);
+    }
   }
 
-  function getStatusTone(status: keyof typeof alertStatusLabels): "error" | "warn" | "ok" | "muted" {
-    if (status === "escalated") return isLeader ? "error" : "warn";
-    if (status === "new") return "warn";
-    if (status === "approved") return "ok";
-    return "muted";
-  }
-
-  function getScoreBadgeClass(score: number): string {
-    if (score >= 70) {
-      return "bg-red-50 text-red-700 border-red-200 dark:bg-red-950/40 dark:text-red-300 dark:border-red-800";
-    }
-    if (score >= 40) {
-      return "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800";
-    }
-    return "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800";
-  }
+  const issueColumns: DataTableColumn<RankedIssue>[] = [
+    {
+      id: "topic",
+      header: ui.dashboard.issues.table.topic,
+      cell: (row) => (
+        <span className="font-medium text-ink">
+          {row.topic?.name ?? (row.subject_account?.handle ? `@${row.subject_account.handle.replace(/^@/, "")}` : ui.common.none)}
+        </span>
+      ),
+    },
+    {
+      id: "kind",
+      header: ui.dashboard.issues.table.kind,
+      cell: (row) => alertKindLabels[row.kind] ?? row.kind,
+    },
+    {
+      id: "score",
+      header: ui.dashboard.issues.table.score,
+      mono: true,
+      cell: (row) => (
+        <span
+          className={cn(
+            "inline-flex items-center rounded-badge border px-2 py-0.5 font-mono text-table font-semibold tabular-nums",
+            row.score >= 70
+              ? "border-sev-high bg-sev-high-bg text-sev-high"
+              : row.score >= 40
+              ? "border-sev-medium bg-sev-medium-bg text-sev-medium"
+              : "border-sev-low bg-sev-low-bg text-sev-low",
+          )}
+        >
+          {row.score}
+        </span>
+      ),
+    },
+    {
+      id: "severity",
+      header: ui.dashboard.issues.table.severity,
+      cell: (row) => <SeverityBadge severity={row.severity} size="sm" />,
+    },
+    {
+      id: "status",
+      header: ui.dashboard.issues.table.status,
+      cell: (row) => <StatusChip status={row.status} />,
+    },
+    {
+      id: "detectedAt",
+      header: ui.dashboard.issues.table.detectedAt,
+      cell: (row) => <Waktu value={row.detected_at} />,
+    },
+    {
+      id: "action",
+      header: ui.dashboard.issues.table.action,
+      align: "right",
+      cell: (row) => (
+        <Link
+          href={`/alerts/${row.id}`}
+          className="inline-flex h-7 items-center justify-center rounded-control border border-line-input bg-panel px-2.5 text-caption font-medium text-ink transition-colors hover:bg-hover"
+        >
+          {ui.dashboard.issues.viewDetail}
+        </Link>
+      ),
+    },
+  ];
 
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <PageTitle>{ui.dashboard.title}</PageTitle>
-          <p className="text-sm text-neutral-600 dark:text-neutral-400">
-            {ui.dashboard.subtitle}
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          {hasSimulatedData && (
-            <span
-              className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-800 dark:border-amber-700 dark:bg-amber-950/50 dark:text-amber-300"
-              title="Data bersumber dari feed pengujian atau skenario replay"
+      <PageHeader
+        title={ui.dashboard.title}
+        subtitle={ui.dashboard.subtitle}
+        actions={
+          <div className="flex items-center gap-3">
+            {hasSimulatedData && <SimBadge />}
+            <Button
+              variant="secondary"
+              onClick={reloadAll}
+              pending={isReloading}
+              className="gap-2"
             >
-              <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
-              {ui.simulatedData}
-            </span>
-          )}
-          <Button onClick={reloadAll} variant="secondary" className="cursor-pointer">
-            Segarkan
-          </Button>
-        </div>
-      </div>
+              <RotateCw className={cn("size-3.5", isReloading && "animate-spin")} />
+              <span>Segarkan</span>
+            </Button>
+          </div>
+        }
+      />
 
       {/* Global Error Banner */}
       {(summaryError || issuesError) && (
-        <ErrorText>{ui.common.loadError}</ErrorText>
+        <ErrorState
+          title={ui.common.loadError}
+          description="Gagal memuat ringkasan atau isu dasbor. Periksa koneksi ke server."
+          onRetry={reloadAll}
+        />
       )}
 
       {/* KPI Cards Grid */}
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-6 sm:grid-cols-3">
         {/* Card 1: Active Issues */}
-        <div className="rounded-lg border border-neutral-200 bg-white p-5 shadow-sm transition hover:shadow-md dark:border-neutral-800 dark:bg-neutral-900">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
-              {ui.dashboard.kpi.activeIssues}
-            </span>
-            <span className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400">
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-            </span>
+        {summary === null ? (
+          <SkeletonCard />
+        ) : (
+          <div className="rounded-control border border-line bg-panel p-5 transition-colors">
+            <div className="flex items-center justify-between text-table text-ink-muted">
+              <span>{ui.dashboard.kpi.activeIssues}</span>
+              <Radio className="size-4 text-brand" aria-hidden="true" />
+            </div>
+            <div className="mt-2 flex items-baseline gap-2">
+              <span className="text-metric font-semibold tabular-nums text-ink">
+                {summary.active_issues}
+              </span>
+              <span className="text-caption text-ink-muted">terbuka</span>
+            </div>
+            <p className="mt-2 text-caption text-ink-muted">
+              {ui.dashboard.kpi.activeIssuesDesc}
+            </p>
           </div>
-          <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-3xl font-bold tracking-tight">
-              {summary ? summary.active_issues : "—"}
-            </span>
-            <span className="text-xs text-neutral-500">terbuka</span>
-          </div>
-          <p className="mt-2 text-xs text-neutral-500 dark:text-neutral-400">
-            {ui.dashboard.kpi.activeIssuesDesc}
-          </p>
-        </div>
+        )}
 
         {/* Card 2: Highest Severity */}
-        <div className="rounded-lg border border-neutral-200 bg-white p-5 shadow-sm transition hover:shadow-md dark:border-neutral-800 dark:bg-neutral-900">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
-              {ui.dashboard.kpi.highestSeverity}
-            </span>
-            <span className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-amber-50 text-amber-600 dark:bg-amber-950/50 dark:text-amber-400">
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-              </svg>
-            </span>
+        {summary === null ? (
+          <SkeletonCard />
+        ) : (
+          <div className="rounded-control border border-line bg-panel p-5 transition-colors">
+            <div className="flex items-center justify-between text-table text-ink-muted">
+              <span>{ui.dashboard.kpi.highestSeverity}</span>
+              <ShieldAlert className="size-4 text-brand" aria-hidden="true" />
+            </div>
+            <div className="mt-2 flex min-h-[36px] items-center">
+              {summary.highest_severity ? (
+                <SeverityBadge severity={summary.highest_severity} size="md" />
+              ) : (
+                <span className="text-metric font-semibold text-ink-muted">—</span>
+              )}
+            </div>
+            <p className="mt-2 text-caption text-ink-muted">
+              {ui.dashboard.kpi.highestSeverityDesc}
+            </p>
           </div>
-          <div className="mt-3 flex items-baseline">
-            {summary?.highest_severity ? (
-              <StatusBadge tone={severityTone(summary.highest_severity)}>
-                {severityLabels[summary.highest_severity]}
-              </StatusBadge>
-            ) : (
-              <span className="text-3xl font-bold tracking-tight text-neutral-400">—</span>
-            )}
-          </div>
-          <p className="mt-2 text-xs text-neutral-500 dark:text-neutral-400">
-            {ui.dashboard.kpi.highestSeverityDesc}
-          </p>
-        </div>
+        )}
 
         {/* Card 3: Awaiting Decision */}
-        <div
-          className={`rounded-lg border p-5 shadow-sm transition hover:shadow-md ${
-            isLeader && (summary?.awaiting_decision ?? 0) > 0
-              ? "border-amber-400 bg-amber-50/40 dark:border-amber-600 dark:bg-amber-950/20"
-              : "border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900"
-          }`}
-        >
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
-              {ui.dashboard.kpi.awaitingDecision}
-            </span>
-            <span
-              className={`inline-flex h-8 w-8 items-center justify-center rounded-md ${
-                isLeader && (summary?.awaiting_decision ?? 0) > 0
-                  ? "bg-amber-100 text-amber-700 dark:bg-amber-900/60 dark:text-amber-300"
-                  : "bg-purple-50 text-purple-600 dark:bg-purple-950/50 dark:text-purple-400"
-              }`}
-            >
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </span>
-          </div>
-          <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-3xl font-bold tracking-tight">
-              {summary ? summary.awaiting_decision : "—"}
-            </span>
-            {isLeader && (summary?.awaiting_decision ?? 0) > 0 && (
-              <Link
-                href="/alerts?status=escalated"
-                className="text-xs font-semibold text-amber-700 hover:underline dark:text-amber-400"
-              >
-                Tinjau sekarang →
-              </Link>
+        {summary === null ? (
+          <SkeletonCard />
+        ) : (
+          <div
+            className={cn(
+              "rounded-control border bg-panel p-5 transition-colors",
+              isLeader && summary.awaiting_decision > 0
+                ? "border-brand-tint bg-brand-tint/20 ring-1 ring-brand/20"
+                : "border-line",
             )}
-          </div>
-          <p className="mt-2 text-xs text-neutral-500 dark:text-neutral-400">
-            {ui.dashboard.kpi.awaitingDecisionDesc}
-          </p>
-        </div>
-      </div>
-
-      {/* 24-Hour Trend Chart Card */}
-      <div className="rounded-lg border border-neutral-200 bg-white p-5 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-b border-neutral-100 pb-4 dark:border-neutral-800">
-          <div>
-            <h2 className="text-base font-semibold">{ui.dashboard.trend.title}</h2>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">
-              {ui.dashboard.trend.subtitle}
-            </p>
-          </div>
-          <div className="flex items-center gap-4 text-xs">
-            <div className="flex items-center gap-1.5">
-              <span className="text-neutral-500">{ui.dashboard.trend.totalPosts}:</span>
-              <span className="font-semibold text-neutral-800 dark:text-neutral-200">
-                {totalVolume.toLocaleString("id-ID")}
-              </span>
+          >
+            <div className="flex items-center justify-between text-table text-ink-muted">
+              <span>{ui.dashboard.kpi.awaitingDecision}</span>
+              <CheckCircle2 className="size-4 text-brand" aria-hidden="true" />
             </div>
-            {peakHour && (
-              <div className="flex items-center gap-1.5 border-l border-neutral-200 pl-4 dark:border-neutral-700">
-                <span className="text-neutral-500">{ui.dashboard.trend.peakHour}:</span>
-                <span className="font-semibold text-neutral-800 dark:text-neutral-200">
-                  {peakTimeFormat.format(new Date(peakHour.hour))} UTC ({peakHour.volume.toLocaleString("id-ID")})
-                </span>
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="mt-4">
-          <DashboardChart data={trendPoints} />
-        </div>
-      </div>
-
-      {/* Ranked Priority Issues Table Card */}
-      <div className="rounded-lg border border-neutral-200 bg-white p-5 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
-        <div className="flex items-center justify-between border-b border-neutral-100 pb-4 dark:border-neutral-800">
-          <div>
-            <h2 className="text-base font-semibold">{ui.dashboard.issues.title}</h2>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">
-              {ui.dashboard.issues.subtitle}
+            <div className="mt-2 flex items-baseline gap-2">
+              <span className="text-metric font-semibold tabular-nums text-ink">
+                {summary.awaiting_decision}
+              </span>
+              {isLeader && summary.awaiting_decision > 0 && (
+                <Link
+                  href="/alerts?status=escalated"
+                  className="inline-flex items-center gap-1 text-caption font-medium text-brand hover:underline"
+                >
+                  <span>Tinjau sekarang</span>
+                  <ArrowRight className="size-3" />
+                </Link>
+              )}
+            </div>
+            <p className="mt-2 text-caption text-ink-muted">
+              {ui.dashboard.kpi.awaitingDecisionDesc}
             </p>
           </div>
+        )}
+      </div>
+
+      {/* 24-Hour Trend Section */}
+      <Section
+        title={ui.dashboard.trend.title}
+        description={ui.dashboard.trend.subtitle}
+        actions={
+          <div className="flex flex-wrap items-center gap-3 text-caption text-ink-muted">
+            <span className="inline-flex items-center gap-1.5 rounded-badge border border-line bg-paper px-2.5 py-1">
+              <span>{ui.dashboard.trend.totalPosts}:</span>
+              <strong className="font-mono font-semibold text-ink">
+                {formatInteger(totalVolume)}
+              </strong>
+            </span>
+            {peakHour && (
+              <span className="inline-flex items-center gap-1.5 rounded-badge border border-line bg-paper px-2.5 py-1">
+                <span>{ui.dashboard.trend.peakHour}:</span>
+                <strong className="font-mono font-semibold text-ink">
+                  {formatWib(peakHour.hour, "time")} ({formatInteger(peakHour.volume)} posting/jam)
+                </strong>
+              </span>
+            )}
+          </div>
+        }
+      >
+        <DashboardChart data={trendPoints} />
+      </Section>
+
+      {/* Ranked Priority Issues Table Section */}
+      <Section
+        title={ui.dashboard.issues.title}
+        description={ui.dashboard.issues.subtitle}
+        actions={
           <Link
             href="/alerts"
-            className="text-xs font-medium text-blue-600 hover:text-blue-700 hover:underline dark:text-blue-400"
+            className="inline-flex items-center gap-1 text-sm font-medium text-brand hover:underline"
           >
-            {ui.dashboard.issues.viewAllAlerts} →
+            <span>{ui.dashboard.issues.viewAllAlerts}</span>
+            <ArrowRight className="size-4" />
           </Link>
-        </div>
-
-        <div className="mt-4">
-          {issues === null ? (
-            <p className="py-8 text-center text-sm text-neutral-500">{ui.loading}</p>
-          ) : issues.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-10 text-center">
-              <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400">
-                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
-              <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                {ui.dashboard.issues.empty}
-              </p>
-              <p className="mt-1 text-xs text-neutral-500">
-                Semua isu saat ini berada dalam kondisi terkendali atau telah ditutup.
-              </p>
-            </div>
-          ) : (
-            <Table
-              head={[
-                ui.dashboard.issues.table.topic,
-                ui.dashboard.issues.table.kind,
-                ui.dashboard.issues.table.score,
-                ui.dashboard.issues.table.severity,
-                ui.dashboard.issues.table.status,
-                ui.dashboard.issues.table.detectedAt,
-                ui.dashboard.issues.table.action,
-              ]}
-            >
-              {issues.map((issue) => (
-                <tr key={issue.id} className="transition hover:bg-neutral-50/70 dark:hover:bg-neutral-800/40">
-                  <Td className="font-medium text-neutral-900 dark:text-neutral-100">
-                    {issue.topic?.name ?? issue.subject_account?.handle ?? ui.common.none}
-                  </Td>
-                  <Td className="text-xs text-neutral-600 dark:text-neutral-400">
-                    {alertKindLabels[issue.kind] ?? issue.kind}
-                  </Td>
-                  <Td>
-                    <span
-                      className={`inline-flex items-center rounded-md border px-2 py-0.5 font-mono text-xs font-semibold ${getScoreBadgeClass(
-                        issue.score,
-                      )}`}
-                    >
-                      {issue.score}
-                    </span>
-                  </Td>
-                  <Td>
-                    <StatusBadge tone={severityTone(issue.severity)}>
-                      {severityLabels[issue.severity] ?? issue.severity}
-                    </StatusBadge>
-                  </Td>
-                  <Td>
-                    <StatusBadge tone={getStatusTone(issue.status)}>
-                      {alertStatusLabels[issue.status] ?? issue.status}
-                    </StatusBadge>
-                  </Td>
-                  <Td className="whitespace-nowrap text-xs text-neutral-500">
-                    {formatDateTime(issue.detected_at)}
-                  </Td>
-                  <Td className="text-right">
-                    <Link
-                      href={`/alerts/${issue.id}`}
-                      className="inline-flex items-center rounded border border-neutral-300 px-2.5 py-1 text-xs font-medium hover:bg-neutral-100 dark:border-neutral-700 dark:hover:bg-neutral-800"
-                    >
-                      {ui.dashboard.issues.viewDetail}
-                    </Link>
-                  </Td>
-                </tr>
-              ))}
-            </Table>
-          )}
-        </div>
-      </div>
+        }
+      >
+        <DataTable
+          columns={issueColumns}
+          rows={issues ?? []}
+          getRowKey={(row) => row.id}
+          rowHref={(row) => `/alerts/${row.id}`}
+          rowSeverity={(row) => row.severity}
+          loading={issues === null}
+          empty={
+            <EmptyState
+              title={ui.dashboard.issues.empty}
+              description="Semua isu saat ini berada dalam kondisi terkendali atau telah ditutup."
+            />
+          }
+          caption={ui.dashboard.issues.title}
+        />
+      </Section>
 
       {/* Quick Action Shortcuts */}
-      <div className="rounded-lg border border-neutral-200 bg-neutral-50/50 p-4 dark:border-neutral-800 dark:bg-neutral-900/50">
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
-          {ui.dashboard.quickLinks.title}
-        </h3>
-        <div className="mt-3 flex flex-wrap gap-2 text-xs">
+      <div className="rounded-control border border-line bg-panel p-5">
+        <div>
+          <h3 className="text-section font-semibold text-ink">{ui.dashboard.quickLinks.title}</h3>
+          <p className="mt-0.5 text-sm text-ink-muted">
+            Pintasan akses cepat ke modul dan alur kerja utama sistem.
+          </p>
+        </div>
+        <div className="mt-4 flex flex-wrap gap-2.5">
           {can("alerts.triage") && (
             <Link
               href="/alerts?status=new"
-              className="rounded-md border border-neutral-300 bg-white px-3 py-1.5 font-medium shadow-sm transition hover:bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:bg-neutral-700"
+              className="inline-flex items-center gap-2 rounded-control border border-line bg-panel px-3.5 py-2 text-sm font-medium text-ink transition-colors hover:border-brand hover:bg-hover"
             >
-              {ui.dashboard.quickLinks.triageAlerts}
+              <Inbox className="size-4 text-brand" />
+              <span>{ui.dashboard.quickLinks.triageAlerts}</span>
             </Link>
           )}
 
           {can("alerts.decide") && (
             <Link
               href="/alerts?status=escalated"
-              className="rounded-md border border-neutral-300 bg-white px-3 py-1.5 font-medium shadow-sm transition hover:bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:bg-neutral-700"
+              className="inline-flex items-center gap-2 rounded-control border border-line bg-panel px-3.5 py-2 text-sm font-medium text-ink transition-colors hover:border-brand hover:bg-hover"
             >
-              {ui.dashboard.quickLinks.reviewEscalated}
+              <ArrowUpRight className="size-4 text-brand" />
+              <span>{ui.dashboard.quickLinks.reviewEscalated}</span>
             </Link>
           )}
 
           {can("topics.manage") && (
             <Link
               href="/topics"
-              className="rounded-md border border-neutral-300 bg-white px-3 py-1.5 font-medium shadow-sm transition hover:bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:bg-neutral-700"
+              className="inline-flex items-center gap-2 rounded-control border border-line bg-panel px-3.5 py-2 text-sm font-medium text-ink transition-colors hover:border-brand hover:bg-hover"
             >
-              {ui.dashboard.quickLinks.viewTopics}
+              <Hash className="size-4 text-brand" />
+              <span>{ui.dashboard.quickLinks.viewTopics}</span>
             </Link>
           )}
 
           {can("briefings.view") && (
             <Link
               href="/briefings"
-              className="rounded-md border border-neutral-300 bg-white px-3 py-1.5 font-medium shadow-sm transition hover:bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:bg-neutral-700"
+              className="inline-flex items-center gap-2 rounded-control border border-line bg-panel px-3.5 py-2 text-sm font-medium text-ink transition-colors hover:border-brand hover:bg-hover"
             >
-              {ui.dashboard.quickLinks.viewBriefings}
+              <FileText className="size-4 text-brand" />
+              <span>{ui.dashboard.quickLinks.viewBriefings}</span>
             </Link>
           )}
 
           {can("labels.manage") && (
             <Link
               href="/labeling"
-              className="rounded-md border border-neutral-300 bg-white px-3 py-1.5 font-medium shadow-sm transition hover:bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:bg-neutral-700"
+              className="inline-flex items-center gap-2 rounded-control border border-line bg-panel px-3.5 py-2 text-sm font-medium text-ink transition-colors hover:border-brand hover:bg-hover"
             >
-              {ui.dashboard.quickLinks.labelingQueue}
+              <Tag className="size-4 text-brand" />
+              <span>{ui.dashboard.quickLinks.labelingQueue}</span>
             </Link>
           )}
 
           {can("evaluation.view") && (
             <Link
               href="/evaluation"
-              className="rounded-md border border-neutral-300 bg-white px-3 py-1.5 font-medium shadow-sm transition hover:bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:bg-neutral-700"
+              className="inline-flex items-center gap-2 rounded-control border border-line bg-panel px-3.5 py-2 text-sm font-medium text-ink transition-colors hover:border-brand hover:bg-hover"
             >
-              {ui.dashboard.quickLinks.evaluation}
+              <CheckSquare className="size-4 text-brand" />
+              <span>{ui.dashboard.quickLinks.evaluation}</span>
             </Link>
           )}
         </div>
@@ -379,3 +380,4 @@ export function DashboardPanel() {
     </div>
   );
 }
+
