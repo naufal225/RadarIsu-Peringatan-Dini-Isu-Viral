@@ -1,5 +1,6 @@
 "use client";
 
+import { Fragment } from "react";
 import { DataTable, type DataTableColumn } from "@/components/radar/data-table";
 import { ClearFilters, FilterBar, FilterField, FilterSelect } from "@/components/radar/filter-bar";
 import { controlClass, FieldError } from "@/components/radar/form";
@@ -8,8 +9,10 @@ import { Pagination } from "@/components/radar/pagination";
 import { EmptyState } from "@/components/radar/states";
 import { Waktu } from "@/components/radar/waktu";
 import type { AuditEntry, AuditFilters, AuditPage, UserOption } from "@/lib/api-types/audit";
-import { detailText, hasActiveFilters, objectLabel } from "@/lib/audit";
+import { detailSummary, detailText, hasActiveFilters } from "@/lib/audit";
+import { formatInteger } from "@/lib/format";
 import { auditActionLabels, ui } from "@/lib/labels";
+import { auditObjectLabels } from "@/lib/labels/audit";
 
 const copy = ui.audit;
 
@@ -31,9 +34,60 @@ function actionText(action: string): string {
   return (auditActionLabels as Record<string, string>)[action] ?? action;
 }
 
+/** Jenis objek berlabel ("Skenario Replay") dengan id mono; jenis yang tidak dikenal tampil sebagai kodenya. */
+function ObjectCell({ entry }: { entry: AuditEntry }) {
+  if (!entry.object_type) return <span className="text-ink-muted">{copy.noDetail}</span>;
+  const label = (auditObjectLabels as Record<string, string>)[entry.object_type];
+  return (
+    <span className="whitespace-nowrap">
+      {label ?? <span className="font-mono">{entry.object_type}</span>}
+      {entry.object_id !== null && <span className="ml-1 font-mono text-ink-muted">#{entry.object_id}</span>}
+    </span>
+  );
+}
+
+/**
+ * Rincian: ringkasan satu baris langsung terbaca (mis. "escalated → approved"), data lengkap dan peramban
+ * di balik <details>. Ditampilkan sebagai teks (React meng-escape), tidak pernah sebagai HTML.
+ */
+function DetailCell({ entry }: { entry: AuditEntry }) {
+  const { parts, more } = detailSummary(entry.detail);
+  const text = detailText(entry.detail);
+  if (parts.length === 0 && !text && !entry.user_agent) return <span className="text-ink-muted">{copy.noDetail}</span>;
+
+  return (
+    <div className="min-w-44 max-w-md py-1.5">
+      {parts.length > 0 && (
+        <p className="break-words text-ink">
+          {/* Satu pasangan tidak terpotong; baris boleh pindah di antara pasangan. */}
+          {parts.map((part, index) => (
+            <Fragment key={`${part.key}:${index}`}>
+              {index > 0 && <span className="text-ink-muted"> · </span>}
+              <span className="whitespace-nowrap">
+                {part.key && <span className="font-mono text-caption text-ink-muted">{part.key} </span>}
+                {part.value}
+              </span>
+            </Fragment>
+          ))}
+          {more && <span className="text-caption text-ink-muted"> {copy.moreDetail}</span>}
+        </p>
+      )}
+      <details className="mt-0.5">
+        <summary className="cursor-pointer text-caption text-brand underline-offset-2 hover:underline">{copy.showJson}</summary>
+        {text && <pre className="mt-2 overflow-x-auto whitespace-pre-wrap break-words rounded-control border border-line bg-paper p-2 font-mono text-caption text-ink">{text}</pre>}
+        {entry.user_agent && (
+          <p className="mt-1 break-words text-caption text-ink-muted">
+            {copy.userAgent}: <span className="font-mono">{entry.user_agent}</span>
+          </p>
+        )}
+      </details>
+    </div>
+  );
+}
+
 const COLUMNS: DataTableColumn<AuditEntry>[] = [
   // Audit wajib menampilkan UTC langsung (docs/UI_PAGES.md), bukan hanya saat hover.
-  { id: "time", header: copy.time, cell: (e) => <Waktu value={e.created_at} utc="inline" />, width: "w-48" },
+  { id: "time", header: copy.time, cell: (e) => <Waktu value={e.created_at} utc="inline" /> },
   {
     id: "user",
     header: copy.user,
@@ -57,28 +111,9 @@ const COLUMNS: DataTableColumn<AuditEntry>[] = [
       </>
     ),
   },
-  { id: "object", header: copy.object, cell: (e) => objectLabel(e) ?? copy.noDetail, mono: true },
+  { id: "object", header: copy.object, cell: (e) => <ObjectCell entry={e} /> },
   { id: "ip", header: copy.ip, cell: (e) => e.ip_address, mono: true },
-  {
-    id: "detail",
-    header: copy.detail,
-    cell: (e) => {
-      const text = detailText(e.detail);
-      if (!text && !e.user_agent) return <span className="text-ink-muted">{copy.noDetail}</span>;
-      return (
-        <details className="max-w-md">
-          <summary className="cursor-pointer text-brand underline-offset-2 hover:underline">{copy.showDetail}</summary>
-          {/* Ditampilkan sebagai teks (React meng-escape), tidak pernah sebagai HTML. */}
-          {text && <pre className="mt-2 overflow-x-auto whitespace-pre-wrap break-words rounded-control border border-line bg-paper p-2 font-mono text-caption text-ink">{text}</pre>}
-          {e.user_agent && (
-            <p className="mt-1 break-words text-caption text-ink-muted">
-              {copy.userAgent}: <span className="font-mono">{e.user_agent}</span>
-            </p>
-          )}
-        </details>
-      );
-    },
-  },
+  { id: "detail", header: copy.detail, cell: (e) => <DetailCell entry={e} /> },
 ];
 
 /** Presentasi murni halaman Audit. Tabel append-only: tidak ada tombol ubah atau hapus. */
@@ -110,6 +145,12 @@ export function AuditView({ result, loading, failed, onRetry, users, filters, fi
         </FilterField>
         <ClearFilters active={hasActiveFilters(filters)} onClear={() => onFiltersChange({ user_id: "", action: "", from: "", to: "" })} />
       </FilterBar>
+
+      {!invalid && result && result.data.length > 0 && (
+        <p role="status" className="mb-2 text-table text-ink-muted">
+          {(hasActiveFilters(filters) ? copy.countFiltered : copy.count)(formatInteger(result.meta.total))}
+        </p>
+      )}
 
       {/* Filter tidak valid (422): pesan ada di bawah bidangnya; tabel lama tidak ditampilkan agar tidak menyesatkan. */}
       {invalid ? null : (
