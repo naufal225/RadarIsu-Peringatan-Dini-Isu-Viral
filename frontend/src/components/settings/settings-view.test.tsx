@@ -5,7 +5,7 @@ import { describe, expect, it, vi } from "vitest";
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn() }), usePathname: () => "/admin/settings" }));
 
 import { DEFAULT_DETECTION, DETECTION_NEVER_CHANGED, DETECTION_RESPONSE, OFFLINE_RESPONSE } from "@/fixtures/settings";
-import { isFieldInvalid, isOutOfRange } from "@/lib/detection-settings";
+import { isFieldInvalid, isOutOfRange, setPath } from "@/lib/detection-settings";
 import { ui } from "@/lib/labels";
 import { SettingsView, type SettingsViewProps } from "./settings-view";
 
@@ -70,5 +70,20 @@ describe("SettingsView", () => {
   it("shows loading and error states", () => {
     expect(render({ loaded: null, draft: null, loading: true })).toContain('aria-busy="true"');
     expect(render({ loaded: null, draft: null, failed: true })).toContain('role="alert"');
+  });
+});
+
+describe("unsaved changes", () => {
+  it("shows the stored value under an edited field and counts the pending changes", () => {
+    const html = render({ draft: setPath(DEFAULT_DETECTION, "z_threshold", 3.5) });
+    expect(html).toContain(ui.settings.was("3"));
+    expect(html).toContain(ui.settings.pendingChanges(1));
+  });
+
+  it("confirms before saving and lists each change there", () => {
+    const html = render({ draft: setPath(DEFAULT_DETECTION, "z_threshold", 3.5) });
+    expect(html).toContain(ui.settings.confirmBody);
+    expect(html).toContain(ui.settings.changeList);
+    expect(html).toMatch(/3,5/);
   });
 });

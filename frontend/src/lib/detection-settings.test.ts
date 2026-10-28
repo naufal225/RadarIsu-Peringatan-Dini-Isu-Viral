@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  changedFields,
   effectiveZ,
   FIELD_RANGES,
   getPath,
@@ -156,5 +157,20 @@ describe("setPath", () => {
 
     expect(edited.weights.spike).toBe(35);
     expect(defaults.weights.spike).toBe(40);
+  });
+});
+
+describe("changedFields", () => {
+  it("lists only the edited fields with their stored and new values", () => {
+    const edited = setPath(setPath(defaults, "z_threshold", 3.5), "weights.reach", 15);
+    expect(changedFields(defaults, edited)).toEqual([
+      { path: "z_threshold", from: 3, to: 3.5 },
+      { path: "weights.reach", from: 10, to: 15 },
+    ]);
+  });
+
+  it("is empty when nothing changed, and counts an emptied field as a change", () => {
+    expect(changedFields(defaults, { ...defaults })).toEqual([]);
+    expect(changedFields(defaults, setPath(defaults, "min_volume", Number.NaN))).toHaveLength(1);
   });
 });

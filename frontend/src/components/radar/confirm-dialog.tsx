@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import { ui } from "@/lib/labels";
 import { Button } from "./button";
 
@@ -17,6 +17,7 @@ export function ConfirmDialog({
   pending = false,
   onConfirm,
   onClose,
+  children,
 }: {
   open: boolean;
   title: string;
@@ -26,6 +27,8 @@ export function ConfirmDialog({
   pending?: boolean;
   onConfirm: () => void;
   onClose: () => void;
+  /** Rincian di bawah deskripsi (mis. daftar perubahan); digulir bila panjang. */
+  children?: ReactNode;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
 
@@ -55,6 +58,7 @@ export function ConfirmDialog({
         <p id="confirm-description" className="text-sm text-ink-muted">
           {description}
         </p>
+        {children && <div className="max-h-64 overflow-y-auto pt-2">{children}</div>}
       </div>
       <div className="flex justify-end gap-2 border-t border-line p-4">
         <Button onClick={onClose} disabled={pending}>
