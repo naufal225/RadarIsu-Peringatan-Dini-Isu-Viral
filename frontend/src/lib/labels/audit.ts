@@ -24,4 +24,21 @@ export const auditUi = {
   tableCaption: "Catatan audit, terbaru di atas",
   invalidFilter: "Isian filter tidak valid",
   invalidRange: "Tanggal akhir harus sama dengan atau setelah tanggal awal",
+  count: (n: string) => `${n} catatan`,
+  countFiltered: (n: string) => `${n} catatan cocok dengan filter`,
+  showJson: "Lihat data lengkap",
+  moreDetail: "dan isian lain di data lengkap",
+} as const;
+
+/** Model behind `object_type` (AuditLogger: snake_case class name). An unknown type is shown as its code. */
+export const auditObjectLabels = {
+  alert: "Alert",
+  briefing: "Briefing",
+  evaluation_run: "Evaluasi",
+  official_account: "Akun resmi",
+  post: "Posting",
+  replay_scenario: "Skenario Replay",
+  source: "Sumber data",
+  topic: "Topik",
+  user: "Pengguna",
 } as const;

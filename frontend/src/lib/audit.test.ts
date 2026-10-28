@@ -6,7 +6,7 @@ vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn() }), usePat
 
 import { AuditView, type AuditViewProps } from "@/components/audit/audit-view";
 import { AUDIT_EMPTY, AUDIT_PAGE, AUDIT_USERS } from "@/fixtures/audit";
-import { auditQuery, detailText, EMPTY_AUDIT_FILTERS, filterErrors, hasActiveFilters, objectLabel } from "./audit";
+import { auditQuery, detailSummary, detailText, EMPTY_AUDIT_FILTERS, filterErrors, hasActiveFilters, objectLabel } from "./audit";
 import { ui } from "./labels";
 
 describe("audit query", () => {
@@ -34,6 +34,32 @@ describe("audit cells", () => {
     expect(detailText({})).toBeNull();
     expect(detailText(null)).toBeNull();
     expect(detailText({ from: "a", to: "b" })).toBe('{\n  "from": "a",\n  "to": "b"\n}');
+  });
+
+  it("summarises the detail: from → to first, plain pairs, nested values left to the full JSON", () => {
+    expect(detailSummary({ from: "escalated", to: "approved", note: "Setuju" })).toEqual({
+      parts: [
+        { key: null, value: "escalated → approved" },
+        { key: "note", value: "Setuju" },
+      ],
+      more: false,
+    });
+    expect(detailSummary({ changes: ["name", "is_active"] }).parts).toEqual([{ key: "changes", value: "name, is_active" }]);
+    expect(detailSummary({ key: "detection", changes: { z_threshold: [3, 3.5] } })).toEqual({ parts: [{ key: "key", value: "detection" }], more: true });
+    expect(detailSummary({ a: 1, b: 2, c: 3, d: 4 })).toEqual({
+      parts: [
+        { key: "a", value: "1" },
+        { key: "b", value: "2" },
+        { key: "c", value: "3" },
+      ],
+      more: true,
+    });
+    expect(detailSummary({ speed_factor: 48000, f1: 0.8333 }).parts).toEqual([
+      { key: "speed_factor", value: "48.000" },
+      { key: "f1", value: "0,833" },
+    ]);
+    expect(detailSummary({}).parts).toEqual([]);
+    expect(detailSummary({ error: null, status: "ok" })).toEqual({ parts: [{ key: "status", value: "ok" }], more: false });
   });
 
   it("maps 422 field errors to the filters", () => {
@@ -66,7 +92,8 @@ describe("AuditView", () => {
     const html = render();
     expect(html).toContain(ui.audit.system);
     expect(html).toContain("Alert disetujui");
-    expect(html).toContain("alert #17");
+    expect(html).toContain("Alert");
+    expect(html).toMatch(/#(<!-- -->)?17/);
   });
 
   it("escapes the detail and has no edit or delete control", () => {
@@ -76,6 +103,11 @@ describe("AuditView", () => {
     expect(html).not.toContain("<script>alert(1)");
     expect(html).toContain("&lt;script&gt;");
     expect(html).not.toMatch(/Ubah|Hapus|Edit|Delete/);
+  });
+
+  it("shows the total, worded for a filtered result", () => {
+    expect(render()).toContain(ui.audit.count(String(AUDIT_PAGE.meta.total)));
+    expect(render({ filters: { ...EMPTY_AUDIT_FILTERS, action: "alert.approve" } })).toContain(ui.audit.countFiltered(String(AUDIT_PAGE.meta.total)));
   });
 
   it("states that nothing matched the filter, shows a retryable error, and a range error under the field", () => {
