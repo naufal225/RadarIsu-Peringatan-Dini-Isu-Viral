@@ -4,6 +4,11 @@ Papan pengumuman untuk perubahan yang menyentuh domain lain, perubahan izin, dan
 
 ---
 
+## 2026-10-28: `RequirePermission` memeriksa izin di dalam `<Suspense>` (branch `feat/b-f12-auth-rbac`)
+
+- **Untuk semua pemilik halaman:** dengan `cacheComponents` aktif, setiap halaman mencatat galat konsol `Route "...": Next.js encountered uncached data during prerendering or a navigation`. Penyebabnya, `RequirePermission` memanggil `getMe()` (`fetch` ke `/auth/me`) di segmen halaman tanpa `<Suspense>`. Sekarang pemeriksaan itu dibungkus `<Suspense fallback={<SkeletonCard />}>` di dalam `RequirePermission`, jadi halaman yang memakainya tidak perlu diubah. Perilaku 403 dan "server tidak dapat dihubungi" tetap sama.
+- **Untuk Rekishi (`/dashboard/page.tsx`):** halaman ini masih memanggil `await getMe()` langsung di komponen halaman (untuk mengalihkan admin ke `/admin/status`), sehingga galat yang sama tetap muncul di `/dashboard`. Usulan: pindahkan pengalihan itu ke komponen async terpisah di dalam `<Suspense>`, atau ke dalam komponen yang sudah dibungkus `RequirePermission`. File ini milik domain C, jadi tidak diubah di sini.
+
 ## 2026-10-27: BFF menjawab 503 bila Laravel tidak bisa dihubungi (branch `feat/ui-admin-sources`)
 
 - **Untuk semua pemilik halaman:** sebelumnya, bila Laravel mati atau tidak terjangkau, `POST /api/auth/login` dan semua `/api/*` gagal dengan 500 tanpa isi ("Internal Server Error"). Sekarang BFF menjawab **503** `{"message":"backend_unavailable","errors":{"server":["backend_unavailable"]}}`. Kode `backend_unavailable` sudah punya label di `errorCodeLabels`, jadi `describeErrorCode` menampilkannya. Halaman login menampilkan "Server RadarIsu tidak dapat dihubungi…".
