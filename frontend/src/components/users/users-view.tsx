@@ -1,6 +1,6 @@
 "use client";
 
-import { CircleCheck, CircleSlash } from "lucide-react";
+import { CircleCheck, CircleSlash, Shield, UserCheck, Users } from "lucide-react";
 import type { FormEvent } from "react";
 import { Button } from "@/components/radar/button";
 import { DataTable, type DataTableColumn } from "@/components/radar/data-table";
@@ -46,36 +46,64 @@ export type UsersViewProps = {
   onFormClose: () => void;
 };
 
-/** Status akun monokrom: ikon + teks (Design System §2 #5, #6). */
+/** Status akun modern pill: ikon + teks (Design System §2 #5, #6). */
 function AccountStatus({ active }: { active: boolean }) {
   const Icon = active ? CircleCheck : CircleSlash;
   return (
-    <span className={cn("inline-flex items-center gap-1.5 whitespace-nowrap", active ? "text-ink" : "text-ink-muted")}>
-      <Icon aria-hidden="true" className="size-4 shrink-0" />
+    <span
+      className={cn(
+        "inline-flex items-center gap-1.5 rounded-badge px-2.5 py-0.5 text-caption font-medium border whitespace-nowrap",
+        active ? "border-brand/20 bg-brand-tint text-brand" : "border-line bg-hover text-ink-muted",
+      )}
+    >
+      <Icon aria-hidden="true" className="size-3.5 shrink-0" />
       {active ? copy.active : copy.inactive}
     </span>
   );
 }
 
-/** Jumlah aktif dan komposisi peran, hanya bila seluruh daftar ada di halaman ini (lib/users.ts). */
+/** Ringkasan metrik pengguna dalam bentuk kartu KPI modern. */
 function Summary({ result }: { result: UserPage }) {
   const summary = userSummary(result);
   const text = copy.summary;
-  if (!summary) return <p className="mb-3 text-table text-ink-muted">{text.total(formatInteger(result.meta.total))}</p>;
-  const parts = [
-    text.total(formatInteger(summary.total)),
-    text.active(formatInteger(summary.active)),
-    ...(Object.keys(roleLabels) as RoleSlug[]).map((role) => text.role(roleLabels[role], formatInteger(summary.byRole[role]))),
-  ];
+  if (!summary) return <p className="mb-4 text-table text-ink-muted">{text.total(formatInteger(result.meta.total))}</p>;
+
   return (
-    <p aria-label={text.label} className="mb-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-table text-ink-muted">
-      {parts.map((part, index) => (
-        <span key={part} className="whitespace-nowrap">
-          {index > 0 && <span aria-hidden="true" className="mr-2">·</span>}
-          {part}
-        </span>
-      ))}
-    </p>
+    <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
+      <div className="flex items-center gap-3.5 rounded-control border border-line bg-panel p-4">
+        <div className="flex size-10 shrink-0 items-center justify-center rounded-control bg-brand-tint text-brand">
+          <Users className="size-5" />
+        </div>
+        <div>
+          <span className="block text-caption font-medium uppercase tracking-wider text-ink-muted">Total Akun</span>
+          <span className="text-lead font-semibold text-ink">{text.total(formatInteger(summary.total))}</span>
+        </div>
+      </div>
+      <div className="flex items-center gap-3.5 rounded-control border border-line bg-panel p-4">
+        <div className="flex size-10 shrink-0 items-center justify-center rounded-control bg-brand-tint text-brand">
+          <UserCheck className="size-5" />
+        </div>
+        <div>
+          <span className="block text-caption font-medium uppercase tracking-wider text-ink-muted">Status Aktif</span>
+          <span className="text-lead font-semibold text-ink">{text.active(formatInteger(summary.active))}</span>
+        </div>
+      </div>
+      <div className="flex items-center gap-3.5 rounded-control border border-line bg-panel p-4">
+        <div className="flex size-10 shrink-0 items-center justify-center rounded-control bg-brand-tint text-brand">
+          <Shield className="size-5" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <span className="block text-caption font-medium uppercase tracking-wider text-ink-muted">Peran</span>
+          <div className="mt-1 flex flex-wrap gap-1.5">
+            {(Object.keys(roleLabels) as RoleSlug[]).map((role) => (
+              <span key={role} className="inline-flex items-center rounded-badge border border-line bg-paper px-2 py-0.5 text-caption font-medium text-ink">
+                {text.role(roleLabels[role], formatInteger(summary.byRole[role]))}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -88,16 +116,29 @@ export function UsersView(props: UsersViewProps) {
       id: "name",
       header: copy.name,
       cell: (u) => (
-        <div className="py-1.5">
-          <span className={cn("block font-medium", u.is_active ? "text-ink" : "text-ink-muted")}>
-            {u.name}
-            {u.id === currentUserId && <span className="ml-2 text-caption font-normal text-ink-muted">{`(${copy.you})`}</span>}
-          </span>
-          <span className="block font-mono text-caption text-ink-muted">{u.email}</span>
+        <div className="flex items-center gap-3 py-1.5">
+          <div className="flex size-8 shrink-0 items-center justify-center rounded-control bg-brand-tint font-mono text-xs font-semibold text-brand">
+            {u.name.charAt(0).toUpperCase()}
+          </div>
+          <div className="min-w-0">
+            <span className={cn("block font-medium", u.is_active ? "text-ink" : "text-ink-muted")}>
+              {u.name}
+              {u.id === currentUserId && <span className="ml-2 text-caption font-normal text-ink-muted">{`(${copy.you})`}</span>}
+            </span>
+            <span className="block font-mono text-caption text-ink-muted">{u.email}</span>
+          </div>
         </div>
       ),
     },
-    { id: "role", header: copy.role, cell: (u) => <span className="whitespace-nowrap">{roleLabels[u.role]}</span> },
+    {
+      id: "role",
+      header: copy.role,
+      cell: (u) => (
+        <span className="inline-flex items-center rounded-badge border border-line bg-paper px-2.5 py-0.5 text-caption font-medium text-ink whitespace-nowrap">
+          {roleLabels[u.role]}
+        </span>
+      ),
+    },
     { id: "status", header: copy.status, cell: (u) => <AccountStatus active={u.is_active} /> },
     { id: "login", header: copy.lastLogin, cell: (u) => (u.last_login_at ? <Waktu value={u.last_login_at} /> : <span className="text-ink-muted">{copy.never}</span>) },
   ];
@@ -119,6 +160,7 @@ export function UsersView(props: UsersViewProps) {
       <PageHeader
         title={copy.title}
         subtitle={copy.subtitle}
+        icon={<Users className="size-5" />}
         actions={canManage ? <Button variant="primary" onClick={props.onNew}>{copy.newUser}</Button> : undefined}
       />
       {result && result.data.length > 0 && <Summary result={result} />}

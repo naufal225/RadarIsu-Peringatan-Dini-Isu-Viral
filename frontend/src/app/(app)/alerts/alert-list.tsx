@@ -1,18 +1,26 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
-import Link from "next/link";
-import { Button, ErrorText, Field, inputClass, PageTitle, StatusBadge, Table, Td } from "@/components/ui";
-import { formatDateTime } from "@/lib/format";
+import { useState } from "react";
+import { ShieldAlert, RotateCcw } from "lucide-react";
+import { PageHeader } from "@/components/radar/page-header";
+import { Section } from "@/components/radar/section";
+import { Button } from "@/components/radar/button";
+import { FilterBar, FilterSelect } from "@/components/radar/filter-bar";
+import { DataTable, type DataTableColumn } from "@/components/radar/data-table";
+import { Pagination } from "@/components/radar/pagination";
+import { SeverityBadge } from "@/components/radar/severity-badge";
+import { StatusChip } from "@/components/radar/status-chip";
+import { Waktu } from "@/components/radar/waktu";
 import { alertKindLabels, alertStatusLabels, severityLabels, ui } from "@/lib/labels";
 import { useApiData } from "@/lib/use-api-data";
+import type { AlertStatus, Severity } from "@/components/radar/types";
 
 type AlertItem = {
   id: number;
   kind: keyof typeof alertKindLabels;
-  status: keyof typeof alertStatusLabels;
+  status: AlertStatus;
   score: number;
-  severity: keyof typeof severityLabels;
+  severity: Severity;
   topic: { id: number; name: string } | null;
   subject_account: { id: number; handle: string } | null;
   detected_at: string;
@@ -36,6 +44,21 @@ type Filters = {
 
 const EMPTY_FILTERS: Filters = { status: "", severity: "", kind: "" };
 
+const STATUS_OPTIONS = Object.entries(alertStatusLabels).map(([value, label]) => ({
+  value,
+  label,
+}));
+
+const SEVERITY_OPTIONS = Object.entries(severityLabels).map(([value, label]) => ({
+  value,
+  label,
+}));
+
+const KIND_OPTIONS = Object.entries(alertKindLabels).map(([value, label]) => ({
+  value,
+  label,
+}));
+
 export function AlertList() {
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
   const [page, setPage] = useState(1);
@@ -45,143 +68,146 @@ export function AlertList() {
   if (filters.severity) query.set("severity", filters.severity);
   if (filters.kind) query.set("kind", filters.kind);
 
-  const { data: result, error } = useApiData<AlertResponse>(`alerts?${query}`);
+  const { data: result, error, reload } = useApiData<AlertResponse>(`alerts?${query}`);
 
-  function applyFilters(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
+  function updateFilter(key: keyof Filters, value: string) {
     setPage(1);
-    setFilters({
-      status: String(data.get("status") ?? ""),
-      severity: String(data.get("severity") ?? ""),
-      kind: String(data.get("kind") ?? ""),
-    });
+    setFilters((prev) => ({ ...prev, [key]: value }));
   }
 
-  function getSeverityTone(sev: keyof typeof severityLabels): "error" | "ok" | "muted" {
-    if (sev === "high") return "error";
-    if (sev === "medium") return "muted";
-    return "ok";
+  function resetFilters() {
+    setPage(1);
+    setFilters(EMPTY_FILTERS);
   }
 
-  function getStatusTone(st: keyof typeof alertStatusLabels): "error" | "ok" | "muted" {
-    if (st === "escalated" || st === "new") return "error";
-    if (st === "approved") return "ok";
-    return "muted";
-  }
+  const hasActiveFilters = Boolean(filters.status || filters.severity || filters.kind);
+
+  const columns: DataTableColumn<AlertItem>[] = [
+    {
+      id: "id",
+      header: ui.alerts.id,
+      cell: (row) => `#${row.id}`,
+      mono: true,
+      width: "w-20",
+    },
+    {
+      id: "target",
+      header: ui.alerts.topicOrAccount,
+      cell: (row) => (
+        <span className="font-medium text-ink">
+          {row.topic?.name ?? (row.subject_account?.handle ? `@${row.subject_account.handle}` : ui.common.none)}
+        </span>
+      ),
+    },
+    {
+      id: "kind",
+      header: ui.alerts.kind,
+      cell: (row) => (
+        <span className="text-table text-ink-muted">
+          {alertKindLabels[row.kind] ?? row.kind}
+        </span>
+      ),
+    },
+    {
+      id: "score",
+      header: ui.alerts.score,
+      cell: (row) => (
+        <span className="font-mono text-table font-semibold tabular-nums text-ink">
+          {row.score}
+        </span>
+      ),
+      align: "right",
+      width: "w-20",
+    },
+    {
+      id: "severity",
+      header: ui.alerts.severity,
+      cell: (row) => <SeverityBadge severity={row.severity} size="sm" />,
+      width: "w-32",
+    },
+    {
+      id: "status",
+      header: ui.alerts.status,
+      cell: (row) => <StatusChip status={row.status} />,
+      width: "w-32",
+    },
+    {
+      id: "detected_at",
+      header: ui.alerts.detectedAt,
+      cell: (row) => <Waktu value={row.detected_at} />,
+      width: "w-44",
+    },
+  ];
 
   return (
-    <>
-      <PageTitle>{ui.alerts.title}</PageTitle>
+    <div>
+      <PageHeader
+        title={ui.alerts.title}
+        subtitle="Daftar deteksi anomali volume, koordinasi akun, dan potensi peniruan identitas yang terdeteksi sistem."
+        icon={<ShieldAlert className="size-6 text-brand" aria-hidden="true" />}
+      />
 
-      <form onSubmit={applyFilters} className="mb-4 grid gap-3 sm:grid-cols-4 sm:items-end">
-        <Field label={ui.alerts.filterStatus}>
-          <select name="status" defaultValue={filters.status} className={inputClass}>
-            <option value="">{ui.alerts.allStatus}</option>
-            {Object.entries(alertStatusLabels).map(([val, label]) => (
-              <option key={val} value={val}>
-                {label}
-              </option>
-            ))}
-          </select>
-        </Field>
+      {/* Filter Bar */}
+      <div className="mb-4 rounded-control border border-line bg-panel p-4">
+        <FilterBar label="Filter Peringatan">
+          <FilterSelect
+            label={ui.alerts.filterStatus}
+            name="status"
+            value={filters.status}
+            options={STATUS_OPTIONS}
+            onChange={(val) => updateFilter("status", val)}
+            allLabel={ui.alerts.allStatus}
+          />
+          <FilterSelect
+            label={ui.alerts.filterSeverity}
+            name="severity"
+            value={filters.severity}
+            options={SEVERITY_OPTIONS}
+            onChange={(val) => updateFilter("severity", val)}
+            allLabel={ui.alerts.allSeverity}
+          />
+          <FilterSelect
+            label={ui.alerts.filterKind}
+            name="kind"
+            value={filters.kind}
+            options={KIND_OPTIONS}
+            onChange={(val) => updateFilter("kind", val)}
+            allLabel={ui.alerts.allKind}
+          />
+          {hasActiveFilters && (
+            <div className="flex self-end pb-0.5">
+              <Button variant="ghost" size="sm" onClick={resetFilters} className="text-caption text-ink-muted">
+                <RotateCcw className="size-3.5" aria-hidden="true" />
+                <span>Reset</span>
+              </Button>
+            </div>
+          )}
+        </FilterBar>
+      </div>
 
-        <Field label={ui.alerts.filterSeverity}>
-          <select name="severity" defaultValue={filters.severity} className={inputClass}>
-            <option value="">{ui.alerts.allSeverity}</option>
-            {Object.entries(severityLabels).map(([val, label]) => (
-              <option key={val} value={val}>
-                {label}
-              </option>
-            ))}
-          </select>
-        </Field>
-
-        <Field label={ui.alerts.filterKind}>
-          <select name="kind" defaultValue={filters.kind} className={inputClass}>
-            <option value="">{ui.alerts.allKind}</option>
-            {Object.entries(alertKindLabels).map(([val, label]) => (
-              <option key={val} value={val}>
-                {label}
-              </option>
-            ))}
-          </select>
-        </Field>
-
-        <Button type="submit" variant="primary">
-          {ui.audit.filter}
-        </Button>
-      </form>
-
-      <ErrorText>{error ? ui.common.loadError : null}</ErrorText>
-
-      {result === null ? (
-        <p className="text-sm text-neutral-500">{ui.loading}</p>
-      ) : result.data.length === 0 ? (
-        <p className="text-sm text-neutral-500">{ui.common.empty}</p>
-      ) : (
-        <>
-          <Table
-            head={[
-              ui.alerts.id,
-              ui.alerts.topicOrAccount,
-              ui.alerts.kind,
-              ui.alerts.score,
-              ui.alerts.severity,
-              ui.alerts.status,
-              ui.alerts.detectedAt,
-              "",
-            ]}
-          >
-            {result.data.map((alert) => (
-              <tr key={alert.id} className="hover:bg-neutral-50">
-                <Td className="font-mono text-xs">#{alert.id}</Td>
-                <Td className="font-medium">
-                  {alert.topic?.name ?? alert.subject_account?.handle ?? ui.common.none}
-                </Td>
-                <Td>{alertKindLabels[alert.kind] ?? alert.kind}</Td>
-                <Td className="font-semibold">{alert.score}</Td>
-                <Td>
-                  <StatusBadge tone={getSeverityTone(alert.severity)}>
-                    {severityLabels[alert.severity] ?? alert.severity}
-                  </StatusBadge>
-                </Td>
-                <Td>
-                  <StatusBadge tone={getStatusTone(alert.status)}>
-                    {alertStatusLabels[alert.status] ?? alert.status}
-                  </StatusBadge>
-                </Td>
-                <Td className="whitespace-nowrap text-xs text-neutral-500">
-                  {formatDateTime(alert.detected_at)}
-                </Td>
-                <Td className="text-right">
-                  <Link
-                    href={`/alerts/${alert.id}`}
-                    className="inline-block rounded border border-neutral-300 px-2.5 py-1 text-xs font-medium hover:bg-neutral-100"
-                  >
-                    {ui.alerts.viewDetail}
-                  </Link>
-                </Td>
-              </tr>
-            ))}
-          </Table>
-
-          <div className="mt-3 flex items-center gap-3 text-sm">
-            <Button disabled={result.meta.current_page <= 1} onClick={() => setPage((p) => p - 1)}>
-              {ui.common.previous}
-            </Button>
-            <span>
-              {ui.common.page} {result.meta.current_page} / {result.meta.last_page} · {result.meta.total}
-            </span>
-            <Button
-              disabled={result.meta.current_page >= result.meta.last_page}
-              onClick={() => setPage((p) => p + 1)}
-            >
-              {ui.common.next}
-            </Button>
+      <Section flush title="Daftar Kasus Peringatan">
+        <DataTable
+          columns={columns}
+          rows={result?.data ?? []}
+          getRowKey={(row) => row.id}
+          rowHref={(row) => `/alerts/${row.id}`}
+          rowSeverity={(row) => row.severity}
+          loading={result === null}
+          error={error ? { title: ui.common.loadError, onRetry: reload } : null}
+          caption="Tabel daftar peringatan dini"
+          framed={false}
+        />
+        {result && result.meta.total > 0 && (
+          <div className="border-t border-line px-5 py-3">
+            <Pagination
+              page={result.meta.current_page}
+              perPage={result.meta.per_page}
+              total={result.meta.total}
+              onPageChange={setPage}
+            />
           </div>
-        </>
-      )}
-    </>
+        )}
+      </Section>
+    </div>
   );
 }

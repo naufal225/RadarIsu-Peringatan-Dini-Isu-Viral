@@ -9,6 +9,7 @@ export function Section({
   title,
   description,
   actions,
+  icon,
   flush = false,
   className,
   children,
@@ -16,6 +17,7 @@ export function Section({
   title: string;
   description?: ReactNode;
   actions?: ReactNode;
+  icon?: ReactNode;
   flush?: boolean;
   className?: string;
   children: ReactNode;
@@ -23,9 +25,12 @@ export function Section({
   return (
     <section className={cn("mb-6 rounded-control border border-line bg-panel", flush ? "overflow-hidden" : "p-5", className)}>
       <div className={cn("flex flex-wrap items-start justify-between gap-3", flush ? "border-b border-line px-5 py-4" : "mb-4")}>
-        <div className="min-w-0">
-          <h2 className="text-section font-semibold text-ink">{title}</h2>
-          {description && <p className="mt-0.5 max-w-3xl text-sm text-ink-muted">{description}</p>}
+        <div className="flex items-start gap-2.5 min-w-0">
+          {icon && <div className="shrink-0 text-brand mt-0.5">{icon}</div>}
+          <div className="min-w-0">
+            <h2 className="text-section font-semibold text-ink">{title}</h2>
+            {description && <p className="mt-0.5 max-w-3xl text-sm text-ink-muted">{description}</p>}
+          </div>
         </div>
         {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
       </div>

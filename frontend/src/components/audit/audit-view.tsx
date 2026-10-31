@@ -1,6 +1,7 @@
 "use client";
 
 import { Fragment } from "react";
+import { ShieldCheck } from "lucide-react";
 import { DataTable, type DataTableColumn } from "@/components/radar/data-table";
 import { ClearFilters, FilterBar, FilterField, FilterSelect } from "@/components/radar/filter-bar";
 import { controlClass, FieldError } from "@/components/radar/form";
@@ -123,7 +124,7 @@ export function AuditView({ result, loading, failed, onRetry, users, filters, fi
 
   return (
     <>
-      <PageHeader title={copy.title} subtitle={copy.subtitle} />
+      <PageHeader title={copy.title} subtitle={copy.subtitle} icon={<ShieldCheck className="size-5" />} />
 
       <FilterBar label={copy.filters}>
         <FilterSelect label={copy.user} name="user_id" value={filters.user_id} onChange={set("user_id")} allLabel={copy.allUsers} options={users.map((u) => ({ value: String(u.id), label: u.name }))} />

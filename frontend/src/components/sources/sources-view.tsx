@@ -1,6 +1,6 @@
 "use client";
 
-import { CircleCheck, CircleDashed, CircleX, type LucideIcon } from "lucide-react";
+import { CircleCheck, CircleDashed, CircleX, Database, Layers, ShieldCheck, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import type { FormEvent } from "react";
 import { Button } from "@/components/radar/button";
@@ -30,8 +30,13 @@ const STATUS: Record<SourceStatus, { icon: LucideIcon; tone: string }> = {
 function SourceStatusLabel({ status }: { status: SourceStatus }) {
   const { icon: Icon, tone } = STATUS[status];
   return (
-    <span className={cn("inline-flex items-center gap-1.5 whitespace-nowrap", tone)}>
-      <Icon aria-hidden="true" className="size-4 shrink-0" />
+    <span
+      className={cn(
+        "inline-flex items-center gap-1.5 rounded-badge px-2.5 py-0.5 text-caption font-medium border whitespace-nowrap",
+        tone === "text-sev-high" ? "border-sev-high/30 bg-sev-high-bg text-sev-high" : "border-line bg-paper text-ink",
+      )}
+    >
+      <Icon aria-hidden="true" className="size-3.5 shrink-0" />
       {sourceStatusLabels[status]}
     </span>
   );
@@ -63,9 +68,7 @@ export type SourcesViewProps = {
   failed: boolean;
   onRetry?: () => void;
   canManage: boolean;
-  /** Id of the row whose action is running. */
   busyId: number | null;
-  /** Inline message per row after a test or a failed action. */
   rowNotice: { id: number; tone: "ok" | "error"; text: string } | null;
   onTest: (source: Source) => void;
   onToggle: (source: Source) => void;
@@ -81,27 +84,59 @@ export type SourcesViewProps = {
   onImportClose: () => void;
 };
 
-/** Ringkasan satu baris di atas tabel: fakta dari daftar (tidak dipaginasi), galat disorot dengan ikon + teks. */
+/** Metrik sumber dalam kartu KPI modern. */
 function Summary({ sources }: { sources: Source[] }) {
   const summary = sourceSummary(sources);
   const text = copy.summary;
+
   return (
-    <p aria-label={text.label} className="mb-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-table text-ink-muted">
-      <span>{text.total(formatInteger(summary.total))}</span>
-      <span aria-hidden="true">·</span>
-      <span>{text.active(formatInteger(summary.active))}</span>
-      <span aria-hidden="true">·</span>
-      <span>{text.rawItems(formatInteger(summary.rawItems))}</span>
-      <span aria-hidden="true">·</span>
-      {summary.failing > 0 ? (
-        <span className="inline-flex items-center gap-1 font-medium text-sev-high">
-          <CircleX aria-hidden="true" className="size-3.5" />
-          {text.failing(formatInteger(summary.failing))}
-        </span>
-      ) : (
-        <span>{text.noneFailing}</span>
-      )}
-    </p>
+    <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="flex items-center gap-3.5 rounded-control border border-line bg-panel p-4">
+        <div className="flex size-10 shrink-0 items-center justify-center rounded-control bg-brand-tint text-brand">
+          <Database className="size-5" />
+        </div>
+        <div>
+          <span className="block text-caption font-medium uppercase tracking-wider text-ink-muted">Total Sumber</span>
+          <span className="text-lead font-semibold text-ink">{text.total(formatInteger(summary.total))}</span>
+        </div>
+      </div>
+      <div className="flex items-center gap-3.5 rounded-control border border-line bg-panel p-4">
+        <div className="flex size-10 shrink-0 items-center justify-center rounded-control bg-brand-tint text-brand">
+          <CircleCheck className="size-5" />
+        </div>
+        <div>
+          <span className="block text-caption font-medium uppercase tracking-wider text-ink-muted">Sumber Aktif</span>
+          <span className="text-lead font-semibold text-ink">{text.active(formatInteger(summary.active))}</span>
+        </div>
+      </div>
+      <div className="flex items-center gap-3.5 rounded-control border border-line bg-panel p-4">
+        <div className="flex size-10 shrink-0 items-center justify-center rounded-control bg-brand-tint text-brand">
+          <Layers className="size-5" />
+        </div>
+        <div>
+          <span className="block text-caption font-medium uppercase tracking-wider text-ink-muted">Item Mentah</span>
+          <span className="text-lead font-semibold text-ink">{text.rawItems(formatInteger(summary.rawItems))}</span>
+        </div>
+      </div>
+      <div className="flex items-center gap-3.5 rounded-control border border-line bg-panel p-4">
+        <div
+          className={cn(
+            "flex size-10 shrink-0 items-center justify-center rounded-control",
+            summary.failing > 0 ? "bg-sev-high-bg text-sev-high" : "bg-brand-tint text-brand",
+          )}
+        >
+          {summary.failing > 0 ? <CircleX className="size-5" /> : <ShieldCheck className="size-5" />}
+        </div>
+        <div>
+          <span className="block text-caption font-medium uppercase tracking-wider text-ink-muted">Status Kesehatan</span>
+          {summary.failing > 0 ? (
+            <span className="text-lead font-semibold text-sev-high">{text.failing(formatInteger(summary.failing))}</span>
+          ) : (
+            <span className="text-lead font-semibold text-ink">{text.noneFailing}</span>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -137,7 +172,9 @@ export function SourcesView(props: SourcesViewProps) {
       header: copy.type,
       cell: (s) => (
         <span className="flex flex-wrap items-center gap-2 whitespace-nowrap">
-          {sourceTypeLabels[s.type]}
+          <span className="inline-flex items-center rounded-badge border border-line bg-paper px-2 py-0.5 text-caption font-medium text-ink">
+            {sourceTypeLabels[s.type]}
+          </span>
           {s.is_simulated && <SimBadge />}
         </span>
       ),
@@ -218,6 +255,7 @@ export function SourcesView(props: SourcesViewProps) {
         title={copy.title}
         subtitle={copy.subtitle}
         meta={copy.ingestLater}
+        icon={<Database className="size-5" />}
         actions={canManage ? <Button variant="primary" onClick={props.onNew}>{copy.newSource}</Button> : undefined}
       />
 

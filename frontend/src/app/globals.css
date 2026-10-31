@@ -1,42 +1,41 @@
 @import "tailwindcss";
 
 /*
- * Token RadarIsu (docs/UI_DESIGN_SYSTEM.md §3). Satu-satunya tempat nilai warna ditulis.
- * Komponen hanya memakai kelas utilitas dari @theme di bawah (bg-paper, text-ink, ...).
- * Tema terang saja; tidak ada varian gelap.
+ * Token RadarIsu (docs/UI_DESIGN_SYSTEM.md §3).
+ * Tema modern, clean, soft, dan kontemporer (Able Pro / Modern SOC UI).
  */
 :root {
-  --paper: #f5f4ee;
+  --paper: #f4f6fa;
   --panel: #ffffff;
-  --line: #e1ded3;
-  --line-input: #8a9285;
-  --hover: #f0eee5;
-  --ink: #1b2418;
-  --ink-muted: #566052;
-  --brand: #3b4a2f;
+  --line: #e2e8f0;
+  --line-input: #cbd5e1;
+  --hover: #f8fafc;
+  --ink: #0f172a;
+  --ink-muted: #64748b;
+  --brand: #2563eb;
   --brand-fg: #ffffff;
-  --brand-tint: #e7ebdf;
-  --sidebar: #26301f;
-  --sidebar-fg: #e8ece2;
-  --sidebar-muted: #b5bfaa;
-  --sev-high: #b42318;
-  --sev-high-bg: #fdecea;
-  --sev-medium: #b54708;
-  --sev-medium-bg: #fef0dc;
-  --sev-low: #5b6676;
-  --sev-low-bg: #eef0f3;
-  --sim: #1e5a96;
-  --sim-bg: #e6eff8;
-  --viz-1: #26301f;
-  --viz-2: #4b5e3a;
-  --viz-3: #7a8c66;
-  --viz-4: #a3b08f;
-  --chart-volume: #3b4a2f;
-  --chart-grid: #e1ded3;
-  --chart-ref: #566052;
-  --radius: 6px;
+  --brand-tint: #eff6ff;
+  --sidebar: #ffffff;
+  --sidebar-fg: #0f172a;
+  --sidebar-muted: #64748b;
+  --sev-high: #dc2626;
+  --sev-high-bg: #fef2f2;
+  --sev-medium: #d97706;
+  --sev-medium-bg: #fffbeb;
+  --sev-low: #475569;
+  --sev-low-bg: #f1f5f9;
+  --sim: #0284c7;
+  --sim-bg: #f0f9ff;
+  --viz-1: #1d4ed8;
+  --viz-2: #2563eb;
+  --viz-3: #3b82f6;
+  --viz-4: #60a5fa;
+  --chart-volume: #2563eb;
+  --chart-grid: #e2e8f0;
+  --chart-ref: #64748b;
+  --radius: 14px;
 
-  /* Alias untuk grafik lama yang masih membaca nama bawaan; hapus setelah halaman bermigrasi. */
+  /* Alias untuk grafik lama */
   --background: var(--paper);
   --foreground: var(--ink);
   --border: var(--line);
@@ -68,8 +67,8 @@
   --color-viz-2: var(--viz-2);
   --color-viz-3: var(--viz-3);
   --color-viz-4: var(--viz-4);
-  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
-  --font-serif: "Source Serif 4 Variable", ui-serif, Georgia, serif;
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-serif: "Inter Variable", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-mono: "JetBrains Mono Variable", ui-monospace, "Cascadia Mono", monospace;
   --text-title: 24px;
   --text-title--line-height: 32px;
@@ -83,8 +82,8 @@
   --text-caption--line-height: 16px;
   --text-metric: 32px;
   --text-metric--line-height: 36px;
-  --radius-control: var(--radius);
-  --radius-badge: 4px;
+  --radius-control: 10px;
+  --radius-badge: 9999px;
 }
 
 html {
@@ -101,15 +100,34 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Cincin fokus: 2 px --brand, offset 2 px (Design System §3.4). */
+/* Cincin fokus modern */
 :focus-visible {
   outline: 2px solid var(--brand);
   outline-offset: 2px;
 }
 
-/* Di atas latar gelap (sidebar) cincin memakai warna terang agar tetap terlihat. */
 .on-dark :focus-visible {
   outline-color: var(--sidebar-fg);
+}
+
+/* Utilitas Card & Hero Elevation Modern */
+.card-modern {
+  background-color: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.02);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-modern:hover {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.03);
+}
+
+.hero-banner {
+  background: linear-gradient(135deg, #1e40af 0%, #2563eb 60%, #3b82f6 100%);
+  color: #ffffff;
+  border-radius: var(--radius);
+  box-shadow: 0 4px 14px 0 rgba(37, 99, 235, 0.25);
 }
 
 @media (prefers-reduced-motion: reduce) {

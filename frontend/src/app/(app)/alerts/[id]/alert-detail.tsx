@@ -2,20 +2,27 @@
 
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
+import { ArrowLeft, CheckCircle, FileText, Info, ShieldAlert } from "lucide-react";
 import { useCan } from "@/components/permissions-provider";
-import { Button, ErrorText, Field, inputClass, PageTitle, Section, StatusBadge, Table, Td } from "@/components/ui";
+import { Section } from "@/components/radar/section";
+import { Button } from "@/components/radar/button";
+import { SeverityBadge } from "@/components/radar/severity-badge";
+import { StatusChip } from "@/components/radar/status-chip";
+import { SimBadge } from "@/components/radar/simulation";
+import { Waktu } from "@/components/radar/waktu";
+import { Field, controlClass } from "@/components/radar/form";
+import { ErrorState } from "@/components/radar/states";
+import { SkeletonRows } from "@/components/radar/skeleton";
 import { api, ApiError } from "@/lib/api";
 import { summarizeEvidence } from "@/lib/coordination";
-import { formatDateTime } from "@/lib/format";
 import {
   alertActionLabels,
   alertKindLabels,
-  alertStatusLabels,
   evidenceReasonLabels,
-  severityLabels,
   ui,
 } from "@/lib/labels";
 import { useApiData } from "@/lib/use-api-data";
+import type { AlertStatus, Severity } from "@/components/radar/types";
 
 type EvidenceItem = {
   id: number;
@@ -45,9 +52,9 @@ type ScoreBreakdown = {
 type AlertDetailData = {
   id: number;
   kind: keyof typeof alertKindLabels;
-  status: keyof typeof alertStatusLabels;
+  status: AlertStatus;
   score: number;
-  severity: keyof typeof severityLabels;
+  severity: Severity;
   topic: { id: number; name: string } | null;
   subject_account: { id: number; handle: string } | null;
   score_breakdown: ScoreBreakdown | null;
@@ -65,14 +72,20 @@ export function AlertDetail({ id }: { id: number }) {
   const [briefingMsg, setBriefingMsg] = useState<string | null>(null);
 
   if (error) {
-    return <ErrorText>{ui.common.loadError}</ErrorText>;
+    return <ErrorState title={ui.common.loadError} description="Gagal memuat rincian peringatan." onRetry={reload} />;
   }
 
   if (data === null) {
-    return <p className="text-sm text-neutral-500">{ui.loading}</p>;
+    return (
+      <div className="space-y-4">
+        <div className="h-8 w-48 animate-pulse rounded-control bg-line" />
+        <SkeletonRows columns={4} />
+      </div>
+    );
   }
 
   const alert = data.data;
+  const isSimulated = alert.evidence?.some((ev) => ev.post?.is_simulated);
 
   async function handleAction(endpoint: string, payload: Record<string, unknown> = {}) {
     setBusyAction(endpoint);
@@ -138,175 +151,209 @@ export function AlertDetail({ id }: { id: number }) {
     handleAction("comments", { note });
   }
 
-  const isSimulated = alert.evidence?.some((ev) => ev.post?.is_simulated);
-
-  function getSeverityTone(sev: keyof typeof severityLabels): "error" | "ok" | "muted" {
-    if (sev === "high") return "error";
-    if (sev === "medium") return "muted";
-    return "ok";
-  }
-
-  function getStatusTone(st: keyof typeof alertStatusLabels): "error" | "ok" | "muted" {
-    if (st === "escalated" || st === "new") return "error";
-    if (st === "approved") return "ok";
-    return "muted";
-  }
-
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-neutral-200 pb-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <Link href="/alerts" className="text-xs text-neutral-500 hover:underline">
-              ← {ui.alerts.backToList}
-            </Link>
-          </div>
-          <div className="mt-1 flex items-center gap-3">
-            <PageTitle>
-              {ui.alerts.detailTitle} #{alert.id}
-            </PageTitle>
-            <StatusBadge tone={getSeverityTone(alert.severity)}>
-              {severityLabels[alert.severity] ?? alert.severity}
-            </StatusBadge>
-            <StatusBadge tone={getStatusTone(alert.status)}>
-              {alertStatusLabels[alert.status] ?? alert.status}
-            </StatusBadge>
-            {isSimulated ? <StatusBadge tone="muted">{ui.simulatedData}</StatusBadge> : null}
-          </div>
-          <p className="text-sm font-medium text-neutral-700">
-            {alert.topic?.name ?? alert.subject_account?.handle ?? ui.common.none} ·{" "}
-            <span className="text-neutral-500">{alertKindLabels[alert.kind] ?? alert.kind}</span>
-          </p>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <div className="text-right">
-            <p className="text-xs text-neutral-500">{ui.alerts.score}</p>
-            <p className="text-2xl font-bold">{alert.score}</p>
-          </div>
-
-          {alert.status !== "new" && can("briefings.create") ? (
-            <Button
-              variant="secondary"
-              disabled={busyAction === "briefings"}
-              onClick={handleCreateBriefing}
-            >
-              {busyAction === "briefings" ? ui.alerts.generatingBriefing : ui.alerts.generateBriefing}
-            </Button>
-          ) : null}
-        </div>
+      {/* Navigation Breadcrumb */}
+      <div>
+        <Link
+          href="/alerts"
+          className="inline-flex items-center gap-1.5 text-table font-medium text-brand hover:underline"
+        >
+          <ArrowLeft className="size-4" aria-hidden="true" />
+          <span>{ui.alerts.backToList}</span>
+        </Link>
       </div>
 
-      {formError ? <ErrorText>{formError}</ErrorText> : null}
-      {briefingMsg ? <p className="text-sm text-green-700">{briefingMsg}</p> : null}
+      {/* Main Incident Header */}
+      <div className="rounded-control border border-line bg-panel p-5">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2.5">
+              <span className="font-mono text-table text-ink-muted">#{alert.id}</span>
+              <SeverityBadge severity={alert.severity} size="md" />
+              <StatusChip status={alert.status} />
+              {isSimulated && <SimBadge />}
+            </div>
+            <h1 className="mt-2 font-serif text-title font-semibold text-ink">
+              {alert.topic?.name ?? (alert.subject_account?.handle ? `@${alert.subject_account.handle}` : ui.common.none)}
+            </h1>
+            <div className="mt-1 flex flex-wrap items-center gap-3 text-sm text-ink-muted">
+              <span>{alertKindLabels[alert.kind] ?? alert.kind}</span>
+              <span>·</span>
+              <span>Terdeteksi: <Waktu value={alert.detected_at} /></span>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="rounded-control border border-line bg-paper px-4 py-2 text-right">
+              <span className="block text-caption text-ink-muted">{ui.alerts.score}</span>
+              <span className="font-mono text-metric font-semibold tabular-nums text-ink">{alert.score}</span>
+            </div>
+
+            {alert.status !== "new" && can("briefings.create") && (
+              <Button
+                variant="primary"
+                pending={busyAction === "briefings"}
+                onClick={handleCreateBriefing}
+              >
+                <FileText className="size-4" aria-hidden="true" />
+                <span>{busyAction === "briefings" ? ui.alerts.generatingBriefing : ui.alerts.generateBriefing}</span>
+              </Button>
+            )}
+          </div>
+        </div>
+
+        {formError && (
+          <div className="mt-4 rounded-control border border-sev-high/30 bg-sev-high-bg p-3 text-sm text-sev-high">
+            {formError}
+          </div>
+        )}
+
+        {briefingMsg && (
+          <div className="mt-4 flex items-center gap-2 rounded-control border border-brand/30 bg-brand-tint/40 p-3 text-sm text-brand font-medium">
+            <CheckCircle className="size-4 shrink-0" aria-hidden="true" />
+            <span>{briefingMsg}</span>
+          </div>
+        )}
+      </div>
 
       {/* Rekomendasi Terakhir */}
-      {alert.recommendation ? (
-        <div className="rounded-md border border-amber-200 bg-amber-50 p-4">
-          <h3 className="text-sm font-semibold text-amber-900">{ui.alerts.recommendation}</h3>
-          <p className="mt-1 text-sm text-amber-800">{alert.recommendation}</p>
+      {alert.recommendation && (
+        <div className="rounded-control border border-brand/20 bg-brand-tint/30 p-4">
+          <div className="flex items-center gap-2 text-table font-semibold text-brand">
+            <Info className="size-4 shrink-0" aria-hidden="true" />
+            <span>{ui.alerts.recommendation}</span>
+          </div>
+          <p className="mt-1 text-sm text-ink">{alert.recommendation}</p>
         </div>
-      ) : null}
+      )}
 
       {/* Rincian Skor Ancaman */}
-      {alert.score_breakdown ? (
-        <Section title={ui.alerts.scoreBreakdown}>
-          <Table head={[ui.alerts.reason, ui.alerts.raw, ui.alerts.weight, ui.alerts.value]}>
-            {alert.score_breakdown.spike ? (
-              <tr>
-                <Td className="font-medium">{ui.alerts.spike}</Td>
-                <Td className="font-mono text-xs">{alert.score_breakdown.spike.raw}</Td>
-                <Td className="font-mono text-xs">{alert.score_breakdown.spike.weight}%</Td>
-                <Td className="font-mono text-xs font-semibold">{alert.score_breakdown.spike.value}</Td>
-              </tr>
-            ) : null}
-            {alert.score_breakdown.anomaly ? (
-              <tr>
-                <Td className="font-medium">{ui.alerts.anomaly}</Td>
-                <Td className="font-mono text-xs">{alert.score_breakdown.anomaly.raw}</Td>
-                <Td className="font-mono text-xs">{alert.score_breakdown.anomaly.weight}%</Td>
-                <Td className="font-mono text-xs font-semibold">{alert.score_breakdown.anomaly.value}</Td>
-              </tr>
-            ) : null}
-            {alert.score_breakdown.sentiment ? (
-              <tr>
-                <Td className="font-medium">{ui.alerts.sentiment}</Td>
-                <Td className="font-mono text-xs">{alert.score_breakdown.sentiment.raw}</Td>
-                <Td className="font-mono text-xs">{alert.score_breakdown.sentiment.weight}%</Td>
-                <Td className="font-mono text-xs font-semibold">{alert.score_breakdown.sentiment.value}</Td>
-              </tr>
-            ) : null}
-            {alert.score_breakdown.reach ? (
-              <tr>
-                <Td className="font-medium">{ui.alerts.reach}</Td>
-                <Td className="font-mono text-xs">{alert.score_breakdown.reach.raw}</Td>
-                <Td className="font-mono text-xs">{alert.score_breakdown.reach.weight}%</Td>
-                <Td className="font-mono text-xs font-semibold">{alert.score_breakdown.reach.value}</Td>
-              </tr>
-            ) : null}
-          </Table>
-
-          {alert.score_breakdown.thresholds ? (
-            <p className="mt-2 text-xs text-neutral-500">
+      {alert.score_breakdown && (
+        <Section flush title={ui.alerts.scoreBreakdown} description="Komposisi bobot indikator penilaian ancaman.">
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse text-left text-table">
+              <thead className="border-b border-line bg-paper text-ink-muted">
+                <tr>
+                  <th scope="col" className="h-9 px-4 font-medium">{ui.alerts.reason}</th>
+                  <th scope="col" className="h-9 px-4 text-right font-medium">{ui.alerts.raw}</th>
+                  <th scope="col" className="h-9 px-4 text-right font-medium">{ui.alerts.weight}</th>
+                  <th scope="col" className="h-9 px-4 text-right font-medium">{ui.alerts.value}</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-line">
+                {alert.score_breakdown.spike && (
+                  <tr className="h-9 hover:bg-hover">
+                    <td className="px-4 font-medium text-ink">{ui.alerts.spike}</td>
+                    <td className="px-4 text-right font-mono text-ink-muted">{alert.score_breakdown.spike.raw}</td>
+                    <td className="px-4 text-right font-mono text-ink-muted">{alert.score_breakdown.spike.weight}%</td>
+                    <td className="px-4 text-right font-mono font-semibold text-ink">{alert.score_breakdown.spike.value}</td>
+                  </tr>
+                )}
+                {alert.score_breakdown.anomaly && (
+                  <tr className="h-9 hover:bg-hover">
+                    <td className="px-4 font-medium text-ink">{ui.alerts.anomaly}</td>
+                    <td className="px-4 text-right font-mono text-ink-muted">{alert.score_breakdown.anomaly.raw}</td>
+                    <td className="px-4 text-right font-mono text-ink-muted">{alert.score_breakdown.anomaly.weight}%</td>
+                    <td className="px-4 text-right font-mono font-semibold text-ink">{alert.score_breakdown.anomaly.value}</td>
+                  </tr>
+                )}
+                {alert.score_breakdown.sentiment && (
+                  <tr className="h-9 hover:bg-hover">
+                    <td className="px-4 font-medium text-ink">{ui.alerts.sentiment}</td>
+                    <td className="px-4 text-right font-mono text-ink-muted">{alert.score_breakdown.sentiment.raw}</td>
+                    <td className="px-4 text-right font-mono text-ink-muted">{alert.score_breakdown.sentiment.weight}%</td>
+                    <td className="px-4 text-right font-mono font-semibold text-ink">{alert.score_breakdown.sentiment.value}</td>
+                  </tr>
+                )}
+                {alert.score_breakdown.reach && (
+                  <tr className="h-9 hover:bg-hover">
+                    <td className="px-4 font-medium text-ink">{ui.alerts.reach}</td>
+                    <td className="px-4 text-right font-mono text-ink-muted">{alert.score_breakdown.reach.raw}</td>
+                    <td className="px-4 text-right font-mono text-ink-muted">{alert.score_breakdown.reach.weight}%</td>
+                    <td className="px-4 text-right font-mono font-semibold text-ink">{alert.score_breakdown.reach.value}</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+          {alert.score_breakdown.thresholds && (
+            <div className="border-t border-line bg-paper px-4 py-2 font-mono text-caption text-ink-muted">
               {ui.alerts.thresholds}: {JSON.stringify(alert.score_breakdown.thresholds)}
-            </p>
-          ) : null}
+            </div>
+          )}
         </Section>
-      ) : null}
+      )}
 
       {/* Bukti Terlampir */}
-      <Section title={ui.alerts.evidence}>
+      <Section flush title={ui.alerts.evidence} description="Indikator dan bukti postingan anomali yang ditemukan.">
         {!alert.evidence || alert.evidence.length === 0 ? (
-          <p className="text-sm text-neutral-500">{ui.alerts.noEvidence}</p>
+          <div className="p-5 text-sm text-ink-muted">{ui.alerts.noEvidence}</div>
         ) : (
-          <Table head={[ui.alerts.reason, ui.alerts.account, ui.alerts.postSnippet, ui.alerts.detail]}>
-            {alert.evidence.map((ev) => (
-              <tr key={ev.id}>
-                <Td className="font-medium">
-                  {evidenceReasonLabels[ev.reason] ?? ev.reason}
-                </Td>
-                <Td className="font-mono text-xs">
-                  {ev.account?.handle ?? ui.common.none}
-                </Td>
-                <Td className="max-w-md text-xs">
-                  {ev.post?.text ?? ui.common.none}
-                  {ev.post?.is_simulated ? (
-                    <span className="ml-1 text-neutral-400">({ui.simulatedData})</span>
-                  ) : null}
-                </Td>
-                <Td className="max-w-xs break-words text-xs">
-                  {summarizeEvidence(ev.reason, ev.detail) ? <p className="mb-1">{summarizeEvidence(ev.reason, ev.detail)}</p> : null}
-                  {ev.detail ? (
-                    <details>
-                      <summary className="cursor-pointer text-neutral-500">{ui.coordination.evidence.raw}</summary>
-                      <code className="font-mono">{JSON.stringify(ev.detail)}</code>
-                    </details>
-                  ) : (
-                    ui.common.none
-                  )}
-                </Td>
-              </tr>
-            ))}
-          </Table>
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse text-left text-table">
+              <thead className="border-b border-line bg-paper text-ink-muted">
+                <tr>
+                  <th scope="col" className="h-9 px-4 font-medium">{ui.alerts.reason}</th>
+                  <th scope="col" className="h-9 px-4 font-medium">{ui.alerts.account}</th>
+                  <th scope="col" className="h-9 px-4 font-medium">{ui.alerts.postSnippet}</th>
+                  <th scope="col" className="h-9 px-4 font-medium">{ui.alerts.detail}</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-line">
+                {alert.evidence.map((ev) => (
+                  <tr key={ev.id} className="hover:bg-hover">
+                    <td className="px-4 py-3 align-top font-medium text-ink whitespace-nowrap">
+                      {evidenceReasonLabels[ev.reason] ?? ev.reason}
+                    </td>
+                    <td className="px-4 py-3 align-top font-mono text-caption text-ink-muted whitespace-nowrap">
+                      {ev.account?.handle ? `@${ev.account.handle}` : ui.common.none}
+                    </td>
+                    <td className="max-w-md px-4 py-3 align-top text-sm text-ink">
+                      <span>{ev.post?.text ?? ui.common.none}</span>
+                      {ev.post?.is_simulated && (
+                        <span className="ml-2 inline-block"><SimBadge /></span>
+                      )}
+                    </td>
+                    <td className="max-w-xs px-4 py-3 align-top text-caption text-ink-muted">
+                      {summarizeEvidence(ev.reason, ev.detail) && (
+                        <p className="mb-1 text-ink">{summarizeEvidence(ev.reason, ev.detail)}</p>
+                      )}
+                      {ev.detail ? (
+                        <details className="mt-1">
+                          <summary className="cursor-pointer text-brand hover:underline">{ui.coordination.evidence.raw}</summary>
+                          <pre className="mt-1 overflow-x-auto rounded-control bg-paper p-2 font-mono text-[11px] text-ink">
+                            {JSON.stringify(ev.detail, null, 2)}
+                          </pre>
+                        </details>
+                      ) : (
+                        ui.common.none
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </Section>
 
       {/* Riwayat Penanganan (Timeline) */}
-      <Section title={ui.alerts.timeline}>
+      <Section title={ui.alerts.timeline} description="Rekam jejak tindakan investigasi dan keputusan komando.">
         {!alert.actions || alert.actions.length === 0 ? (
-          <p className="text-sm text-neutral-500">{ui.common.empty}</p>
+          <p className="text-sm text-ink-muted">{ui.common.empty}</p>
         ) : (
           <div className="space-y-3">
             {alert.actions.map((act, idx) => (
-              <div key={idx} className="rounded-md border border-neutral-200 bg-neutral-50 p-3 text-sm">
+              <div key={idx} className="rounded-control border border-line bg-paper p-3.5 text-sm">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <span className="font-medium text-neutral-900">
+                  <span className="font-medium text-ink">
                     {alertActionLabels[act.action] ?? act.action} ·{" "}
-                    <span className="font-normal text-neutral-600">{act.user ?? ui.audit.system}</span>
+                    <span className="font-normal text-ink-muted">{act.user ?? ui.audit.system}</span>
                   </span>
-                  <span className="text-xs text-neutral-500">{formatDateTime(act.created_at)}</span>
+                  <Waktu value={act.created_at} />
                 </div>
-                {act.note ? <p className="mt-1 text-neutral-700">{act.note}</p> : null}
+                {act.note && <p className="mt-2 text-ink">{act.note}</p>}
               </div>
             ))}
           </div>
@@ -314,34 +361,35 @@ export function AlertDetail({ id }: { id: number }) {
       </Section>
 
       {/* Operasi Triase Sesuai Peran */}
-      <Section title={ui.alerts.action}>
-        <div className="space-y-4 rounded-md border border-neutral-200 p-4">
+      <Section title={ui.alerts.action} description="Aksi penanganan insiden berdasarkan kewenangan peran.">
+        <div className="space-y-5 rounded-control border border-line bg-panel p-5">
           {/* Analyst Operations */}
-          {can("alerts.triage") ? (
+          {can("alerts.triage") && (
             <>
-              {alert.status === "new" ? (
+              {alert.status === "new" && (
                 <div>
                   <Button
                     variant="primary"
-                    disabled={busyAction === "take"}
+                    pending={busyAction === "take"}
                     onClick={() => handleAction("take")}
                   >
-                    {busyAction === "take" ? ui.alerts.taking : ui.alerts.take}
+                    <ShieldAlert className="size-4" aria-hidden="true" />
+                    <span>{busyAction === "take" ? ui.alerts.taking : ui.alerts.take}</span>
                   </Button>
                 </div>
-              ) : null}
+              )}
 
-              {alert.status === "reviewing" || alert.status === "returned" ? (
+              {(alert.status === "reviewing" || alert.status === "returned") && (
                 <div className="space-y-4">
                   {/* Form Eskalasi */}
-                  <form onSubmit={submitEscalate} className="space-y-2 border-b border-neutral-200 pb-4">
+                  <form onSubmit={submitEscalate} className="space-y-3 border-b border-line pb-4">
                     <Field label={ui.alerts.recommendation}>
                       <textarea
                         name="recommendation"
                         rows={2}
                         required
                         placeholder={ui.alerts.recommendationPlaceholder}
-                        className={inputClass}
+                        className={controlClass}
                       />
                     </Field>
                     <Field label={ui.alerts.note}>
@@ -349,10 +397,10 @@ export function AlertDetail({ id }: { id: number }) {
                         name="note"
                         type="text"
                         placeholder={ui.alerts.notePlaceholder}
-                        className={inputClass}
+                        className={controlClass}
                       />
                     </Field>
-                    <Button type="submit" variant="primary" disabled={busyAction === "escalate"}>
+                    <Button type="submit" variant="primary" pending={busyAction === "escalate"}>
                       {busyAction === "escalate" ? ui.alerts.escalating : ui.alerts.escalate}
                     </Button>
                   </form>
@@ -360,20 +408,20 @@ export function AlertDetail({ id }: { id: number }) {
                   {/* Form Positif Palsu */}
                   <form
                     onSubmit={(e) => submitNoteAction(e, "false-positive")}
-                    className="flex flex-wrap items-end gap-2 border-b border-neutral-200 pb-4"
+                    className="flex flex-wrap items-end gap-3 border-b border-line pb-4"
                   >
-                    <div className="flex-1">
+                    <div className="flex-1 min-w-[200px]">
                       <Field label={ui.alerts.falsePositive}>
                         <input
                           name="note"
                           type="text"
                           required
                           placeholder={ui.alerts.notePlaceholder}
-                          className={inputClass}
+                          className={controlClass}
                         />
                       </Field>
                     </div>
-                    <Button type="submit" variant="secondary" disabled={busyAction === "false-positive"}>
+                    <Button type="submit" variant="secondary" pending={busyAction === "false-positive"}>
                       {busyAction === "false-positive" ? ui.alerts.closingFp : ui.alerts.falsePositive}
                     </Button>
                   </form>
@@ -381,47 +429,47 @@ export function AlertDetail({ id }: { id: number }) {
                   {/* Form Tutup Isu */}
                   <form
                     onSubmit={(e) => submitNoteAction(e, "close")}
-                    className="flex flex-wrap items-end gap-2 border-b border-neutral-200 pb-4"
+                    className="flex flex-wrap items-end gap-3 border-b border-line pb-4"
                   >
-                    <div className="flex-1">
+                    <div className="flex-1 min-w-[200px]">
                       <Field label={ui.alerts.close}>
                         <input
                           name="note"
                           type="text"
                           required
                           placeholder={ui.alerts.notePlaceholder}
-                          className={inputClass}
+                          className={controlClass}
                         />
                       </Field>
                     </div>
-                    <Button type="submit" variant="secondary" disabled={busyAction === "close"}>
+                    <Button type="submit" variant="secondary" pending={busyAction === "close"}>
                       {busyAction === "close" ? ui.alerts.closing : ui.alerts.close}
                     </Button>
                   </form>
                 </div>
-              ) : null}
+              )}
             </>
-          ) : null}
+          )}
 
           {/* Leader Operations */}
-          {can("alerts.decide") && alert.status === "escalated" ? (
+          {can("alerts.decide") && alert.status === "escalated" && (
             <div className="space-y-4">
               {/* Form Approve */}
               <form
                 onSubmit={(e) => submitNoteAction(e, "approve")}
-                className="flex flex-wrap items-end gap-2 border-b border-neutral-200 pb-4"
+                className="flex flex-wrap items-end gap-3 border-b border-line pb-4"
               >
-                <div className="flex-1">
+                <div className="flex-1 min-w-[200px]">
                   <Field label={ui.alerts.approve}>
                     <input
                       name="note"
                       type="text"
                       placeholder={ui.alerts.notePlaceholder}
-                      className={inputClass}
+                      className={controlClass}
                     />
                   </Field>
                 </div>
-                <Button type="submit" variant="primary" disabled={busyAction === "approve"}>
+                <Button type="submit" variant="primary" pending={busyAction === "approve"}>
                   {busyAction === "approve" ? ui.alerts.approving : ui.alerts.approve}
                 </Button>
               </form>
@@ -429,7 +477,7 @@ export function AlertDetail({ id }: { id: number }) {
               {/* Form Return */}
               <form
                 onSubmit={(e) => submitNoteAction(e, "return")}
-                className="space-y-2 border-b border-neutral-200 pb-4"
+                className="space-y-3 border-b border-line pb-4"
               >
                 <Field label={ui.alerts.return}>
                   <textarea
@@ -437,28 +485,28 @@ export function AlertDetail({ id }: { id: number }) {
                     rows={2}
                     required
                     placeholder={ui.alerts.notePlaceholder}
-                    className={inputClass}
+                    className={controlClass}
                   />
                 </Field>
-                <Button type="submit" variant="secondary" disabled={busyAction === "return"}>
+                <Button type="submit" variant="secondary" pending={busyAction === "return"}>
                   {busyAction === "return" ? ui.alerts.returning : ui.alerts.return}
                 </Button>
               </form>
             </div>
-          ) : null}
+          )}
 
-          {/* Comment Form (Allowed for any role that can view alert) */}
-          <form onSubmit={submitComment} className="space-y-2">
+          {/* Comment Form */}
+          <form onSubmit={submitComment} className="space-y-3">
             <Field label={ui.alerts.addComment}>
               <textarea
                 name="note"
                 rows={2}
                 required
                 placeholder={ui.alerts.commentPlaceholder}
-                className={inputClass}
+                className={controlClass}
               />
             </Field>
-            <Button type="submit" variant="secondary" disabled={busyAction === "comments"}>
+            <Button type="submit" variant="secondary" pending={busyAction === "comments"}>
               {busyAction === "comments" ? ui.alerts.commenting : ui.alerts.comment}
             </Button>
           </form>
