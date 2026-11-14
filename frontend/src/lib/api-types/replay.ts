@@ -41,3 +41,10 @@ export type ReplayListResponse = {
 
 /** 409 dari start/stop dan 422 dari unggah membawa kode galat (`lib/labels/replay.ts` replayErrorCodes). */
 export type ReplayErrorBody = { message?: string; errors?: Record<string, string[]> } | null;
+
+/** GET /replay/scenarios/{id}/composition: komposisi baris skenario menurut fase dan label manual. */
+export type ReplayComposition = {
+  total: number;
+  phases: { baseline: number; incident: number };
+  labels: { organic: number; anomalous: number; unlabeled: number };
+};

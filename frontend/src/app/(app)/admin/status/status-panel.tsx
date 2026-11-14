@@ -2,6 +2,7 @@
 
 import { CircleCheck, CircleDashed, TriangleAlert } from "lucide-react";
 import { DataTable, type DataTableColumn } from "@/components/radar/data-table";
+import { StackedMeter } from "@/components/radar/meter";
 import { PageHeader } from "@/components/radar/page-header";
 import { Section } from "@/components/radar/section";
 import { Stat } from "@/components/radar/stat";
@@ -31,6 +32,7 @@ type Status = {
     recent_failures: FailureRow[];
   };
   counts: { raw_items: number; unprocessed_raw_items: number; posts: number; open_alerts: number };
+  sentiment: { positive: number; negative: number; neutral: number };
   offline_mode: boolean;
 };
 
@@ -88,6 +90,30 @@ const FAILURE_COLUMNS: DataTableColumn<FailureRow>[] = [
   { id: "error", header: "", cell: (f) => <span className="break-words text-sev-high">{f.error}</span> },
 ];
 
+/** Sebaran sentimen semua posting. Bila hanya netral, panel mencatatnya sebagai batasan kamus, bukan kondisi nyata. */
+function SentimentSection({ sentiment }: { sentiment: Status["sentiment"] }) {
+  const total = sentiment.positive + sentiment.negative + sentiment.neutral;
+  const onlyNeutral = total > 0 && sentiment.positive === 0 && sentiment.negative === 0;
+  const parts = [
+    { name: ui.adminStatus.sentimentPositive, value: sentiment.positive, tone: "bg-brand" },
+    { name: ui.adminStatus.sentimentNegative, value: sentiment.negative, tone: "bg-sev-high" },
+    { name: ui.adminStatus.sentimentNeutral, value: sentiment.neutral, tone: "bg-line-input" },
+  ];
+  return (
+    <Section title={ui.adminStatus.sentimentTitle}>
+      <div className="grid gap-4 sm:grid-cols-3">
+        {parts.map((part) => (
+          <Stat key={part.name} label={part.name} value={formatInteger(part.value)} hint={total > 0 ? `${Math.round((part.value / total) * 100)}%` : undefined} />
+        ))}
+      </div>
+      <div className="mt-4">
+        <StackedMeter parts={parts.map((p) => ({ name: p.name, value: p.value, tone: p.tone }))} label={ui.adminStatus.sentimentTitle} />
+      </div>
+      {onlyNeutral && <p className="mt-3 text-caption text-sev-medium">{ui.adminStatus.sentimentOnlyNeutral}</p>}
+    </Section>
+  );
+}
+
 export function StatusPanel() {
   const { data, error, reload } = useApiData<{ data: Status }>("system/status");
   const status = error ? null : (data?.data ?? null);
@@ -119,6 +145,8 @@ export function StatusPanel() {
               <Stat label={ui.adminStatus.openAlerts} value={formatInteger(status.counts.open_alerts)} />
             </div>
           </Section>
+
+          <SentimentSection sentiment={status.sentiment} />
 
           <Section title={ui.adminStatus.sources} flush>
             <DataTable

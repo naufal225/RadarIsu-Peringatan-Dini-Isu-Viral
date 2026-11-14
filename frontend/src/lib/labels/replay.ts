@@ -76,6 +76,16 @@ export const replayUi = {
   confirmStart: "Mulai Replay",
   confirmStop: "Hentikan Replay",
   times2: { anchor: "Jangkar virtual", started: "Mulai", finished: "Berhenti", heartbeat: "Detak pekerja terakhir" },
+  composition: {
+    title: "Komposisi baris skenario",
+    phases: "Fase",
+    labels: "Label manual",
+    baseline: "Baseline",
+    incident: "Incident",
+    organic: "Organik",
+    anomalous: "Tidak Wajar",
+    unlabeled: "Belum berlabel",
+  },
   trend: {
     title: "Volume posting selama Replay",
     dataClock: "Jam data",

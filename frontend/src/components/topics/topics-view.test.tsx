@@ -13,6 +13,7 @@ import { TopicsView, type TopicFormState, type TopicsViewProps } from "./topics-
 const noop = () => undefined;
 const closed: TopicFormState = { open: false, topicId: null, values: { name: "", category: "general", sensitivity: "medium", keywordsText: "", is_active: true }, errors: {}, pending: false, failed: false };
 const list: TopicsViewProps = {
+  coverage: null,
   result: { data: TOPICS },
   loading: false,
   failed: false,

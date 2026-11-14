@@ -10,7 +10,9 @@ import { SimBadge } from "@/components/radar/simulation";
 import { SkeletonRows } from "@/components/radar/skeleton";
 import { EmptyState, ErrorState } from "@/components/radar/states";
 import { Waktu } from "@/components/radar/waktu";
-import type { LabelingPost, LabelingResponse, LabelingStatusFilter, ManualLabel } from "@/lib/api-types/labeling";
+import { Section } from "@/components/radar/section";
+import { StackedMeter } from "@/components/radar/meter";
+import type { LabelingDaily, LabelingPost, LabelingResponse, LabelingStatusFilter, ManualLabel } from "@/lib/api-types/labeling";
 import { formatInteger } from "@/lib/format";
 import { labelingPercent } from "@/lib/labeling";
 import { manualLabelLabels, ui } from "@/lib/labels";
@@ -33,7 +35,44 @@ export type LabelingViewProps = {
   /** Inline error for one post after a failed save. */
   rowError: { id: number; text: string } | null;
   onLabel: (post: LabelingPost, label: ManualLabel | null) => void;
+  /** Sebaran label per tanggal posting; null saat memuat atau gagal. */
+  daily: LabelingDaily[] | null;
 };
+
+/** Sebaran per tanggal posting: satu batang bertumpuk per hari (organik, tidak wajar, belum berlabel). */
+function DailyDistribution({ days }: { days: LabelingDaily[] | null }) {
+  if (days === null) return null;
+  const palette = [
+    { name: "organic", tone: "bg-brand" },
+    { name: "anomalous", tone: "bg-sev-high" },
+    { name: "unlabeled", tone: "bg-line-input" },
+  ] as const;
+  return (
+    <Section title={copy.daily.title}>
+      <p className="mb-4 text-caption text-ink-muted">
+        {copy.daily.note} Urutan angka: {copy.daily.organic} / {copy.daily.anomalous} / {copy.daily.unlabeled}.
+      </p>
+      {days.length === 0 ? (
+        <p className="text-table text-ink-muted">{copy.daily.empty}</p>
+      ) : (
+        <ol className="space-y-2">
+          {days.map((day) => {
+            const parts = palette.map((p) => ({ name: copy.daily[p.name], value: day[p.name], tone: p.tone }));
+            return (
+              <li key={day.day} className="grid grid-cols-[7rem_1fr_auto] items-center gap-3 text-table">
+                <span className="font-mono text-caption text-ink-muted">{day.day}</span>
+                <StackedMeter parts={parts} label={`${day.day}: ${parts.map((p) => `${p.name} ${p.value}`).join(", ")}`} />
+                <span className="font-mono text-caption tabular-nums text-ink">
+                  {formatInteger(day.organic)} / {formatInteger(day.anomalous)} / {formatInteger(day.unlabeled)}
+                </span>
+              </li>
+            );
+          })}
+        </ol>
+      )}
+    </Section>
+  );
+}
 
 /** Presentasi murni /labeling: kemajuan, filter, dan satu kartu per posting. */
 export function LabelingView(props: LabelingViewProps) {
@@ -54,6 +93,10 @@ export function LabelingView(props: LabelingViewProps) {
           <p className="text-caption text-ink-muted">{copy.breakdown(formatInteger(progress.organic), formatInteger(progress.anomalous))}</p>
         </div>
       )}
+
+      <div className="mb-6">
+        <DailyDistribution days={props.daily} />
+      </div>
 
       <FilterBar label={copy.filtersLabel}>
         <FilterSelect

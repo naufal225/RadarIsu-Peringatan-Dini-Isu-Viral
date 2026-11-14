@@ -11,6 +11,14 @@ export const topicCategoryLabels = {
 export const sensitivityLabels = { low: "Rendah", medium: "Sedang", high: "Tinggi" } as const;
 
 export const topicsUi = {
+  coverage: {
+    title: "Cakupan topik",
+    matched: "Posting cocok dengan topik",
+    of: "dari",
+    note: "Posting yang tidak cocok dengan topik mana pun tidak masuk grafik topik.",
+    perTopic: "Per topik",
+    inactive: "nonaktif",
+  },
   title: "Topik pantauan",
   intro:
     "Topik adalah kumpulan kata kunci yang dicari di postingan. Postingan yang memuat salah satu kata kunci sebagai kata atau frasa utuh dihitung ke topik itu, dan jumlahnya tampil per jam di grafik.",

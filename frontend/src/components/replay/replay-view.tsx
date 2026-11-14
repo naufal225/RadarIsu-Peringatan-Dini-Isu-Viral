@@ -14,7 +14,8 @@ import { SkeletonCard } from "@/components/radar/skeleton";
 import { EmptyState } from "@/components/radar/states";
 import { SignalChart } from "@/components/charts/signal-chart";
 import { Waktu } from "@/components/radar/waktu";
-import type { ReplayListResponse, ReplayScenario, ReplayStatus } from "@/lib/api-types/replay";
+import type { ReplayComposition, ReplayListResponse, ReplayScenario, ReplayStatus } from "@/lib/api-types/replay";
+import { StackedMeter } from "@/components/radar/meter";
 import type { SignalPoint } from "@/lib/signal-chart";
 import { cn } from "@/lib/cn";
 import { formatInteger } from "@/lib/format";
@@ -125,6 +126,8 @@ export type ReplayViewProps = {
   actionErrors: string[];
   upload: UploadState;
   onUpload: (form: FormData) => void;
+  /** Komposisi baris skenario yang terpilih; null saat memuat atau gagal. */
+  composition: ReplayComposition | null;
   /** Grafik volume yang tumbuh selama Replay; null bila skenario tidak sedang berjalan. */
   trend: {
     series: SignalPoint[] | null;
@@ -238,6 +241,7 @@ function Controls({
   actionPending,
   actionErrors,
   trend,
+  composition,
 }: ReplayViewProps & { scenario: ReplayScenario; running: ReplayScenario | null }) {
   const anotherRunning = !!running && running.id !== scenario.id;
   const action = availableAction(scenario, anotherRunning);
@@ -290,6 +294,8 @@ function Controls({
           </>
         )}
       </dl>
+
+      <CompositionPanel composition={composition} />
 
       <ReplayTrendPanel trend={trend} />
 
@@ -349,6 +355,47 @@ function Controls({
         onConfirm={onConfirm}
         onClose={onCancel}
       />
+    </div>
+  );
+}
+
+/** Komposisi baris skenario: fase (baseline vs incident) dan label manual, dalam dua batang bertumpuk. */
+function CompositionPanel({ composition }: { composition: ReplayComposition | null }) {
+  if (composition === null || composition.total === 0) return null;
+  const phases = [
+    { name: copy.composition.baseline, value: composition.phases.baseline, tone: "bg-line-input" },
+    { name: copy.composition.incident, value: composition.phases.incident, tone: "bg-sev-medium" },
+  ];
+  const labels = [
+    { name: copy.composition.organic, value: composition.labels.organic, tone: "bg-brand" },
+    { name: copy.composition.anomalous, value: composition.labels.anomalous, tone: "bg-sev-high" },
+    { name: copy.composition.unlabeled, value: composition.labels.unlabeled, tone: "bg-line-input" },
+  ];
+  return (
+    <div className="space-y-3 border-t border-line pt-4">
+      <h3 className="text-table font-semibold text-ink">{copy.composition.title}</h3>
+      <div className="space-y-2">
+        <p className="text-caption text-ink-muted">{copy.composition.phases}</p>
+        <StackedMeter parts={phases} label={copy.composition.phases} />
+        <ul className="flex flex-wrap gap-x-4 text-caption text-ink">
+          {phases.map((p) => (
+            <li key={p.name}>
+              {p.name}: <span className="font-mono tabular-nums">{formatInteger(p.value)}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+      <div className="space-y-2">
+        <p className="text-caption text-ink-muted">{copy.composition.labels}</p>
+        <StackedMeter parts={labels} label={copy.composition.labels} />
+        <ul className="flex flex-wrap gap-x-4 text-caption text-ink">
+          {labels.map((l) => (
+            <li key={l.name}>
+              {l.name}: <span className="font-mono tabular-nums">{formatInteger(l.value)}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
 }

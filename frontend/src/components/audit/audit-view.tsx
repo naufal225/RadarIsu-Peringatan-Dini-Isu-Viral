@@ -8,7 +8,9 @@ import { PageHeader } from "@/components/radar/page-header";
 import { Pagination } from "@/components/radar/pagination";
 import { EmptyState } from "@/components/radar/states";
 import { Waktu } from "@/components/radar/waktu";
-import type { AuditEntry, AuditFilters, AuditPage, UserOption } from "@/lib/api-types/audit";
+import { Meter } from "@/components/radar/meter";
+import { Section } from "@/components/radar/section";
+import type { AuditEntry, AuditFilters, AuditPage, AuditSummary, UserOption } from "@/lib/api-types/audit";
 import { detailSummary, detailText, hasActiveFilters } from "@/lib/audit";
 import { formatInteger } from "@/lib/format";
 import { auditActionLabels, ui } from "@/lib/labels";
@@ -28,6 +30,8 @@ export type AuditViewProps = {
   filterErrors: Partial<Record<keyof AuditFilters, string[]>>;
   onFiltersChange: (filters: AuditFilters) => void;
   onPageChange: (page: number) => void;
+  /** Ringkasan rentang tanggal; null saat memuat atau gagal (panel disembunyikan). */
+  summary: AuditSummary | null;
 };
 
 function actionText(action: string): string {
@@ -116,8 +120,56 @@ const COLUMNS: DataTableColumn<AuditEntry>[] = [
   { id: "detail", header: copy.detail, cell: (e) => <DetailCell entry={e} /> },
 ];
 
+/** Ringkasan rentang tanggal: total, aksi terbanyak, dan catatan per hari. Dihitung server dari seluruh rentang. */
+function AuditInsight({ summary }: { summary: AuditSummary | null }) {
+  if (summary === null) return null;
+  const insight = copy.insight;
+  if (summary.total === 0) {
+    return (
+      <Section title={insight.title}>
+        <p className="text-table text-ink-muted">{insight.empty}</p>
+      </Section>
+    );
+  }
+  const actions = Object.entries(summary.by_action);
+  const maxAction = Math.max(0, ...actions.map(([, n]) => n));
+  const maxDay = Math.max(0, ...summary.by_day.map((d) => d.total));
+
+  return (
+    <Section title={insight.title}>
+      <p className="mb-4 text-table text-ink-muted">
+        {insight.total}: <span className="font-mono text-ink">{formatInteger(summary.total)}</span>
+      </p>
+      <div className="grid gap-8 lg:grid-cols-2">
+        <div className="space-y-2">
+          <h3 className="text-table font-medium text-ink">{insight.byAction}</h3>
+          {actions.map(([action, n]) => (
+            <div key={action} className="grid grid-cols-[12rem_1fr_3.5rem] items-center gap-3 text-table">
+              <span className="truncate text-ink">{actionText(action)}</span>
+              <Meter value={n} max={maxAction} label={`${actionText(action)}: ${n}`} />
+              <span className="text-right font-mono tabular-nums text-ink">{formatInteger(n)}</span>
+            </div>
+          ))}
+        </div>
+        <div className="space-y-2">
+          <h3 className="text-table font-medium text-ink">
+            {insight.perDay} <span className="text-caption font-normal text-ink-muted">{insight.dayNote}</span>
+          </h3>
+          {summary.by_day.map((d) => (
+            <div key={d.day} className="grid grid-cols-[7rem_1fr_3.5rem] items-center gap-3 text-table">
+              <span className="font-mono text-caption text-ink-muted">{d.day}</span>
+              <Meter value={d.total} max={maxDay} label={`${d.day}: ${d.total}`} />
+              <span className="text-right font-mono tabular-nums text-ink">{formatInteger(d.total)}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </Section>
+  );
+}
+
 /** Presentasi murni halaman Audit. Tabel append-only: tidak ada tombol ubah atau hapus. */
-export function AuditView({ result, loading, failed, onRetry, users, filters, filterErrors, onFiltersChange, onPageChange }: AuditViewProps) {
+export function AuditView({ result, loading, failed, onRetry, users, filters, filterErrors, onFiltersChange, onPageChange, summary }: AuditViewProps) {
   const invalid = Object.keys(filterErrors).length > 0;
   const set = (key: keyof AuditFilters) => (value: string) => onFiltersChange({ ...filters, [key]: value });
 
@@ -145,6 +197,10 @@ export function AuditView({ result, loading, failed, onRetry, users, filters, fi
         </FilterField>
         <ClearFilters active={hasActiveFilters(filters)} onClear={() => onFiltersChange({ user_id: "", action: "", from: "", to: "" })} />
       </FilterBar>
+
+      <div className="mb-6">
+        <AuditInsight summary={invalid ? null : summary} />
+      </div>
 
       {!invalid && result && result.data.length > 0 && (
         <p role="status" className="mb-2 text-table text-ink-muted">

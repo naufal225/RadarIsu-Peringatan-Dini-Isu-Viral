@@ -4,6 +4,16 @@ Papan pengumuman untuk perubahan yang menyentuh domain lain, perubahan izin, dan
 
 ---
 
+## 2026-11-14: Insight di halaman yang ada (branch `feat/ui-cyber`)
+
+- **Untuk Rekishi (C):** `GET /system/status` menambah field `sentiment` (`positive`, `negative`, `neutral`). Field baru, tidak ada yang berubah. `GET /topics/coverage` baru (`topics.view`): posting cocok topik, total, dan per topik. Keduanya dibaca UI status dan topik.
+- **Untuk Kadavi (B):** tidak ada perubahan endpoint alert. Detail alert menampilkan ringkasan bukti dari `alert_evidence` yang sudah ada.
+- **Untuk Naufal (F10, F12, F14, F11):** `GET /audit-logs/summary` (`audit.view`), `GET /labeling/daily` (`labels.manage`), dan `GET /replay/scenarios/{id}/composition` (`replay.manage`) baru, semuanya agregat baca-saja dari `InsightController`.
+- Semua endpoint baru dicakup `tests/Feature/Insight/InsightEndpointsTest.php` (7 tes).
+- Catatan sebaran per hari di pelabelan dihitung menurut `posted_at`. Tabel posting tidak punya waktu pelabelan, jadi "kapan diberi label" tidak bisa ditampilkan.
+
+---
+
 ## 2026-11-14: Sentimen (F5, domain C): rata-rata hanya dari kata bermuatan (branch `feat/ui-cyber`)
 
 - **Untuk Rekishi (C):** `SentimentAnalyzer::classify` kini menghitung skor sebagai rata-rata polaritas kata yang **bermuatan** (≠ 0). Kata netral tidak menurunkan skor. Sebelumnya satu kata positif di antara banyak kata netral tidak pernah mencapai ambang 0,2. Tes diperbarui (`SentimentAnalyzerTest`) dan ditambah satu tes untuk aturan baru.

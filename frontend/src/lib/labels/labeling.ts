@@ -8,6 +8,14 @@ export const labelingStatusFilterLabels = {
 
 export const labelingUi = {
   title: "Pelabelan data",
+  daily: {
+    title: "Sebaran label per tanggal posting",
+    note: "Dikelompokkan menurut tanggal posting (UTC), bukan tanggal pelabelan.",
+    empty: "Belum ada posting.",
+    organic: "Organik",
+    anomalous: "Tidak Wajar",
+    unlabeled: "Belum berlabel",
+  },
   intro:
     "Beri label Organik atau Tidak Wajar pada posting. Label dipakai halaman Evaluasi sebagai kebenaran dasar; perubahan dicatat di audit log.",
   progress: (labeled: string, target: string) => `${labeled} dari ±${target} diberi label`,

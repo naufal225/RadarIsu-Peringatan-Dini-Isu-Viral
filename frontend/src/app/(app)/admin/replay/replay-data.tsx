@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { EMPTY_UPLOAD, ReplayView, type UploadState } from "@/components/replay/replay-view";
 import { api, ApiError } from "@/lib/api";
-import type { ReplayListResponse, ReplayScenario } from "@/lib/api-types/replay";
+import type { ReplayComposition, ReplayListResponse, ReplayScenario } from "@/lib/api-types/replay";
 import type { SignalPoint } from "@/lib/signal-chart";
 import { errorCodes, isRunning, POLL_MS, uploadErrors } from "@/lib/replay";
 import { incidentWindow, replayTrend, utcDay } from "@/lib/replay-trend";
@@ -25,6 +25,8 @@ export function ReplayData() {
   // Tanpa pilihan, skenario yang berjalan (atau yang pertama) ditampilkan di panel kontrol.
   const effectiveId = selectedId ?? scenarios.find(isRunning)?.id ?? scenarios[0]?.id ?? null;
   const effective = scenarios.find((s) => s.id === effectiveId) ?? null;
+  // Komposisi baris skenario yang terpilih; statis, cukup diambil sekali per skenario.
+  const composition = useApiData<{ data: ReplayComposition }>(effective ? `replay/scenarios/${effective.id}/composition` : null).data?.data ?? null;
 
   // Grafik volume tumbuh mengikuti jam data. Hanya selama skenario berjalan; setiap polling membawa clock_now baru.
   const clockNow = data?.meta.clock_now ?? null;
@@ -124,6 +126,7 @@ export function ReplayData() {
       actionErrors={actionErrors}
       upload={upload}
       onUpload={submitUpload}
+      composition={composition}
       trend={{
         series: trendLive ? trend.series : null,
         failed: trend.failed,

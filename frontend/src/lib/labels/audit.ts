@@ -3,6 +3,14 @@
 export const auditUi = {
   title: "Audit",
   subtitle: "Catatan aksi pengguna dan sistem. Hanya dapat dibaca; catatan tidak dapat diubah atau dihapus.",
+  insight: {
+    title: "Ringkasan aktivitas",
+    total: "Total catatan",
+    byAction: "Per aksi",
+    perDay: "Per hari",
+    dayNote: "Tanggal dalam UTC.",
+    empty: "Belum ada aktivitas untuk rentang ini.",
+  },
   time: "Waktu",
   user: "Pengguna",
   action: "Aksi",

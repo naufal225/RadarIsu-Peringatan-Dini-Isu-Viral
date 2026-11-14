@@ -10,7 +10,9 @@ import { controlClass, Field, FieldError } from "@/components/radar/form";
 import { PageHeader } from "@/components/radar/page-header";
 import { Section } from "@/components/radar/section";
 import { EmptyState } from "@/components/radar/states";
-import type { OfficialAccount, Topic, TopicCategory, TopicList, TopicSensitivity } from "@/lib/api-types/topics";
+import { Meter } from "@/components/radar/meter";
+import { formatInteger } from "@/lib/format";
+import type { OfficialAccount, Topic, TopicCategory, TopicCoverage, TopicList, TopicSensitivity } from "@/lib/api-types/topics";
 import { cn } from "@/lib/cn";
 import { sensitivityLabels, topicCategoryLabels, ui } from "@/lib/labels";
 import { CATEGORIES, hasPlaceholder, parseKeywords, SENSITIVITIES } from "@/lib/topics";
@@ -40,8 +42,42 @@ export type OfficialsState = {
   removing: boolean;
 };
 
+/** Cakupan topik: seberapa banyak posting yang dijangkau topik, total dan per topik. Null saat memuat atau gagal. */
+function CoveragePanel({ coverage }: { coverage: TopicCoverage | null }) {
+  if (coverage === null) return null;
+  const share = coverage.posts_total > 0 ? coverage.posts_matched / coverage.posts_total : 0;
+  const maxTopic = Math.max(0, ...coverage.topics.map((t) => t.matched_posts));
+  return (
+    <Section title={copy.coverage.title} description={copy.coverage.note}>
+      <div className="mb-4 flex flex-wrap items-baseline gap-2 text-table">
+        <span className="font-mono text-section font-semibold tabular-nums text-ink">{formatInteger(coverage.posts_matched)}</span>
+        <span className="text-ink-muted">
+          {copy.coverage.of} {formatInteger(coverage.posts_total)} {copy.coverage.matched.toLowerCase()} ({Math.round(share * 100)}%)
+        </span>
+      </div>
+      <Meter value={coverage.posts_matched} max={coverage.posts_total} label={`${copy.coverage.matched}: ${coverage.posts_matched} ${copy.coverage.of} ${coverage.posts_total}`} />
+      {coverage.topics.length > 0 && (
+        <ul className="mt-4 space-y-2">
+          {coverage.topics.map((topic) => (
+            <li key={topic.id} className="grid grid-cols-[minmax(0,14rem)_1fr_3.5rem] items-center gap-3 text-table">
+              <span className="truncate text-ink">
+                {topic.name}
+                {!topic.is_active && <span className="ml-2 text-caption text-ink-muted">({copy.coverage.inactive})</span>}
+              </span>
+              <Meter value={topic.matched_posts} max={maxTopic} tone={topic.is_active ? "bg-brand" : "bg-line-input"} label={`${topic.name}: ${topic.matched_posts}`} />
+              <span className="text-right font-mono tabular-nums text-ink">{formatInteger(topic.matched_posts)}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </Section>
+  );
+}
+
 export type TopicsViewProps = {
   result: TopicList | null;
+  /** Cakupan posting oleh topik; null saat memuat atau gagal. */
+  coverage: TopicCoverage | null;
   loading: boolean;
   failed: boolean;
   onRetry?: () => void;
@@ -134,6 +170,10 @@ export function TopicsView(props: TopicsViewProps) {
         subtitle={copy.list.subtitle}
         actions={canManage ? <Button variant="primary" onClick={() => props.onCreate(null)}>{copy.list.create}</Button> : undefined}
       />
+
+      <div className="mb-6">
+        <CoveragePanel coverage={props.coverage} />
+      </div>
 
       <div className="mb-6">
         <DataTable

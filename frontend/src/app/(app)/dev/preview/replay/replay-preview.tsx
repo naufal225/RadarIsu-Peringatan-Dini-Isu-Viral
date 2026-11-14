@@ -26,6 +26,7 @@ const BASE: ReplayViewProps = {
   actionErrors: [],
   upload: EMPTY_UPLOAD,
   onUpload: noop,
+  composition: null,
   trend: { series: null, failed: false, window: null, clockNow: null },
 };
 

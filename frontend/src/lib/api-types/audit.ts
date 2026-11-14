@@ -28,3 +28,10 @@ export type AuditPage = {
 export type AuditFilters = { user_id: string; action: string; from: string; to: string };
 
 export type UserOption = { id: number; name: string };
+
+/** GET /audit-logs/summary: jumlah per aksi dan per hari (UTC), dengan filter tanggal yang sama seperti daftar. */
+export type AuditSummary = {
+  total: number;
+  by_action: Record<string, number>;
+  by_day: { day: string; total: number }[];
+};

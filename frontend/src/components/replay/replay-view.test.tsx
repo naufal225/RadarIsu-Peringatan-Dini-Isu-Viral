@@ -26,6 +26,7 @@ const base: ReplayViewProps = {
   actionErrors: [],
   upload: EMPTY_UPLOAD,
   onUpload: noop,
+  composition: null,
   trend: { series: null, failed: false, window: null, clockNow: null },
 };
 const render = (props: Partial<ReplayViewProps> = {}) => renderToString(createElement(ReplayView, { ...base, ...props }));

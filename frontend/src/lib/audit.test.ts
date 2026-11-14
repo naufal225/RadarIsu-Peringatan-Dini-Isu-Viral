@@ -70,6 +70,7 @@ describe("audit cells", () => {
 
 describe("AuditView", () => {
   const base: AuditViewProps = {
+    summary: null,
     result: AUDIT_PAGE,
     loading: false,
     failed: false,
