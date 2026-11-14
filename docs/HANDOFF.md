@@ -13,6 +13,8 @@ Papan pengumuman untuk perubahan yang menyentuh domain lain, perubahan izin, dan
   - `admin/status/status-panel.tsx` (Rekishi): hanya kelas warna.
   - `topics/[id]/coordination-panel.tsx`, `topics/lookalikes-panel.tsx`, `evaluation/evaluation-panel.tsx` (Naufal): hanya kelas warna.
 - **Untuk Rekishi dan Kadavi:** `components/ui.tsx` (lapisan lama) memakai token sekarang. Tidak ada tanda tangan komponen yang berubah.
+- **Dasbor (`dashboard/dashboard-panel.tsx`, Rekishi):** bagian "Tindakan Cepat" dihapus karena hanya mengulang menu sidebar. Ganti dengan "Perlu ditangani": hingga tiga isu yang menunggu peran pengguna (`new` untuk analis, `escalated` untuk pimpinan), dari `dashboard/issues` yang sudah ada. Tidak ada endpoint baru.
+- **Daftar alert (`alerts/alert-list.tsx` + `components/alerts/alert-list-view.tsx`, Kadavi):** pindah ke komponen radar (`DataTable`, `FilterBar`, `SeverityBadge`, `StatusChip`). Filter langsung berlaku tanpa tombol. Parameter query tidak berubah.
 - Verifikasi: lint, tsc, 268 tes, dan build lulus. Belum diuji di browser.
 
 ---

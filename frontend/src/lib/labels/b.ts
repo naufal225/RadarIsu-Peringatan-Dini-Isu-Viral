@@ -24,6 +24,10 @@ export const bUi = {
     allKind: "Semua Jenis",
     viewDetail: "Lihat Detail",
     backToList: "Kembali ke Daftar",
+    listSubtitle: "Diurutkan berdasarkan skor ancaman tertinggi.",
+    filterGroup: "Filter alert",
+    listEmpty: "Belum ada alert.",
+    listEmptyFiltered: "Tidak ada alert dengan filter ini.",
 
     // Breakdown
     scoreBreakdown: "Rincian Skor Ancaman",

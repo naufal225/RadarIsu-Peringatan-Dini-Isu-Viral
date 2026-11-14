@@ -37,6 +37,12 @@ export const dashboardUi = {
     },
     viewDetail: "Buka Detail",
   },
+  priority: {
+    title: "Perlu ditangani",
+    subtitle: "Isu yang menunggu tindakan Anda.",
+    empty: "Tidak ada isu yang menunggu tindakan.",
+    open: "Buka",
+  },
   quickLinks: {
     title: "Tindakan Cepat",
     triageAlerts: "Triase Alert Baru",
