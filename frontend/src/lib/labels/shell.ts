@@ -50,7 +50,7 @@ export const stateUi = {
   notAvailableTitle: "Data tidak tersedia",
   notAvailableBody: "Data yang diminta tidak tersedia.",
   notImplementedTitle: "Fitur ini belum tersedia",
-  notImplementedBody: "Bagian ini akan tersedia pada fase berikutnya.",
+  notImplementedBody: "Bagian ini belum tersedia.",
   loadedAtLabel: "Dimuat pukul",
   emptyTitle: "Tidak ada data",
   notAvailableValue: "—",

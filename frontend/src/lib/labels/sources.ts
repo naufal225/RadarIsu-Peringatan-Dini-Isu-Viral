@@ -42,7 +42,7 @@ export const sourcesUi = {
   errorsTruncated: "Hanya 200 baris bermasalah pertama yang ditampilkan.",
   csvFormat:
     "Header wajib: text, account_handle, posted_at. Opsional: external_id, account_display_name, account_created_at. Waktu dalam ISO 8601 dengan zona waktu. Maks. 10 MB / 50.000 baris.",
-  ingestLater: "Penarikan terjadwal RSS/YouTube aktif mulai Fase 3; saat ini hanya uji koneksi.",
+  ingestLater: "Penarikan terjadwal RSS/YouTube belum aktif. Saat ini hanya uji koneksi.",
   empty: "Belum ada sumber data.",
   tableCaption: "Daftar sumber data",
   noInterval: "—",
