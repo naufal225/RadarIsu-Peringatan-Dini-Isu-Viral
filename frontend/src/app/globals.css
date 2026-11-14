@@ -1,39 +1,41 @@
 @import "tailwindcss";
 
 /*
- * Token RadarIsu (docs/UI_DESIGN_SYSTEM.md §3). Satu-satunya tempat nilai warna ditulis.
- * Komponen hanya memakai kelas utilitas dari @theme di bawah (bg-paper, text-ink, ...).
- * Tema terang saja; tidak ada varian gelap.
+ * Token RadarIsu, tema "Cyber" (docs/UI_DESIGN_SYSTEM.md §3, revisi 2026-11-14).
+ * Satu-satunya tempat nilai warna ditulis. Komponen hanya memakai kelas utilitas
+ * dari @theme di bawah (bg-paper, text-ink, shadow-glow-alert, ...).
+ * Tema gelap; glow hanya untuk pin dan kartu alert severity tinggi.
  */
 :root {
-  --paper: #f5f4ee;
-  --panel: #ffffff;
-  --line: #e1ded3;
-  --line-input: #8a9285;
-  --hover: #f0eee5;
-  --ink: #1b2418;
-  --ink-muted: #566052;
-  --brand: #3b4a2f;
-  --brand-fg: #ffffff;
-  --brand-tint: #e7ebdf;
-  --sidebar: #26301f;
-  --sidebar-fg: #e8ece2;
-  --sidebar-muted: #b5bfaa;
-  --sev-high: #b42318;
-  --sev-high-bg: #fdecea;
-  --sev-medium: #b54708;
-  --sev-medium-bg: #fef0dc;
-  --sev-low: #5b6676;
-  --sev-low-bg: #eef0f3;
-  --sim: #1e5a96;
-  --sim-bg: #e6eff8;
-  --viz-1: #26301f;
-  --viz-2: #4b5e3a;
-  --viz-3: #7a8c66;
-  --viz-4: #a3b08f;
-  --chart-volume: #3b4a2f;
-  --chart-grid: #e1ded3;
-  --chart-ref: #566052;
+  --paper: #070b14;
+  --panel: #0d1624;
+  --line: #1c2a40;
+  --line-input: #5b7090;
+  --hover: #132038;
+  --ink: #e6f3ff;
+  --ink-muted: #9ab0cc;
+  --brand: #22d3ee;
+  --brand-fg: #03141c;
+  --brand-tint: #0b2f3d;
+  --sidebar: #050912;
+  --sidebar-fg: #d7e7f7;
+  --sidebar-muted: #8da2bf;
+  --sev-high: #ff5c7a;
+  --sev-high-bg: #3d0f1e;
+  --sev-medium: #ffb547;
+  --sev-medium-bg: #3d2a08;
+  --sev-low: #9aa8bd;
+  --sev-low-bg: #1b2636;
+  --sim: #a78bfa;
+  --sim-bg: #2a1f4a;
+  --viz-1: #0891b2;
+  --viz-2: #22d3ee;
+  --viz-3: #67e8f9;
+  --viz-4: #a5f3fc;
+  --chart-volume: #22d3ee;
+  --chart-grid: #1c2a40;
+  --chart-ref: #9ab0cc;
+  --glow-alert: 0 0 14px rgba(255, 92, 122, 0.35);
   --radius: 6px;
 
   /* Alias untuk grafik lama yang masih membaca nama bawaan; hapus setelah halaman bermigrasi. */
@@ -68,6 +70,7 @@
   --color-viz-2: var(--viz-2);
   --color-viz-3: var(--viz-3);
   --color-viz-4: var(--viz-4);
+  --shadow-glow-alert: var(--glow-alert);
   --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
   --font-serif: "Source Serif 4 Variable", ui-serif, Georgia, serif;
   --font-mono: "JetBrains Mono Variable", ui-monospace, "Cascadia Mono", monospace;
@@ -89,7 +92,7 @@
 
 html {
   background: var(--paper);
-  color-scheme: light;
+  color-scheme: dark;
 }
 
 body {
@@ -101,7 +104,7 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Cincin fokus: 2 px --brand, offset 2 px (Design System §3.4). */
+/* Cincin fokus: 2 px --brand, offset 2 px (Design System §3.4). Tanpa glow. */
 :focus-visible {
   outline: 2px solid var(--brand);
   outline-offset: 2px;
