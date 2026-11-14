@@ -22,3 +22,6 @@ Route::get('official-accounts', [OfficialAccountController::class, 'index'])->mi
 Route::get('official-accounts/lookalikes', OfficialAccountLookalikeController::class)->middleware('permission:alerts.triage');
 Route::post('official-accounts', [OfficialAccountController::class, 'store'])->middleware('permission:topics.manage');
 Route::delete('official-accounts/{officialAccount}', [OfficialAccountController::class, 'destroy'])->middleware('permission:topics.manage');
+
+// Insight (F2): cakupan posting oleh topik. Sebelum topics/{topic} agar tidak tertangkap parameter.
+Route::get('topics/coverage', [\App\Http\Controllers\Api\V1\InsightController::class, 'topicCoverage'])->middleware('permission:topics.view');

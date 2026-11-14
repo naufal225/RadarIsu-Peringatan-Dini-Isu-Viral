@@ -43,6 +43,12 @@ class SystemStatusController extends Controller
                 'posts' => DB::table('posts')->count(),
                 'open_alerts' => Alert::whereIn('status', Alert::OPEN_STATUSES)->count(),
             ],
+            // Insight: sebaran sentimen semua posting. Kalau satu label mendominasi, kamus belum menangkap sinyal.
+            'sentiment' => [
+                'positive' => DB::table('posts')->where('sentiment', 'positive')->count(),
+                'negative' => DB::table('posts')->where('sentiment', 'negative')->count(),
+                'neutral' => DB::table('posts')->where('sentiment', 'neutral')->count(),
+            ],
             'offline_mode' => (bool) (Setting::find('offline_mode')?->value['enabled'] ?? false),
         ]]);
     }
