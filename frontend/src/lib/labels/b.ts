@@ -39,10 +39,13 @@ export const bUi = {
     raw: "Mentah",
     weight: "Bobot",
     value: "Nilai",
+    impersonationSimilarity: "Kemiripan Nama",
+    impersonationYoung: "Akun Baru",
 
     // Evidence
     evidence: "Bukti Terlampir",
     reason: "Alasan Bukti",
+    component: "Komponen",
     account: "Akun Terkait",
     postSnippet: "Cuplikan Postingan",
     detail: "Detail Teknis",

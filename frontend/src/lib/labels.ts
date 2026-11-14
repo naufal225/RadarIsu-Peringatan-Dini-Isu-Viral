@@ -209,7 +209,7 @@ export const ui = {
     recentFailures: "Kegagalan terakhir",
     counts: "Jumlah data",
     rawItems: "Item mentah",
-    unprocessedRawItems: "Item mentah belum diproses",
+    unprocessedRawItems: "Item mentah menunggu proses",
     posts: "Posting",
     openAlerts: "Alert terbuka",
     offlineMode: "Mode Offline",
