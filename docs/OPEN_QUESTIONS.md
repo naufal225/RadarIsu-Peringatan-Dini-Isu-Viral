@@ -6,6 +6,9 @@ Dicatat sesuai CLAUDE.md: konflik tidak ditebak. Keputusan dicatat di sini dan d
 
 1. **Waktu deteksi negatif (#37).** Keputusan: nilai dibiarkan apa adanya di data, dan halaman Evaluasi menampilkannya sebagai "N sebelum insiden" tanpa tanda minus. Alasan: alert memang terdeteksi sebelum awal insiden di data. Menyembunyikannya akan mengubah hasil evaluasi.
 2. **Logout.** Tombol Keluar sebelumnya menahan spinner karena state `pending` tidak pernah dilepas saat navigasi lewat router. Keputusan: navigasi penuh ke `/login` setelah request logout, sehingga seluruh state klien dibuang.
+3. **Sentimen selalu netral (F5, PRD §9.4).** Temuan: skor dihitung sebagai rata-rata polaritas **semua** kata kamus yang cocok, termasuk 1.404 kata bernilai 0. Akibatnya satu kata positif di antara sekitar delapan kata cocok hanya memberi skor 0,125, sedangkan ambang positif/negatif 0,2. Di data demo, satu-satunya kata bermuatan adalah "waspada" (+1, 840 posting kampanye), dan seluruh 4.394 posting tetap netral. PRD tidak menjelaskan apakah kata netral ikut dihitung; ini konflik definisi.
+   - **Keputusan pilihan:** rata-rata hanya dari kata bermuatan (polaritas ≠ 0). Polaritas "waspada" (+1) perlu diverifikasi, karena secara makna lebih dekat ke peringatan.
+   - **Status:** belum diubah di kode. F5 milik domain C (Rekishi), dan perubahan ini mengubah skor alert serta hasil evaluasi. Menunggu persetujuan pemilik dan pengujian ulang evaluasi.
 
 ## Diputuskan 2026-11-14 (tema Cyber, amendemen aturan UI)
 
