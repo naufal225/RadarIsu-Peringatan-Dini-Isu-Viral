@@ -41,33 +41,33 @@ Pelanggaran aturan ini ditolak saat review.
 
 ## 3. Token
 
-Sumber nilai: tabel ini. `frontend/src/app/globals.css` harus mencerminkannya persis. Perubahan nilai lewat PR yang disetujui pemilik fondasi dan diumumkan di `HANDOFF.md`.
+Sumber nilai: tabel ini. `frontend/src/app/globals.css` harus mencerminkannya persis. **Status 2026-11-14:** tabel ini sudah berisi nilai tema Cyber, tetapi `globals.css` masih nilai Lembar Situasi. Keduanya dipindah bersama saat migrasi halaman, karena komponen lama (`components/ui.tsx`, 7 berkas) dan 8 berkas dengan warna hardcoded akan rusak di tema gelap. Perubahan nilai lewat PR yang disetujui pemilik fondasi dan diumumkan di `HANDOFF.md`.
 
 ### 3.1 Warna
 
 | Token | Nilai | Fungsi |
 |---|---|---|
-| `--paper` | `#F5F4EE` | Latar halaman |
-| `--panel` | `#FFFFFF` | Kartu/panel. Satu level saja, tidak ada kartu di dalam kartu |
-| `--line` | `#E1DED3` | Garis pemisah dan batas kartu |
-| `--line-input` | `#8A9285` | Batas input/kontrol (kontras ≥ 3:1 terhadap panel) |
-| `--hover` | `#F0EEE5` | Latar baris saat hover |
-| `--ink` | `#1B2418` | Teks utama |
-| `--ink-muted` | `#566052` | Teks sekunder. Jangan dipakai untuk isi yang harus terbaca saat demo |
-| `--brand` | `#3B4A2F` | Zaitun tua: tombol utama, tautan, cincin fokus |
-| `--brand-fg` | `#FFFFFF` | Teks di atas `--brand` |
-| `--brand-tint` | `#E7EBDF` | Baris terpilih, track grafik, sorotan halus |
-| `--sidebar` | `#26301F` | Latar sidebar |
-| `--sidebar-fg` | `#E8ECE2` | Teks sidebar |
-| `--sidebar-muted` | `#B5BFAA` | Teks sekunder sidebar |
-| `--sev-high` / `--sev-high-bg` | `#B42318` / `#FDECEA` | Severity Tinggi; juga galat |
-| `--sev-medium` / `--sev-medium-bg` | `#B54708` / `#FEF0DC` | Severity Sedang |
-| `--sev-low` / `--sev-low-bg` | `#5B6676` / `#EEF0F3` | Severity Rendah (abu-biru, sengaja bukan hijau) |
-| `--sim` / `--sim-bg` | `#1E5A96` / `#E6EFF8` | Penanda data simulasi |
-| `--viz-1` … `--viz-4` | `#26301F` `#4B5E3A` `#7A8C66` `#A3B08F` | Segmen `ScoreBar` (keluarga zaitun) |
-| `--chart-volume` | `#3B4A2F` | Garis volume. Isi area: 12% opasitas dari warna ini |
-| `--chart-grid` | `#E1DED3` | Grid grafik |
-| `--chart-ref` | `#566052` | Garis acuan putus-putus (rata-rata/ambang) |
+| `--paper` | `#070B14` | Latar halaman (navy-hitam) |
+| `--panel` | `#0D1624` | Kartu/panel. Satu level saja, tidak ada kartu di dalam kartu |
+| `--line` | `#1C2A40` | Garis pemisah dan batas kartu |
+| `--line-input` | `#5B7090` | Batas input/kontrol (3,6:1 terhadap panel) |
+| `--hover` | `#132038` | Latar baris saat hover |
+| `--ink` | `#E6F3FF` | Teks utama |
+| `--ink-muted` | `#9AB0CC` | Teks sekunder (8,2:1 di panel) |
+| `--brand` | `#22D3EE` | Cyan: tombol utama, tautan, cincin fokus |
+| `--brand-fg` | `#03141C` | Teks di atas `--brand` |
+| `--brand-tint` | `#0B2F3D` | Baris terpilih, track grafik, sorotan halus |
+| `--sidebar` | `#050912` | Latar sidebar |
+| `--sidebar-fg` | `#D7E7F7` | Teks sidebar |
+| `--sidebar-muted` | `#8DA2BF` | Teks sekunder sidebar |
+| `--sev-high` / `--sev-high-bg` | `#FF5C7A` / `#3D0F1E` | Severity Tinggi; juga galat |
+| `--sev-medium` / `--sev-medium-bg` | `#FFB547` / `#3D2A08` | Severity Sedang |
+| `--sev-low` / `--sev-low-bg` | `#9AA8BD` / `#1B2636` | Severity Rendah (abu-biru, bukan hijau) |
+| `--sim` / `--sim-bg` | `#A78BFA` / `#2A1F4A` | Violet: data simulasi (sengaja tidak biru agar tidak bentrok dengan cyan merek) |
+| `--viz-1` … `--viz-4` | `#0891B2` `#22D3EE` `#67E8F9` `#A5F3FC` | Segmen `ScoreBar` (keluarga cyan) |
+| `--chart-volume` | `#22D3EE` | Garis volume. Isi area: 12% opasitas dari warna ini |
+| `--chart-grid` | `#1C2A40` | Grid grafik |
+| `--chart-ref` | `#9AB0CC` | Garis acuan putus-putus (rata-rata/ambang) |
 
 Hanya satu elemen jenuh di grafik: **pin alert**, berwarna sesuai severity.
 
@@ -75,19 +75,26 @@ Pemetaan ke variabel shadcn (nama bisa berbeda per versi; sesuaikan nama, **jang
 
 ### 3.2 Kontras (perkiraan hitung manual)
 
-| Pasangan | Rasio ≈ | Target |
+| Pasangan | Rasio (WCAG) | Target |
 |---|---|---|
-| ink di paper | 14 | AA 4,5 |
-| ink-muted di panel | 6,6 | AA 4,5 |
-| sev-high di sev-high-bg | 5,7 | AA 4,5 |
-| sev-medium di sev-medium-bg | 4,9 | AA 4,5 |
-| sev-low di sev-low-bg | 5,0 | AA 4,5 |
-| brand-fg di brand | 9,5 | AA 4,5 |
-| sidebar-muted di sidebar | 7,1 | AA 4,5 |
-| brand-fg di sim | 7,1 | AA 4,5 |
-| sim di sim-bg | 6,1 | AA 4,5 |
+| ink di paper | 17,5 | AA 4,5 |
+| ink di panel | 16,1 | AA 4,5 |
+| ink-muted di panel | 8,2 | AA 4,5 |
+| ink-muted di paper | 8,9 | AA 4,5 |
+| ink di hover | 14,4 | AA 4,5 |
+| ink-muted di hover | 7,3 | AA 4,5 |
+| sev-high di panel | 6,1 | AA 4,5 |
+| sev-high di sev-high-bg | 5,5 | AA 4,5 |
+| sev-medium di sev-medium-bg | 7,8 | AA 4,5 |
+| sev-low di sev-low-bg | 6,3 | AA 4,5 |
+| brand-fg di brand | 10,4 | AA 4,5 |
+| brand di panel (cincin fokus) | 10,0 | 3,0 |
+| line-input di panel | 3,6 | 3,0 |
+| sidebar-muted di sidebar | 7,6 | AA 4,5 |
+| sidebar-fg di sidebar | 15,8 | AA 4,5 |
+| sim di sim-bg | 5,5 | AA 4,5 |
 
-Angka ini perkiraan, **belum diukur dengan alat**. Di tahap fondasi, verifikasi dengan pemeriksa kontras WCAG dan laporkan hasil sebenarnya. Koreksi token bila ada yang di bawah 4,5.
+Dihitung dengan rumus WCAG 2.x (skrip Python, 2026-11-14), bukan alat resmi. Verifikasi ulang di tahap fondasi setelah token masuk `globals.css`. Semua pasangan di atas lulus target.
 
 ### 3.3 Tipografi
 
@@ -104,7 +111,8 @@ Font di-bundle lewat paket `@fontsource-variable/*` (Inter, Source Serif 4, JetB
 
 - Dasar 4 px. Jarak antar-kartu 24. Padding kartu 20. Padding halaman 32 (desktop), 16 (ponsel).
 - Radius 6 px untuk kartu, input, tombol. Badge 4 px.
-- Tidak ada bayangan. Pemisah memakai garis 1 px `--line`.
+- Tidak ada bayangan dekoratif. Pemisah memakai garis 1 px `--line`.
+- Glow (revisi 2026-11-14): hanya `--glow-alert` pada pin dan kartu alert severity Tinggi. Nilai: `--glow-alert: 0 0 14px rgba(255, 92, 122, 0.35)`. Tidak untuk dekorasi, latar, atau tombol biasa. Cincin fokus tetap 2 px `--brand`, tanpa glow.
 - Cincin fokus: 2 px `--brand`, offset 2 px.
 - Gerak hanya fungsional: transisi 120–150 ms untuk hover/fokus. Hormati `prefers-reduced-motion`. Skeleton boleh berdenyut halus.
 - Ikon: `lucide-react`, 16 px, selalu berpasangan dengan label untuk severity/status.

@@ -30,6 +30,21 @@ Tanggal: 2026-11-14. Branch: `feat/ui-cyber` (dari `main` 790e008).
 - Hero dasbor: satu kalimat ringkasan besar dan skor utama, dengan `SignalChart` penuh.
 - Login: panel tengah dengan wordmark dan garis grid, tanpa dekorasi.
 
+## Alur analis (dari kode frontend di `main`)
+
+Analis punya izin `alerts.triage`, `topics.manage`, `briefings.create`, `labels.manage`, dan `evaluation.run`. Halaman yang mereka pakai: dasbor, `/alerts`, `/alerts/[id]`, `/briefings`, `/topics`, `/labeling`, dan `/evaluation`.
+
+- **Dasbor (`dashboard/dashboard-panel.tsx`).** Tiga kartu KPI, grafik tren, tabel isu, dan pintasan. Sudah memakai token. Kekurangan: tidak ada "isu berikutnya yang perlu ditangani". Analis harus memindai tabel untuk menemukannya.
+- **Daftar alert (`alerts/alert-list.tsx`).** Memakai komponen lama `components/ui.tsx`. Filter berupa select HTML biasa, tabel polos, dan skor hanya berupa angka. Tidak ada urutan prioritas yang terlihat. Warna `neutral-*` ditulis langsung.
+- **Detail alert (`alerts/[id]/alert-detail.tsx`).** Empat form aksi (eskalasi, positif palsu, tutup, komentar) terbuka sekaligus, sehingga beban keputusan tinggi. Alur analis sebenarnya berurutan: ambil → tinjau → putuskan. Kotak rekomendasi memakai `amber-*`, dan pesan sukses memakai `text-green-700`. Keduanya melanggar token dan aturan tanpa hijau.
+- **Pelanggaran aturan yang sudah ada:** `alert-detail.tsx`, `alert-list.tsx`, dan 6 berkas lain memakai warna hardcoded (`neutral`, `amber`, `green`). Berkas ini harus dimigrasi sebelum tema gelap aktif.
+
+**Inspirasi untuk Cyber (fokus analis):**
+- Antrean prioritas di atas daftar: alert `new` tampil sebagai kartu dengan `ScoreBar`, dan tombol "Ambil" langsung terlihat.
+- Detail alert memakai panel keputusan sticky di kanan yang hanya menampilkan aksi dari `availableActions` untuk status saat ini. Tidak ada empat form terbuka sekaligus.
+- Rekomendasi analis tampil sebagai kutipan terpisah, bukan kotak kuning.
+- Bukti dan timeline di bawah, bukan di tengah alur.
+
 ## Yang belum bisa dinilai tanpa screenshot
 
 - Kontras nyata pada `ink-muted` di panel gelap (perlu pengukuran WCAG).

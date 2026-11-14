@@ -119,8 +119,8 @@ git log --oneline main..HEAD    # branch lama: harus kosong (lihat di atas); bra
 git merge --ff-only main        # gagal (divergen) → BERHENTI dan laporkan
 ```
 
-- Agent **tidak** menjalankan `git commit`, `git push`, `git stash`, `git reset`, `git rebase`, atau opsi force. Manusia yang commit.
-- Setelah selesai, agent memberi perintah commit siap-salin (bagian 9 prompt). Pesan commit **tanpa** `Co-Authored-By`, "Generated with …", atau atribusi AI. Gaya pesan mengikuti `git log --oneline -20`.
+- Agent **boleh** menjalankan `git commit` untuk pekerjaan UI di branch yang ditetapkan (revisi 2026-11-14, lihat CLAUDE.md dan OPEN_QUESTIONS). `git push`, `git stash`, `git reset`, `git rebase`, dan opsi force tetap tidak, kecuali diminta.
+- Setiap commit: pesan **tanpa** `Co-Authored-By`, "Generated with …", atau atribusi AI. Gaya pesan mengikuti `git log --oneline -20`, diawali `ui:` di branch fitur lama.
 - Satu PR per branch. Reviewer ditentukan `CODEOWNERS`. Penulis tidak menyetujui PR-nya sendiri.
 - Fondasi harus merge ke `main` **sebelum** tahap 2 dimulai. Setelah itu, setiap pemilik mem-`merge main` ke branch-nya (bukan rebase) saat fondasi atau token berubah.
 

@@ -12,7 +12,7 @@ Diputuskan oleh pemilik fondasi UI. Amendemen ini menyentuh file bersama, jadi p
 4. **Konflik yang belum selesai:**
    - `docs/UI_WORKPLAN.md` §4 masih menulis agent tidak boleh commit. Belum diubah pada amendemen ini.
    - Branch `update_ui` ada di remote dan berisi `bf19a6e` (Kadavi, restyle "Able Pro", 20 berkas). Branch ini tidak tercantum di UI_WORKPLAN §4. Pekerjaan Cyber dikerjakan di `feat/ui-cyber` dari `main` sebagai cadangan sesuai UI_WORKPLAN §4. Nasib `update_ui` ada di tangan pemilik branch.
-   - Token tema Cyber belum ditetapkan. Sampai itu, nilai token di UI_DESIGN_SYSTEM §3 masih nilai Lembar Situasi.
+   - Nilai token tema Cyber sudah ada di UI_DESIGN_SYSTEM §3 (dihitung kontrasnya, 2026-11-14), tetapi `globals.css` belum diubah. Perpindahan dilakukan bersama migrasi halaman, karena 7 berkas masih memakai `components/ui.tsx` dan 8 berkas punya warna hardcoded (neutral, amber, green) yang akan rusak di tema gelap.
 
 ## Terbuka
 
