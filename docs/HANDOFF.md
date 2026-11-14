@@ -15,7 +15,12 @@ Papan pengumuman untuk perubahan yang menyentuh domain lain, perubahan izin, dan
 - **Untuk Rekishi dan Kadavi:** `components/ui.tsx` (lapisan lama) memakai token sekarang. Tidak ada tanda tangan komponen yang berubah.
 - **Dasbor (`dashboard/dashboard-panel.tsx`, Rekishi):** bagian "Tindakan Cepat" dihapus karena hanya mengulang menu sidebar. Ganti dengan "Perlu ditangani": hingga tiga isu yang menunggu peran pengguna (`new` untuk analis, `escalated` untuk pimpinan), dari `dashboard/issues` yang sudah ada. Tidak ada endpoint baru.
 - **Daftar alert (`alerts/alert-list.tsx` + `components/alerts/alert-list-view.tsx`, Kadavi):** pindah ke komponen radar (`DataTable`, `FilterBar`, `SeverityBadge`, `StatusChip`). Filter langsung berlaku tanpa tombol. Parameter query tidak berubah.
-- Verifikasi: lint, tsc, 268 tes, dan build lulus. Belum diuji di browser.
+- **`components/ui.tsx` (lapisan lama) dihapus.** Tidak ada lagi pemakainya. Komponen pengganti: `components/radar/*`, dan `Tag` baru di `components/radar/tag.tsx` untuk label keadaan (menggantikan `StatusBadge`).
+- Berkas yang berpindah ke komponen radar dalam branch ini:
+  - `alerts/[id]/alert-detail.tsx` dan `briefings/briefing-list.tsx` (Kadavi). Bukti di detail dibatasi 8 baris, sisanya lewat "Tampilkan semua".
+  - `admin/status/status-panel.tsx` (Rekishi).
+  - `topics/[id]/coordination-panel.tsx` dan `topics/lookalikes-panel.tsx` (Naufal). Label `asOfPrefix`, `windowFrom`, `windowTo` (dan `firstSeenPrefix` untuk impersonation) ditambahkan agar tanggal bisa dirender lewat `<Waktu>`.
+- Verifikasi: lint, tsc, 269 tes, dan build lulus. Diperiksa di browser: login, dasbor, daftar alert, detail alert, evaluasi, status sistem, labeling.
 
 ---
 

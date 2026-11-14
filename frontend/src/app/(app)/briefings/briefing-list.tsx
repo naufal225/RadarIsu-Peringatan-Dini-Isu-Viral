@@ -2,8 +2,11 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Button, ErrorText, PageTitle, Table, Td } from "@/components/ui";
-import { formatDateTime } from "@/lib/format";
+import { DataTable, type DataTableColumn } from "@/components/radar/data-table";
+import { PageHeader } from "@/components/radar/page-header";
+import { Pagination } from "@/components/radar/pagination";
+import { EmptyState, ErrorState } from "@/components/radar/states";
+import { Waktu } from "@/components/radar/waktu";
 import { ui } from "@/lib/labels";
 import { useApiData } from "@/lib/use-api-data";
 
@@ -36,82 +39,77 @@ type BriefingResponse = {
   };
 };
 
+const COLUMNS: DataTableColumn<BriefingItem>[] = [
+  { id: "id", header: "ID", mono: true, cell: (b) => `#${b.id}` },
+  {
+    id: "title",
+    header: ui.briefings.briefingTitle,
+    cell: (b) => (
+      <>
+        <span className="block font-medium text-ink">{b.title}</span>
+        <span className="mt-0.5 line-clamp-1 block text-caption text-ink-muted">{b.summary}</span>
+      </>
+    ),
+  },
+  {
+    id: "alert",
+    header: ui.briefings.relatedAlert,
+    cell: (b) => (
+      <Link href={`/alerts/${b.alert_id}`} className="font-mono text-caption text-brand hover:underline">
+        Alert #{b.alert_id} ({b.alert?.topic?.name ?? b.alert?.subject_account?.handle ?? ui.common.none})
+      </Link>
+    ),
+  },
+  { id: "author", header: ui.briefings.author, cell: (b) => b.creator?.name ?? ui.audit.system },
+  { id: "created", header: ui.briefings.createdAt, cell: (b) => <Waktu value={b.created_at} /> },
+  {
+    id: "download",
+    header: "",
+    align: "right",
+    cell: (b) => (
+      <a
+        href={`/api/briefings/${b.id}/download`}
+        target="_blank"
+        rel="noreferrer"
+        className="inline-flex h-8 items-center rounded-control bg-brand px-3 text-table font-medium text-brand-fg hover:opacity-90"
+      >
+        {ui.briefings.download}
+      </a>
+    ),
+  },
+];
+
 export function BriefingList() {
   const [page, setPage] = useState(1);
-  const { data: result, error } = useApiData<BriefingResponse>(`briefings?page=${page}`);
+  const { data: result, error, reload } = useApiData<BriefingResponse>(`briefings?page=${page}`);
 
   return (
-    <>
-      <PageTitle>{ui.briefings.title}</PageTitle>
+    <div className="space-y-6">
+      <PageHeader title={ui.briefings.title} />
 
-      <ErrorText>{error ? ui.common.loadError : null}</ErrorText>
-
-      {result === null ? (
-        <p className="text-sm text-ink-muted">{ui.loading}</p>
-      ) : result.data.length === 0 ? (
-        <p className="text-sm text-ink-muted">{ui.briefings.empty}</p>
+      {error ? (
+        <ErrorState onRetry={reload} />
+      ) : result !== null && result.data.length === 0 ? (
+        <EmptyState title={ui.briefings.empty} />
       ) : (
         <>
-          <Table
-            head={[
-              "ID",
-              ui.briefings.briefingTitle,
-              ui.briefings.relatedAlert,
-              ui.briefings.author,
-              ui.briefings.createdAt,
-              "",
-            ]}
-          >
-            {result.data.map((b) => (
-              <tr key={b.id} className="hover:bg-hover">
-                <Td className="font-mono text-xs">#{b.id}</Td>
-                <Td>
-                  <p className="font-medium text-ink">{b.title}</p>
-                  <p className="mt-0.5 line-clamp-1 text-xs text-ink-muted">{b.summary}</p>
-                </Td>
-                <Td>
-                  <Link
-                    href={`/alerts/${b.alert_id}`}
-                    className="font-mono text-xs text-brand hover:underline"
-                  >
-                    Alert #{b.alert_id} (
-                    {b.alert?.topic?.name ?? b.alert?.subject_account?.handle ?? ui.common.none})
-                  </Link>
-                </Td>
-                <Td>{b.creator?.name ?? ui.audit.system}</Td>
-                <Td className="whitespace-nowrap text-xs text-ink-muted">
-                  {formatDateTime(b.created_at)}
-                </Td>
-                <Td className="text-right">
-                  <a
-                    href={`/api/briefings/${b.id}/download`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-block rounded bg-brand px-3 py-1.5 text-xs font-medium text-brand-fg hover:opacity-90"
-                  >
-                    {ui.briefings.download}
-                  </a>
-                </Td>
-              </tr>
-            ))}
-          </Table>
-
-          <div className="mt-3 flex items-center gap-3 text-sm">
-            <Button disabled={result.meta.current_page <= 1} onClick={() => setPage((p) => p - 1)}>
-              {ui.common.previous}
-            </Button>
-            <span>
-              {ui.common.page} {result.meta.current_page} / {result.meta.last_page} · {result.meta.total}
-            </span>
-            <Button
-              disabled={result.meta.current_page >= result.meta.last_page}
-              onClick={() => setPage((p) => p + 1)}
-            >
-              {ui.common.next}
-            </Button>
-          </div>
+          <DataTable
+            caption={ui.briefings.title}
+            columns={COLUMNS}
+            rows={result?.data ?? []}
+            getRowKey={(b) => b.id}
+            loading={result === null}
+          />
+          {result && result.meta.last_page > 1 && (
+            <Pagination
+              page={page}
+              perPage={result.meta.per_page}
+              total={result.meta.total}
+              onPageChange={setPage}
+            />
+          )}
         </>
       )}
-    </>
+    </div>
   );
 }

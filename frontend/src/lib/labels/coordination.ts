@@ -7,6 +7,9 @@ export const coordinationUi = {
     intro:
       "Posting dengan teks hampir identik dari akun berbeda dalam jendela waktu sempit. Satu akun yang mengulang pesan tidak dihitung sebagai koordinasi. Panel ini hanya untuk Analis dan tidak membuat alert.",
     asOf: (when: string) => `Per ${when}`,
+    asOfPrefix: "Per",
+    windowFrom: "Jendela",
+    windowTo: "sampai",
     window: (from: string, to: string) => `Jendela ${from} sampai ${to}`,
     triggered: "Koordinasi terdeteksi",
     notTriggered: "Belum ada koordinasi",

@@ -3,12 +3,17 @@
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useCan, useMe } from "@/components/permissions-provider";
-import { Button, ErrorText, Field, inputClass, PageTitle, Section, StatusBadge, Table, Td } from "@/components/ui";
+import { Button } from "@/components/radar/button";
+import { DataTable, type DataTableColumn } from "@/components/radar/data-table";
+import { controlClass, Field, FieldError } from "@/components/radar/form";
+import { Section } from "@/components/radar/section";
+import { Tag } from "@/components/radar/tag";
+import { Waktu } from "@/components/radar/waktu";
 import { api, ApiError } from "@/lib/api";
 import { availableActions, type AlertActionKey } from "@/lib/alert-actions";
 import { summarizeEvidence } from "@/lib/coordination";
 import { cn } from "@/lib/cn";
-import { formatDateTime } from "@/lib/format";
+import { formatInteger } from "@/lib/format";
 import {
   alertActionLabels,
   alertKindLabels,
@@ -36,11 +41,13 @@ type ActionItem = {
   created_at: string;
 };
 
+type Part = { raw: number; weight: number; value: number };
+
 type ScoreBreakdown = {
-  spike?: { raw: number; weight: number; value: number };
-  anomaly?: { raw: number; weight: number; value: number };
-  sentiment?: { raw: number; weight: number; value: number };
-  reach?: { raw: number; weight: number; value: number };
+  spike?: Part;
+  anomaly?: Part;
+  sentiment?: Part;
+  reach?: Part;
   thresholds?: Record<string, unknown>;
 };
 
@@ -59,12 +66,69 @@ type AlertDetailData = {
   actions?: ActionItem[];
 };
 
-const BREAKDOWN_ROWS: { key: keyof Omit<ScoreBreakdown, "thresholds">; label: string }[] = [
+type BreakdownRow = { key: string; label: string; part: Part };
+
+const BREAKDOWN_LABELS: { key: keyof Omit<ScoreBreakdown, "thresholds">; label: string }[] = [
   { key: "spike", label: ui.alerts.spike },
   { key: "anomaly", label: ui.alerts.anomaly },
   { key: "sentiment", label: ui.alerts.sentiment },
   { key: "reach", label: ui.alerts.reach },
 ];
+
+/** Bukti yang tampil di awal; sisanya lewat "Tampilkan semua". */
+const EVIDENCE_PREVIEW = 8;
+
+const BREAKDOWN_COLUMNS: DataTableColumn<BreakdownRow>[] = [
+  { id: "reason", header: ui.alerts.reason, cell: (r) => <span className="font-medium text-ink">{r.label}</span> },
+  { id: "raw", header: ui.alerts.raw, mono: true, align: "right", cell: (r) => r.part.raw },
+  { id: "weight", header: ui.alerts.weight, mono: true, align: "right", cell: (r) => `${r.part.weight}%` },
+  { id: "value", header: ui.alerts.value, mono: true, align: "right", cell: (r) => <span className="font-semibold">{r.part.value}</span> },
+];
+
+const EVIDENCE_COLUMNS: DataTableColumn<EvidenceItem>[] = [
+  {
+    id: "reason",
+    header: ui.alerts.reason,
+    cell: (ev) => <span className="font-medium text-ink">{evidenceReasonLabels[ev.reason] ?? ev.reason}</span>,
+  },
+  { id: "account", header: ui.alerts.account, mono: true, cell: (ev) => ev.account?.handle ?? ui.common.none },
+  {
+    id: "post",
+    header: ui.alerts.postSnippet,
+    cell: (ev) => (
+      <span className="block max-w-md break-words">
+        {ev.post?.text ?? ui.common.none}
+        {ev.post?.is_simulated && <span className="ml-1 text-ink-muted">({ui.simulatedData})</span>}
+      </span>
+    ),
+  },
+  {
+    id: "detail",
+    header: ui.alerts.detail,
+    cell: (ev) => {
+      const summary = summarizeEvidence(ev.reason, ev.detail);
+      return (
+        <span className="block max-w-xs break-words text-caption">
+          {summary && <span className="mb-1 block">{summary}</span>}
+          {ev.detail ? (
+            <details>
+              <summary className="cursor-pointer text-ink-muted">{ui.coordination.evidence.raw}</summary>
+              <code className="font-mono">{JSON.stringify(ev.detail)}</code>
+            </details>
+          ) : (
+            ui.common.none
+          )}
+        </span>
+      );
+    },
+  },
+];
+
+function toneOf(severity: keyof typeof severityLabels): "danger" | "warn" | "muted" {
+  if (severity === "high") return "danger";
+  if (severity === "medium") return "warn";
+  return "muted";
+}
 
 export function AlertDetail({ id }: { id: number }) {
   const can = useCan();
@@ -73,13 +137,14 @@ export function AlertDetail({ id }: { id: number }) {
   const [busyAction, setBusyAction] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [briefingMsg, setBriefingMsg] = useState<string | null>(null);
+  const [showAllEvidence, setShowAllEvidence] = useState(false);
 
   if (error) {
-    return <ErrorText>{ui.common.loadError}</ErrorText>;
+    return <FieldError>{ui.common.loadError}</FieldError>;
   }
 
   if (data === null) {
-    return <p className="text-sm text-ink-muted">{ui.loading}</p>;
+    return <p className="text-table text-ink-muted">{ui.loading}</p>;
   }
 
   const alert = data.data;
@@ -153,6 +218,12 @@ export function AlertDetail({ id }: { id: number }) {
 
   const isSimulated = alert.evidence?.some((ev) => ev.post?.is_simulated);
   const subject = alert.topic?.name ?? alert.subject_account?.handle ?? ui.common.none;
+  const breakdownRows: BreakdownRow[] = alert.score_breakdown
+    ? BREAKDOWN_LABELS.flatMap(({ key, label }) => {
+        const part = alert.score_breakdown?.[key];
+        return part ? [{ key, label, part }] : [];
+      })
+    : [];
 
   return (
     <div className="space-y-6">
@@ -163,18 +234,16 @@ export function AlertDetail({ id }: { id: number }) {
             ← {ui.alerts.backToList}
           </Link>
           <div className="mt-2 flex flex-wrap items-center gap-3">
-            <PageTitle>
+            <h1 className="font-serif text-title text-ink">
               {ui.alerts.detailTitle} #{alert.id}
-            </PageTitle>
-            <StatusBadge tone={alert.severity === "high" ? "error" : alert.severity === "medium" ? "warn" : "muted"}>
-              {severityLabels[alert.severity] ?? alert.severity}
-            </StatusBadge>
-            <StatusBadge tone={alert.status === "escalated" || alert.status === "new" ? "error" : "muted"}>
+            </h1>
+            <Tag tone={toneOf(alert.severity)}>{severityLabels[alert.severity] ?? alert.severity}</Tag>
+            <Tag tone={alert.status === "escalated" || alert.status === "new" ? "danger" : "muted"}>
               {alertStatusLabels[alert.status] ?? alert.status}
-            </StatusBadge>
-            {isSimulated ? <StatusBadge tone="muted">{ui.simulatedData}</StatusBadge> : null}
+            </Tag>
+            {isSimulated && <Tag tone="muted">{ui.simulatedData}</Tag>}
           </div>
-          <p className="mt-1 text-sm font-medium text-ink">
+          <p className="mt-1 text-table font-medium text-ink">
             {subject} · <span className="font-normal text-ink-muted">{alertKindLabels[alert.kind] ?? alert.kind}</span>
           </p>
         </div>
@@ -190,94 +259,73 @@ export function AlertDetail({ id }: { id: number }) {
         </div>
       </div>
 
-      {formError ? <ErrorText>{formError}</ErrorText> : null}
-      {briefingMsg ? <p className="text-sm text-brand">{briefingMsg}</p> : null}
+      {formError && <FieldError>{formError}</FieldError>}
+      {briefingMsg && <p className="text-table text-brand">{briefingMsg}</p>}
 
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
-        {/* Kolom utama: rekomendasi, bukti, skor, riwayat */}
+        {/* Kolom utama: rekomendasi, skor, bukti, riwayat */}
         <div className="min-w-0 space-y-6">
-          {alert.recommendation ? (
+          {alert.recommendation && (
             <blockquote className="rounded-control border border-line bg-panel p-4 pl-5">
-              <p className="mb-1 text-caption font-medium uppercase tracking-wide text-brand">
-                {ui.alerts.recommendation}
-              </p>
+              <p className="mb-1 text-caption font-medium uppercase tracking-wide text-brand">{ui.alerts.recommendation}</p>
               <p className="font-serif text-lead text-ink">{alert.recommendation}</p>
             </blockquote>
-          ) : null}
+          )}
 
-          {alert.score_breakdown ? (
+          {alert.score_breakdown && (
             <Section title={ui.alerts.scoreBreakdown}>
-              <Table head={[ui.alerts.reason, ui.alerts.raw, ui.alerts.weight, ui.alerts.value]}>
-                {BREAKDOWN_ROWS.map(({ key, label }) => {
-                  const part = alert.score_breakdown?.[key];
-                  if (!part) return null;
-                  return (
-                    <tr key={key}>
-                      <Td className="font-medium">{label}</Td>
-                      <Td className="font-mono text-caption">{part.raw}</Td>
-                      <Td className="font-mono text-caption">{part.weight}%</Td>
-                      <Td className="font-mono text-caption font-semibold">{part.value}</Td>
-                    </tr>
-                  );
-                })}
-              </Table>
-              {alert.score_breakdown.thresholds ? (
+              <DataTable caption={ui.alerts.scoreBreakdown} columns={BREAKDOWN_COLUMNS} rows={breakdownRows} getRowKey={(r) => r.key} framed={false} />
+              {alert.score_breakdown.thresholds && (
                 <p className="mt-2 break-all font-mono text-caption text-ink-muted">
                   {ui.alerts.thresholds}: {JSON.stringify(alert.score_breakdown.thresholds)}
                 </p>
-              ) : null}
+              )}
             </Section>
-          ) : null}
+          )}
 
           <Section title={ui.alerts.evidence}>
             {!alert.evidence || alert.evidence.length === 0 ? (
-              <p className="text-sm text-ink-muted">{ui.alerts.noEvidence}</p>
+              <p className="text-table text-ink-muted">{ui.alerts.noEvidence}</p>
             ) : (
-              <Table head={[ui.alerts.reason, ui.alerts.account, ui.alerts.postSnippet, ui.alerts.detail]}>
-                {alert.evidence.map((ev) => (
-                  <tr key={ev.id}>
-                    <Td className="font-medium">{evidenceReasonLabels[ev.reason] ?? ev.reason}</Td>
-                    <Td className="font-mono text-caption">{ev.account?.handle ?? ui.common.none}</Td>
-                    <Td className="max-w-md text-caption">
-                      {ev.post?.text ?? ui.common.none}
-                      {ev.post?.is_simulated ? (
-                        <span className="ml-1 text-ink-muted">({ui.simulatedData})</span>
-                      ) : null}
-                    </Td>
-                    <Td className="max-w-xs break-words text-caption">
-                      {summarizeEvidence(ev.reason, ev.detail) ? (
-                        <p className="mb-1">{summarizeEvidence(ev.reason, ev.detail)}</p>
-                      ) : null}
-                      {ev.detail ? (
-                        <details>
-                          <summary className="cursor-pointer text-ink-muted">{ui.coordination.evidence.raw}</summary>
-                          <code className="font-mono">{JSON.stringify(ev.detail)}</code>
-                        </details>
-                      ) : (
-                        ui.common.none
-                      )}
-                    </Td>
-                  </tr>
-                ))}
-              </Table>
+              <div className="space-y-3">
+                <DataTable
+                  caption={ui.alerts.evidence}
+                  columns={EVIDENCE_COLUMNS}
+                  rows={showAllEvidence ? alert.evidence : alert.evidence.slice(0, EVIDENCE_PREVIEW)}
+                  getRowKey={(ev) => ev.id}
+                  framed={false}
+                />
+                {alert.evidence.length > EVIDENCE_PREVIEW && (
+                  <div className="flex items-center justify-between gap-3 text-caption text-ink-muted">
+                    <span>
+                      {formatInteger(showAllEvidence ? alert.evidence.length : EVIDENCE_PREVIEW)} / {formatInteger(alert.evidence.length)}
+                    </span>
+                    <Button variant="ghost" size="sm" onClick={() => setShowAllEvidence((v) => !v)}>
+                      {showAllEvidence ? ui.alerts.evidenceShowFewer : ui.alerts.evidenceShowAll}
+                    </Button>
+                  </div>
+                )}
+              </div>
             )}
           </Section>
 
           <Section title={ui.alerts.timeline}>
             {!alert.actions || alert.actions.length === 0 ? (
-              <p className="text-sm text-ink-muted">{ui.common.empty}</p>
+              <p className="text-table text-ink-muted">{ui.common.empty}</p>
             ) : (
               <ol className="space-y-3 border-l border-line pl-4">
                 {alert.actions.map((act, idx) => (
-                  <li key={idx} className="rounded-control border border-line bg-panel p-3 text-sm">
+                  <li key={idx} className="rounded-control border border-line bg-panel p-3 text-table">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <span className="font-medium text-ink">
                         {alertActionLabels[act.action] ?? act.action} ·{" "}
                         <span className="font-normal text-ink-muted">{act.user ?? ui.audit.system}</span>
                       </span>
-                      <span className="font-mono text-caption text-ink-muted">{formatDateTime(act.created_at)}</span>
+                      <span className="text-caption text-ink-muted">
+                        <Waktu value={act.created_at} />
+                      </span>
                     </div>
-                    {act.note ? <p className="mt-1 text-ink">{act.note}</p> : null}
+                    {act.note && <p className="mt-1 text-ink">{act.note}</p>}
                   </li>
                 ))}
               </ol>
@@ -292,109 +340,88 @@ export function AlertDetail({ id }: { id: number }) {
         >
           <h2 className="text-section font-semibold text-ink">{ui.alerts.action}</h2>
 
-          {alert.status !== "new" && can("briefings.create") ? (
-            <Button
-              variant="secondary"
-              className="w-full"
-              disabled={busyAction === "briefings"}
-              onClick={handleCreateBriefing}
-            >
+          {alert.status !== "new" && can("briefings.create") && (
+            <Button variant="secondary" className="w-full" disabled={busyAction === "briefings"} onClick={handleCreateBriefing}>
               {busyAction === "briefings" ? ui.alerts.generatingBriefing : ui.alerts.generateBriefing}
             </Button>
-          ) : null}
+          )}
 
-          {has("take") ? (
-            <Button
-              variant="primary"
-              className="w-full"
-              disabled={busyAction === "take"}
-              onClick={() => handleAction("take")}
-            >
+          {has("take") && (
+            <Button variant="primary" className="w-full" disabled={busyAction === "take"} onClick={() => handleAction("take")}>
               {busyAction === "take" ? ui.alerts.taking : ui.alerts.take}
             </Button>
-          ) : null}
+          )}
 
-          {has("escalate") ? (
+          {has("escalate") && (
             <form onSubmit={submitEscalate} className="space-y-2 border-t border-line pt-4">
               <Field label={ui.alerts.recommendation}>
-                <textarea
-                  name="recommendation"
-                  rows={2}
-                  required
-                  placeholder={ui.alerts.recommendationPlaceholder}
-                  className={inputClass}
-                />
+                <textarea name="recommendation" rows={2} required placeholder={ui.alerts.recommendationPlaceholder} className={controlClass} />
               </Field>
               <Field label={ui.alerts.note}>
-                <input name="note" type="text" placeholder={ui.alerts.notePlaceholder} className={inputClass} />
+                <input name="note" type="text" placeholder={ui.alerts.notePlaceholder} className={controlClass} />
               </Field>
               <Button type="submit" variant="primary" className="w-full" disabled={busyAction === "escalate"}>
                 {busyAction === "escalate" ? ui.alerts.escalating : ui.alerts.escalate}
               </Button>
             </form>
-          ) : null}
+          )}
 
-          {has("false-positive") ? (
-            <form
-              onSubmit={(e) => submitNoteAction(e, "false-positive")}
-              className="space-y-2 border-t border-line pt-4"
-            >
+          {has("false-positive") && (
+            <form onSubmit={(e) => submitNoteAction(e, "false-positive")} className="space-y-2 border-t border-line pt-4">
               <Field label={ui.alerts.falsePositive}>
-                <input name="note" type="text" required placeholder={ui.alerts.notePlaceholder} className={inputClass} />
+                <input name="note" type="text" required placeholder={ui.alerts.notePlaceholder} className={controlClass} />
               </Field>
               <Button type="submit" variant="secondary" className="w-full" disabled={busyAction === "false-positive"}>
                 {busyAction === "false-positive" ? ui.alerts.closingFp : ui.alerts.falsePositive}
               </Button>
             </form>
-          ) : null}
+          )}
 
-          {has("close") ? (
+          {has("close") && (
             <form onSubmit={(e) => submitNoteAction(e, "close")} className="space-y-2 border-t border-line pt-4">
               <Field label={ui.alerts.close}>
-                <input name="note" type="text" required placeholder={ui.alerts.notePlaceholder} className={inputClass} />
+                <input name="note" type="text" required placeholder={ui.alerts.notePlaceholder} className={controlClass} />
               </Field>
               <Button type="submit" variant="secondary" className="w-full" disabled={busyAction === "close"}>
                 {busyAction === "close" ? ui.alerts.closing : ui.alerts.close}
               </Button>
             </form>
-          ) : null}
+          )}
 
-          {has("approve") ? (
+          {has("approve") && (
             <form onSubmit={(e) => submitNoteAction(e, "approve")} className="space-y-2 border-t border-line pt-4">
               <Field label={ui.alerts.approve}>
-                <input name="note" type="text" placeholder={ui.alerts.notePlaceholder} className={inputClass} />
+                <input name="note" type="text" placeholder={ui.alerts.notePlaceholder} className={controlClass} />
               </Field>
               <Button type="submit" variant="primary" className="w-full" disabled={busyAction === "approve"}>
                 {busyAction === "approve" ? ui.alerts.approving : ui.alerts.approve}
               </Button>
             </form>
-          ) : null}
+          )}
 
-          {has("return") ? (
+          {has("return") && (
             <form onSubmit={(e) => submitNoteAction(e, "return")} className="space-y-2 border-t border-line pt-4">
               <Field label={ui.alerts.return}>
-                <textarea name="note" rows={2} required placeholder={ui.alerts.notePlaceholder} className={inputClass} />
+                <textarea name="note" rows={2} required placeholder={ui.alerts.notePlaceholder} className={controlClass} />
               </Field>
               <Button type="submit" variant="secondary" className="w-full" disabled={busyAction === "return"}>
                 {busyAction === "return" ? ui.alerts.returning : ui.alerts.return}
               </Button>
             </form>
-          ) : null}
+          )}
 
-          {has("comment") ? (
+          {has("comment") && (
             <form onSubmit={submitComment} className="space-y-2 border-t border-line pt-4">
               <Field label={ui.alerts.addComment}>
-                <textarea name="note" rows={2} required placeholder={ui.alerts.commentPlaceholder} className={inputClass} />
+                <textarea name="note" rows={2} required placeholder={ui.alerts.commentPlaceholder} className={controlClass} />
               </Field>
               <Button type="submit" variant="secondary" className="w-full" disabled={busyAction === "comments"}>
                 {busyAction === "comments" ? ui.alerts.commenting : ui.alerts.comment}
               </Button>
             </form>
-          ) : null}
+          )}
 
-          {actions.length === 0 ? (
-            <p className="text-sm text-ink-muted">{ui.common.empty}</p>
-          ) : null}
+          {actions.length === 0 && <p className="text-table text-ink-muted">{ui.common.empty}</p>}
         </aside>
       </div>
     </div>

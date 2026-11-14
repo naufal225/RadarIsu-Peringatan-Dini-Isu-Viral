@@ -7,6 +7,10 @@ export const impersonationUi = {
     intro:
       "Akun yang pertama kali terlihat dalam jendela waktu terakhir dan namanya mirip akun resmi. Nama dinormalisasi lebih dulu (huruf kecil, Unicode, pemisah dibuang, karakter mirip disamakan). Akun resmi sendiri tidak pernah ditandai. Panel ini hanya untuk Analis dan tidak membuat alert.",
     asOf: (when: string) => `Per ${when}`,
+    asOfPrefix: "Per",
+    windowFrom: "Akun pertama kali terlihat",
+    windowTo: "sampai",
+    firstSeenPrefix: "Pertama terlihat",
     window: (from: string, to: string) => `Akun pertama kali terlihat ${from} sampai ${to}`,
     officialsCount: (count: number) => `${count} akun resmi sebagai pembanding`,
     filterOfficial: "Akun resmi",

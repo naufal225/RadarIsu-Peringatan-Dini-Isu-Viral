@@ -47,6 +47,8 @@ export const bUi = {
     postSnippet: "Cuplikan Postingan",
     detail: "Detail Teknis",
     noEvidence: "Belum ada bukti terlampir.",
+    evidenceShowAll: "Tampilkan semua",
+    evidenceShowFewer: "Tampilkan sebagian",
 
     // Actions & Timeline
     timeline: "Riwayat Penanganan",
