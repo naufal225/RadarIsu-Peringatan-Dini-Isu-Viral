@@ -2,6 +2,11 @@
 
 Dicatat sesuai CLAUDE.md: konflik tidak ditebak. Keputusan dicatat di sini dan di PRD (riwayat perubahan).
 
+## Diputuskan 2026-11-14 (waktu deteksi negatif, logout)
+
+1. **Waktu deteksi negatif (#37).** Keputusan: nilai dibiarkan apa adanya di data, dan halaman Evaluasi menampilkannya sebagai "N sebelum insiden" tanpa tanda minus. Alasan: alert memang terdeteksi sebelum awal insiden di data. Menyembunyikannya akan mengubah hasil evaluasi.
+2. **Logout.** Tombol Keluar sebelumnya menahan spinner karena state `pending` tidak pernah dilepas saat navigasi lewat router. Keputusan: navigasi penuh ke `/login` setelah request logout, sehingga seluruh state klien dibuang.
+
 ## Diputuskan 2026-11-14 (tema Cyber, amendemen aturan UI)
 
 Diputuskan oleh pemilik fondasi UI. Amendemen ini menyentuh file bersama, jadi perlu review semua pemilik sebelum merge (OWNERSHIP).

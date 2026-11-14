@@ -30,6 +30,7 @@ export const evaluationUi = {
     latency: "Waktu deteksi",
   },
   latencyNone: "Tidak diukur",
+  latencyBefore: (text: string) => `${text} sebelum insiden`,
   counts: (tp: number, fp: number, fn: number, posts: number) => `TP ${tp}, FP ${fp}, FN ${fn} dari ${posts} posting berlabel`,
   history: "Riwayat evaluasi",
   columns: { when: "Waktu", scope: "Cakupan", posts: "Posting", precision: "Presisi", recall: "Recall", f1: "F1", latency: "Waktu deteksi", by: "Dijalankan oleh", change: "Perubahan F1" },

@@ -15,8 +15,15 @@ import { ui } from "@/lib/labels";
 
 const copy = ui.evaluation;
 
+/**
+ * Negatif berarti alert terdeteksi sebelum awal insiden (OPEN_QUESTIONS #37): nilainya benar,
+ * jadi ditampilkan sebagai jarak dengan keterangan, bukan tanda minus.
+ */
 function latencyText(run: EvaluationRun): string {
-  return run.detection_latency_seconds === null ? copy.latencyNone : copy.seconds(run.detection_latency_seconds);
+  const seconds = run.detection_latency_seconds;
+  if (seconds === null) return copy.latencyNone;
+  if (seconds < 0) return copy.latencyBefore(copy.seconds(-seconds));
+  return copy.seconds(seconds);
 }
 
 type HistoryRow = { run: EvaluationRun; change: number | null };
