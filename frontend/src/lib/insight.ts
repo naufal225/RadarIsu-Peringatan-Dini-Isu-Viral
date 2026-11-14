@@ -79,3 +79,4 @@ export function f1Trend(runs: { id: number; created_at: string; f1: number | nul
     .reverse()
     .map((run) => ({ id: run.id, label: run.created_at, f1: run.f1 }));
 }
+

@@ -49,6 +49,8 @@ type ScoreBreakdown = {
   anomaly?: Part;
   sentiment?: Part;
   reach?: Part;
+  similarity?: Part;
+  young_account?: Part;
   thresholds?: Record<string, unknown>;
 };
 
@@ -67,23 +69,25 @@ type AlertDetailData = {
   actions?: ActionItem[];
 };
 
-type BreakdownRow = { key: string; label: string; part: Part };
+type BreakdownRow = { key: string; label: string; raw: string; weight: string; value: number };
 
 const BREAKDOWN_LABELS: { key: keyof Omit<ScoreBreakdown, "thresholds">; label: string }[] = [
   { key: "spike", label: ui.alerts.spike },
   { key: "anomaly", label: ui.alerts.anomaly },
   { key: "sentiment", label: ui.alerts.sentiment },
   { key: "reach", label: ui.alerts.reach },
+  { key: "similarity", label: ui.alerts.impersonationSimilarity },
+  { key: "young_account", label: ui.alerts.impersonationYoung },
 ];
 
 /** Bukti yang tampil di awal; sisanya lewat "Tampilkan semua". */
 const EVIDENCE_PREVIEW = 8;
 
 const BREAKDOWN_COLUMNS: DataTableColumn<BreakdownRow>[] = [
-  { id: "reason", header: ui.alerts.reason, cell: (r) => <span className="font-medium text-ink">{r.label}</span> },
-  { id: "raw", header: ui.alerts.raw, mono: true, align: "right", cell: (r) => r.part.raw },
-  { id: "weight", header: ui.alerts.weight, mono: true, align: "right", cell: (r) => `${r.part.weight}%` },
-  { id: "value", header: ui.alerts.value, mono: true, align: "right", cell: (r) => <span className="font-semibold">{r.part.value}</span> },
+  { id: "component", header: ui.alerts.component, cell: (r) => <span className="font-medium text-ink">{r.label}</span> },
+  { id: "raw", header: ui.alerts.raw, mono: true, align: "right", cell: (r) => r.raw },
+  { id: "weight", header: ui.alerts.weight, mono: true, align: "right", cell: (r) => r.weight },
+  { id: "value", header: ui.alerts.value, mono: true, align: "right", cell: (r) => <span className="font-semibold">{r.value}</span> },
 ];
 
 const EVIDENCE_COLUMNS: DataTableColumn<EvidenceItem>[] = [
@@ -240,12 +244,13 @@ export function AlertDetail({ id }: { id: number }) {
 
   const isSimulated = alert.evidence?.some((ev) => ev.post?.is_simulated);
   const subject = alert.topic?.name ?? alert.subject_account?.handle ?? ui.common.none;
-  const breakdownRows: BreakdownRow[] = alert.score_breakdown
-    ? BREAKDOWN_LABELS.flatMap(({ key, label }) => {
-        const part = alert.score_breakdown?.[key];
-        return part ? [{ key, label, part }] : [];
-      })
-    : [];
+  // Rincian dari server: alert `issue` memakai spike/anomali/sentimen/jangkauan, alert peniruan memakai kemiripan dan akun baru.
+  const breakdownRows: BreakdownRow[] = BREAKDOWN_LABELS.flatMap(({ key, label }) => {
+    const part = alert.score_breakdown?.[key];
+    if (!part) return [];
+    const raw = key === "young_account" ? (part.raw ? ui.common.yes : ui.common.no) : String(part.raw);
+    return [{ key, label, raw, weight: `${part.weight}%`, value: part.value }];
+  });
 
   return (
     <div className="space-y-6">
@@ -294,10 +299,10 @@ export function AlertDetail({ id }: { id: number }) {
             </blockquote>
           )}
 
-          {alert.score_breakdown && (
+          {breakdownRows.length > 0 && (
             <Section title={ui.alerts.scoreBreakdown}>
               <DataTable caption={ui.alerts.scoreBreakdown} columns={BREAKDOWN_COLUMNS} rows={breakdownRows} getRowKey={(r) => r.key} framed={false} />
-              {alert.score_breakdown.thresholds && (
+              {alert.score_breakdown?.thresholds && (
                 <p className="mt-2 break-all font-mono text-caption text-ink-muted">
                   {ui.alerts.thresholds}: {JSON.stringify(alert.score_breakdown.thresholds)}
                 </p>

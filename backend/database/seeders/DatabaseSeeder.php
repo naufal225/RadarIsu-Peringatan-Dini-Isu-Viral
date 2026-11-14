@@ -21,5 +21,10 @@ class DatabaseSeeder extends Seeder
             TopicTemplateSeeder::class,
             SettingsSeeder::class,
         ]);
+
+        // Data demo lengkap hanya untuk lingkungan lokal; produksi tidak pernah menerima data simulasi.
+        if (app()->environment('local')) {
+            $this->call(FullDemoSeeder::class);
+        }
     }
 }

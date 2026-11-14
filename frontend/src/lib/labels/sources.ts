@@ -42,7 +42,7 @@ export const sourcesUi = {
   errorsTruncated: "Hanya 200 baris bermasalah pertama yang ditampilkan.",
   csvFormat:
     "Header wajib: text, account_handle, posted_at. Opsional: external_id, account_display_name, account_created_at. Waktu dalam ISO 8601 dengan zona waktu. Maks. 10 MB / 50.000 baris.",
-  ingestLater: "Penarikan terjadwal RSS/YouTube belum aktif. Saat ini hanya uji koneksi.",
+  ingestLater: "Saat ini tersedia uji koneksi. Penarikan terjadwal RSS/YouTube menyusul.",
   empty: "Belum ada sumber data.",
   tableCaption: "Daftar sumber data",
   noInterval: "—",
@@ -58,7 +58,7 @@ export const sourcesUi = {
     total: (n: string) => `${n} sumber`,
     active: (n: string) => `${n} aktif`,
     failing: (n: string) => `${n} gagal pada uji terakhir`,
-    noneFailing: "Tidak ada yang gagal pada uji terakhir",
+    noneFailing: "Tanpa galat pada uji terakhir",
     rawItems: (n: string) => `${n} item mentah`,
   },
 } as const;

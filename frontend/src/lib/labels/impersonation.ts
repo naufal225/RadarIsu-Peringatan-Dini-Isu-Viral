@@ -26,7 +26,7 @@ export const impersonationUi = {
     ageUnknown: "Tidak diketahui",
     firstSeen: (when: string) => `Pertama terlihat ${when}`,
     otherMatches: (items: string) => `Juga mirip: ${items}`,
-    noAlert: "Belum ada alert",
+    noAlert: "Tanpa alert",
     viewAlert: "Buka alert",
     noRules: "Tanpa aturan tambahan",
   },

@@ -30,7 +30,7 @@ export const replayUi = {
   intro:
     "Memutar ulang skenario melalui jalur data yang sama dengan sumber langsung: baris baseline masuk sekaligus, baris incident dialirkan sesuai kecepatan. Semua data ditandai simulasi.",
   clockActive: (virtual: string) => `Jam data virtual: ${virtual}`,
-  clockIdle: "Detektor memakai jam sebenarnya (tidak ada Replay berjalan).",
+  clockIdle: "Detektor memakai jam sebenarnya. Jalankan Replay untuk memutar data simulasi.",
   scenarios: "Skenario",
   empty: "Belum ada skenario. Unggah CSV skenario di bawah.",
   columns: {

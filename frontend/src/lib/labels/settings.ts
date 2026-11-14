@@ -18,7 +18,7 @@ export const settingsUi = {
   changeList: "Yang berubah",
   unchanged: "Tidak ada perubahan.",
   lastUpdated: (name: string, when: string) => `Terakhir diubah oleh ${name} pada ${when}.`,
-  neverUpdated: "Belum pernah diubah dari nilai awal.",
+  neverUpdated: "Masih nilai awal.",
   invalidFields: "Periksa isian berikut:",
   groups: {
     spike: "Deteksi lonjakan isu",
@@ -189,6 +189,6 @@ export const settingsUi = {
     saved: "Mode Offline disimpan.",
     lastUpdated: (name: string, when: string) => `Terakhir diubah oleh ${name} pada ${when}.`,
     lastUpdatedBy: (name: string) => `Terakhir diubah oleh ${name} pada`,
-    neverUpdated: "Belum pernah diubah dari nilai awal.",
+    neverUpdated: "Masih nilai awal.",
   },
 } as const;
