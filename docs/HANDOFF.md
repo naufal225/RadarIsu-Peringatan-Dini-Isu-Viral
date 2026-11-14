@@ -4,6 +4,26 @@ Papan pengumuman untuk perubahan yang menyentuh domain lain, perubahan izin, dan
 
 ---
 
+## STATUS REVIEW: `feat/ui-cyber` (belum di-push, belum ada PR)
+
+Dicatat 2026-11-14. Tidak ada persetujuan yang tercatat di bagian ini. Setiap pemilik harus memberi persetujuan sendiri di PR sebelum merge (OWNERSHIP, aturan 1 dan 2).
+
+| Domain | Berkas yang berubah | Status review |
+|---|---|---|
+| Naufal (F10, F11, F12, F14, F15, fondasi UI) | `components/radar/*`, `lib/labels/{audit,labeling,replay,shell,evaluation}.ts`, halaman `/labeling`, `/evaluation`, `/admin/audit`, `/admin/replay`, `/topics`, `globals.css`, `components/ui.tsx` (dihapus), `InsightController`, route audit/labeling/replay/topics | belum direview |
+| Kadavi (B) | `alerts/[id]/alert-detail.tsx`, `alerts/alert-list.tsx`, `briefings/briefing-list.tsx`, `components/alerts/alert-list-view.tsx`, `lib/alert-actions.ts` | belum direview |
+| Rekishi (C) | `dashboard/dashboard-panel.tsx`, `admin/status/status-panel.tsx`, `SentimentAnalyzer.php`, `id_sentiment.csv`, `SystemStatusController.php` (field `sentiment`), `topics/coverage` | belum direview. Perubahan sentimen menggeser hasil deteksi |
+| Bersama | `CLAUDE.md`, `AGENTS.md`, `docs/PRD.md` (v2.4), `docs/UI_DESIGN_SYSTEM.md`, `docs/UI_WORKPLAN.md`, `docs/OPEN_QUESTIONS.md`, `docs/HANDOFF.md` | butuh review semua pemilik (OWNERSHIP, file bersama) |
+
+Keputusan yang dibuat ketua kelompok atas nama tim dan masih menunggu persetujuan pemilik:
+- Pengambilalihan pekerjaan domain C (sentimen dan dasbor), lihat catatan sentimen di bawah.
+- Cabang `update_ui` (Kadavi, redesign "Able Pro") belum diputuskan. Pekerjaan UI dibuat di `feat/ui-cyber` dari `main` sebagai cadangan (UI_WORKPLAN §4).
+- Izin agent melakukan commit untuk pekerjaan UI (CLAUDE.md, AGENTS.md, UI_WORKPLAN §4): sudah diubah, tetap perlu disetujui pemilik.
+
+Yang belum ada di repo: `docs/UI_PROMPTS.md` disebut CLAUDE.md dan UI_WORKPLAN, tapi berkasnya tidak ada.
+
+---
+
 ## 2026-11-14: Insight di halaman yang ada (branch `feat/ui-cyber`)
 
 - **Untuk Rekishi (C):** `GET /system/status` menambah field `sentiment` (`positive`, `negative`, `neutral`). Field baru, tidak ada yang berubah. `GET /topics/coverage` baru (`topics.view`): posting cocok topik, total, dan per topik. Keduanya dibaca UI status dan topik.
