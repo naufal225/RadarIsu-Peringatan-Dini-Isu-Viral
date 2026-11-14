@@ -20,7 +20,7 @@
 
 Baca berurutan sebelum menulis UI: docs/UI_DESIGN_SYSTEM.md → docs/UI_PAGES.md (bagian halamanmu) → docs/UI_WORKPLAN.md. Prompt siap pakai ada di docs/UI_PROMPTS.md.
 
-- Warna hanya dari token di frontend/src/app/globals.css. Dilarang hex/rgb di komponen, nilai arbitrer Tailwind, gradien, glow, donut/gauge, avatar, kartu KPI solid, dan warna hijau.
+- Warna hanya dari token di frontend/src/app/globals.css. Dilarang hex/rgb di komponen, nilai arbitrer Tailwind, gradien, donut/gauge, avatar, kartu KPI solid, dan warna hijau. Glow hanya untuk status fokus dan alert kritis (revisi 2026-11-14, lihat docs/UI_DESIGN_SYSTEM.md §1).
 - Semua timestamp lewat komponen `<Waktu>` (WIB di UI, UTC saat hover). Tanpa waktu relatif.
 - Izin lewat `useCan`/`<Can>`, bukan nama peran. Server tetap penentu: tangani 401/403/404/422/501.
 - Halaman dipecah: `page.tsx` (fetch) + `*-view.tsx` (presentasi murni). Tidak ada data palsu di halaman asli; fixture hanya di `/dev/*` dan tes.
@@ -28,5 +28,5 @@ Baca berurutan sebelum menulis UI: docs/UI_DESIGN_SYSTEM.md → docs/UI_PAGES.md
 - Kosakata netral: jangan menulis "bot", "hoaks", "pelaku", "terbukti". Sistem menandai pola tidak wajar; keputusan akhir manusia.
 - Lambang resmi TNI AD tidak dipakai kecuali panitia memberi aset atau izin.
 - Tidak menambah dependensi UI tanpa mencatatnya di docs/HANDOFF.md.
-- **Aturan commit untuk pekerjaan UI menggantikan baris "Setiap fase selesai: commit" di atas:** agent TIDAK menjalankan `git commit`, `git push`, `git stash`, `git reset`, `git rebase`, atau opsi force. Agent memberi perintah commit siap-salin (`git add` path spesifik, pesan mengikuti `git log --oneline -20`, diawali `ui:` bila branch-nya branch fitur lama, tanpa Co-Authored-By atau atribusi AI) lalu berhenti dan menunggu.
+- **Aturan commit untuk pekerjaan UI menggantikan baris "Setiap fase selesai: commit" di atas (revisi 2026-11-14):** agent boleh menjalankan `git commit` untuk pekerjaan UI di branch yang ditetapkan. `git add` memakai path spesifik, pesan mengikuti `git log --oneline -20`, diawali `ui:`, tanpa Co-Authored-By atau atribusi AI. Agent TIDAK menjalankan `git push`, `git stash`, `git reset`, `git rebase`, atau opsi force kecuali diminta.
 - Verifikasi UI: `cd frontend && npm run lint && npx tsc --noEmit && npm test && npm run build`.

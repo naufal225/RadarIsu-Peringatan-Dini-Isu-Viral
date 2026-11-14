@@ -14,6 +14,11 @@
 
 ### Riwayat perubahan
 
+**v2.4 (2026-11-14)** — arah visual UI (lintas-fase, tidak menyentuh fase deteksi):
+
+1. **Arah UI diganti ke "Cyber"**: tema gelap, aksen cyan, glow terbatas untuk status fokus dan alert kritis. Menggantikan "Lembar Situasi" di `docs/UI_DESIGN_SYSTEM.md` §1. Gradien dan warna hijau tetap dilarang. Nilai token menyusul di tahap desain. Amendemen ini menunggu review semua pemilik (OWNERSHIP).
+2. Entri v2.3 yang direncanakan di `docs/UI_WORKPLAN.md` §11c belum pernah ditulis. Keputusan visual sebelumnya tidak tercatat di PRD.
+
 **v2.2 (2026-10-21)** — keputusan untuk Fase 2:
 
 1. **Format CSV impor** ditetapkan sama dengan `replay_rows`, beserta aturan baris, kode galat, dan duplikat (§11.4).

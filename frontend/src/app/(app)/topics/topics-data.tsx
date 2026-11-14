@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useCan } from "@/components/permissions-provider";
 import { TopicsView, type OfficialsState, type TopicFormState, type TopicFormValues } from "@/components/topics/topics-view";
 import { api, ApiError } from "@/lib/api";
-import type { OfficialAccount, Topic, TopicList } from "@/lib/api-types/topics";
+import type { OfficialAccount, Topic, TopicCoverage, TopicList } from "@/lib/api-types/topics";
 import { ui } from "@/lib/labels";
 import { parseKeywords } from "@/lib/topics";
 import { useApiData } from "@/lib/use-api-data";
@@ -25,6 +25,8 @@ export function TopicsData() {
   const can = useCan();
   const { data, error, loading, reload } = useApiData<TopicList>("topics");
   const officialsData = useApiData<{ data: OfficialAccount[] }>("official-accounts");
+  // Cakupan hanya pelengkap: gagal diam-diam, daftar topik tetap jalan.
+  const coverage = useApiData<{ data: TopicCoverage }>("topics/coverage").data?.data ?? null;
   const [form, setForm] = useState<TopicFormState>(CLOSED);
   const [rowError, setRowError] = useState<{ id: number; text: string } | null>(null);
   const [addErrors, setAddErrors] = useState<Record<string, string[]>>({});
@@ -100,6 +102,7 @@ export function TopicsData() {
 
   return (
     <TopicsView
+      coverage={coverage}
       result={data}
       loading={loading}
       failed={error && data === null}

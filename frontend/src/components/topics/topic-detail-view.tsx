@@ -13,7 +13,38 @@ import type { MetricsResponse, SpikeBaselineResponse, Topic } from "@/lib/api-ty
 import { cn } from "@/lib/cn";
 import { formatInteger, formatNumber } from "@/lib/format";
 import { sensitivityLabels, spikeStatusLabels, topicCategoryLabels, ui } from "@/lib/labels";
+import { sentimentMix } from "@/lib/insight";
 import { fillHours, rowsForRange, spikeReference, spikeWindow, summarize, type MetricsRange } from "@/lib/topics";
+
+/** Komposisi sentimen pada rentang terpilih, dengan catatan bila semua posting netral. */
+function SentimentBlock({ rows }: { rows: { positive_count: number; negative_count: number; neutral_count: number }[] }) {
+  const mix = sentimentMix(rows);
+  if (mix.total === 0) return null;
+  const parts = [
+    { key: "positive", label: copy.detail.sentimentPositive, value: mix.positive, share: mix.share.positive, tone: "bg-brand" },
+    { key: "negative", label: copy.detail.sentimentNegative, value: mix.negative, share: mix.share.negative, tone: "bg-sev-high" },
+    { key: "neutral", label: copy.detail.sentimentNeutral, value: mix.neutral, share: mix.share.neutral, tone: "bg-line-input" },
+  ];
+  return (
+    <div className="mt-6 space-y-3">
+      <h3 className="text-table font-semibold text-ink">{copy.detail.sentimentTitle}</h3>
+      <div className="flex h-2 w-full overflow-hidden rounded-badge bg-hover" role="img" aria-label={copy.detail.sentimentTitle}>
+        {parts.map((part) => (
+          <span key={part.key} className={part.tone} style={{ width: `${part.share * 100}%` }} />
+        ))}
+      </div>
+      <ul className="flex flex-wrap gap-x-5 gap-y-1 text-table">
+        {parts.map((part) => (
+          <li key={part.key} className="text-ink">
+            {part.label}: <span className="font-mono tabular-nums">{formatInteger(part.value)}</span>{" "}
+            <span className="text-ink-muted">({Math.round(part.share * 100)}%)</span>
+          </li>
+        ))}
+      </ul>
+      {mix.onlyNeutral && <p className="text-caption text-sev-medium">{copy.detail.sentimentOnlyNeutral}</p>}
+    </div>
+  );
+}
 
 const copy = ui.topics;
 const spikeCopy = ui.detection.spike;
@@ -104,6 +135,7 @@ export function TopicDetailView({ topic, metrics, metricsLoading, metricsFailed,
               <Stat label={copy.detail.peakHour} value={summary.peak ? formatInteger(summary.peak.volume) : ui.common.none} hint={summary.peak ? <Waktu value={summary.peak.hour} className="text-caption" /> : undefined} />
               <Stat label={copy.detail.hoursWithData} value={formatInteger(summary.hoursWithData)} />
             </div>
+            <SentimentBlock rows={rows} />
           </>
         )}
       </Section>

@@ -61,3 +61,11 @@ export function uploadErrors(body: ReplayErrorBody): { fields: Record<string, st
   });
   return { fields, file: errors.file ?? [], rows };
 }
+
+/**
+ * Nilai kolom kecepatan. `null` berarti pengguna belum mengubah kolom: pakai kecepatan bawaan skenario.
+ * String kosong berarti pengguna mengosongkan kolom: tetap kosong, jangan kembali ke bawaan.
+ */
+export function speedInputValue(speed: string | null, defaultSpeed: number | null): string {
+  return speed ?? (defaultSpeed === null ? "" : String(defaultSpeed));
+}

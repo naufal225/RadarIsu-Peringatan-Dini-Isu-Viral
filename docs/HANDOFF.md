@@ -4,6 +4,65 @@ Papan pengumuman untuk perubahan yang menyentuh domain lain, perubahan izin, dan
 
 ---
 
+## STATUS REVIEW: `feat/ui-cyber` (belum di-push, belum ada PR)
+
+Dicatat 2026-11-14. Tidak ada persetujuan yang tercatat di bagian ini. Setiap pemilik harus memberi persetujuan sendiri di PR sebelum merge (OWNERSHIP, aturan 1 dan 2).
+
+| Domain | Berkas yang berubah | Status review |
+|---|---|---|
+| Naufal (F10, F11, F12, F14, F15, fondasi UI) | `components/radar/*`, `lib/labels/{audit,labeling,replay,shell,evaluation}.ts`, halaman `/labeling`, `/evaluation`, `/admin/audit`, `/admin/replay`, `/topics`, `globals.css`, `components/ui.tsx` (dihapus), `InsightController`, route audit/labeling/replay/topics | belum direview |
+| Kadavi (B) | `alerts/[id]/alert-detail.tsx`, `alerts/alert-list.tsx`, `briefings/briefing-list.tsx`, `components/alerts/alert-list-view.tsx`, `lib/alert-actions.ts` | belum direview |
+| Rekishi (C) | `dashboard/dashboard-panel.tsx`, `admin/status/status-panel.tsx`, `SentimentAnalyzer.php`, `id_sentiment.csv`, `SystemStatusController.php` (field `sentiment`), `topics/coverage` | belum direview. Perubahan sentimen menggeser hasil deteksi |
+| Bersama | `CLAUDE.md`, `AGENTS.md`, `docs/PRD.md` (v2.4), `docs/UI_DESIGN_SYSTEM.md`, `docs/UI_WORKPLAN.md`, `docs/OPEN_QUESTIONS.md`, `docs/HANDOFF.md` | butuh review semua pemilik (OWNERSHIP, file bersama) |
+
+Keputusan yang dibuat ketua kelompok atas nama tim dan masih menunggu persetujuan pemilik:
+- Pengambilalihan pekerjaan domain C (sentimen dan dasbor), lihat catatan sentimen di bawah.
+- Cabang `update_ui` (Kadavi, redesign "Able Pro") belum diputuskan. Pekerjaan UI dibuat di `feat/ui-cyber` dari `main` sebagai cadangan (UI_WORKPLAN §4).
+- Izin agent melakukan commit untuk pekerjaan UI (CLAUDE.md, AGENTS.md, UI_WORKPLAN §4): sudah diubah, tetap perlu disetujui pemilik.
+
+Yang belum ada di repo: `docs/UI_PROMPTS.md` disebut CLAUDE.md dan UI_WORKPLAN, tapi berkasnya tidak ada.
+
+---
+
+## 2026-11-14: Insight di halaman yang ada (branch `feat/ui-cyber`)
+
+- **Untuk Rekishi (C):** `GET /system/status` menambah field `sentiment` (`positive`, `negative`, `neutral`). Field baru, tidak ada yang berubah. `GET /topics/coverage` baru (`topics.view`): posting cocok topik, total, dan per topik. Keduanya dibaca UI status dan topik.
+- **Untuk Kadavi (B):** tidak ada perubahan endpoint alert. Detail alert menampilkan ringkasan bukti dari `alert_evidence` yang sudah ada.
+- **Untuk Naufal (F10, F12, F14, F11):** `GET /audit-logs/summary` (`audit.view`), `GET /labeling/daily` (`labels.manage`), dan `GET /replay/scenarios/{id}/composition` (`replay.manage`) baru, semuanya agregat baca-saja dari `InsightController`.
+- Semua endpoint baru dicakup `tests/Feature/Insight/InsightEndpointsTest.php` (7 tes).
+- Catatan sebaran per hari di pelabelan dihitung menurut `posted_at`. Tabel posting tidak punya waktu pelabelan, jadi "kapan diberi label" tidak bisa ditampilkan.
+
+---
+
+## 2026-11-14: Sentimen (F5, domain C): rata-rata hanya dari kata bermuatan (branch `feat/ui-cyber`)
+
+- **Untuk Rekishi (C):** `SentimentAnalyzer::classify` kini menghitung skor sebagai rata-rata polaritas kata yang **bermuatan** (≠ 0). Kata netral tidak menurunkan skor. Sebelumnya satu kata positif di antara banyak kata netral tidak pernah mencapai ambang 0,2. Tes diperbarui (`SentimentAnalyzerTest`) dan ditambah satu tes untuk aturan baru.
+- Polaritas "waspada" di `resources/lexicon/id_sentiment.csv` diubah dari +1 ke 0. Kata itu peringatan, bukan pujian, dan sebelumnya membuat posting kampanye "Waspada!" berlabel positif. Ini keputusan yang perlu ditinjau pemilik kamus.
+- Data lokal dihitung ulang dan metrik dibangun ulang (`radarisu:aggregate --all`). Di data demo tidak ada perubahan label, karena satu-satunya kata bermuatan sudah 0. **Sentimen tetap netral di data demo.** Itu batasan data, bukan bug rumus.
+- **Pengambilalihan:** pekerjaan ini dilakukan oleh ketua kelompok atas nama tim. OWNERSHIP mensyaratkan perubahan kepemilikan lewat PR yang disetujui semua pemilik. Sampai itu, berkas domain C yang berubah tetap perlu direview Rekishi.
+
+---
+
+## 2026-11-14: Tema Cyber (branch `feat/ui-cyber`, belum di-merge)
+
+- **Untuk semua pemilik:** nilai token di `globals.css` berganti ke tema gelap Cyber (tabel di `docs/UI_DESIGN_SYSTEM.md` §3). Tidak ada nama token yang berubah. Tambahan: `--glow-alert` dan kelas `shadow-glow-alert`, hanya untuk pin dan kartu alert severity tinggi.
+- **Perubahan di berkas milik domain lain** (direview lewat PR, sesuai CODEOWNERS):
+  - `alerts/[id]/alert-detail.tsx` dan `alerts/alert-list.tsx` (Kadavi): tata letak detail dibuat dua kolom dengan panel keputusan sticky. Aksi ditampilkan lewat `lib/alert-actions.ts` (`availableActions`, dengan tes). Perilaku, endpoint, dan pesan galat tidak berubah.
+  - `briefings/briefing-list.tsx` (Kadavi): hanya kelas warna.
+  - `admin/status/status-panel.tsx` (Rekishi): hanya kelas warna.
+  - `topics/[id]/coordination-panel.tsx`, `topics/lookalikes-panel.tsx`, `evaluation/evaluation-panel.tsx` (Naufal): hanya kelas warna.
+- **Untuk Rekishi dan Kadavi:** `components/ui.tsx` (lapisan lama) memakai token sekarang. Tidak ada tanda tangan komponen yang berubah.
+- **Dasbor (`dashboard/dashboard-panel.tsx`, Rekishi):** bagian "Tindakan Cepat" dihapus karena hanya mengulang menu sidebar. Ganti dengan "Perlu ditangani": hingga tiga isu yang menunggu peran pengguna (`new` untuk analis, `escalated` untuk pimpinan), dari `dashboard/issues` yang sudah ada. Tidak ada endpoint baru.
+- **Daftar alert (`alerts/alert-list.tsx` + `components/alerts/alert-list-view.tsx`, Kadavi):** pindah ke komponen radar (`DataTable`, `FilterBar`, `SeverityBadge`, `StatusChip`). Filter langsung berlaku tanpa tombol. Parameter query tidak berubah.
+- **`components/ui.tsx` (lapisan lama) dihapus.** Tidak ada lagi pemakainya. Komponen pengganti: `components/radar/*`, dan `Tag` baru di `components/radar/tag.tsx` untuk label keadaan (menggantikan `StatusBadge`).
+- Berkas yang berpindah ke komponen radar dalam branch ini:
+  - `alerts/[id]/alert-detail.tsx` dan `briefings/briefing-list.tsx` (Kadavi). Bukti di detail dibatasi 8 baris, sisanya lewat "Tampilkan semua".
+  - `admin/status/status-panel.tsx` (Rekishi).
+  - `topics/[id]/coordination-panel.tsx` dan `topics/lookalikes-panel.tsx` (Naufal). Label `asOfPrefix`, `windowFrom`, `windowTo` (dan `firstSeenPrefix` untuk impersonation) ditambahkan agar tanggal bisa dirender lewat `<Waktu>`.
+- Verifikasi: lint, tsc, 269 tes, dan build lulus. Diperiksa di browser: login, dasbor, daftar alert, detail alert, evaluasi, status sistem, labeling.
+
+---
+
 ## 2026-10-27: BFF menjawab 503 bila Laravel tidak bisa dihubungi (branch `feat/ui-admin-sources`)
 
 - **Untuk semua pemilik halaman:** sebelumnya, bila Laravel mati atau tidak terjangkau, `POST /api/auth/login` dan semua `/api/*` gagal dengan 500 tanpa isi ("Internal Server Error"). Sekarang BFF menjawab **503** `{"message":"backend_unavailable","errors":{"server":["backend_unavailable"]}}`. Kode `backend_unavailable` sudah punya label di `errorCodeLabels`, jadi `describeErrorCode` menampilkannya. Halaman login menampilkan "Server RadarIsu tidak dapat dihubungi…".

@@ -1,104 +1,183 @@
 "use client";
 
-import { ErrorText, PageTitle, Section, StatusBadge, Table, Td } from "@/components/ui";
-import { formatDateTime } from "@/lib/format";
+import { CircleCheck, CircleDashed, TriangleAlert } from "lucide-react";
+import { DataTable, type DataTableColumn } from "@/components/radar/data-table";
+import { StackedMeter } from "@/components/radar/meter";
+import { PageHeader } from "@/components/radar/page-header";
+import { Section } from "@/components/radar/section";
+import { Stat } from "@/components/radar/stat";
+import { EmptyState, ErrorState } from "@/components/radar/states";
+import { Waktu } from "@/components/radar/waktu";
+import { formatInteger } from "@/lib/format";
 import { sourceStatusLabels, sourceTypeLabels, ui } from "@/lib/labels";
 import { useApiData } from "@/lib/use-api-data";
 
+type SourceRow = {
+  id: number;
+  type: keyof typeof sourceTypeLabels;
+  name: string;
+  is_active: boolean;
+  last_status: keyof typeof sourceStatusLabels;
+  last_fetched_at: string | null;
+  last_error: string | null;
+};
+
+type FailureRow = { id: number; job: string | null; error: string; failed_at: string };
+
 type Status = {
-  sources: {
-    id: number;
-    type: keyof typeof sourceTypeLabels;
-    name: string;
-    is_active: boolean;
-    last_status: keyof typeof sourceStatusLabels;
-    last_fetched_at: string | null;
-    last_error: string | null;
-  }[];
+  sources: SourceRow[];
   queue: {
     pending_jobs: number;
     failed_jobs: number;
-    recent_failures: { id: number; job: string | null; error: string; failed_at: string }[];
+    recent_failures: FailureRow[];
   };
   counts: { raw_items: number; unprocessed_raw_items: number; posts: number; open_alerts: number };
+  sentiment: { positive: number; negative: number; neutral: number };
   offline_mode: boolean;
 };
 
+/** Status sumber: ikon dan teks, tanpa warna hijau. */
+function SourceState({ status }: { status: SourceRow["last_status"] }) {
+  const label = sourceStatusLabels[status];
+  if (status === "ok") {
+    return (
+      <span className="inline-flex items-center gap-1.5 text-ink">
+        <CircleCheck aria-hidden="true" className="size-4" />
+        {label}
+      </span>
+    );
+  }
+  if (status === "error") {
+    return (
+      <span className="inline-flex items-center gap-1.5 text-sev-high">
+        <TriangleAlert aria-hidden="true" className="size-4" />
+        {label}
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center gap-1.5 text-ink-muted">
+      <CircleDashed aria-hidden="true" className="size-4" />
+      {label}
+    </span>
+  );
+}
+
+const SOURCE_COLUMNS: DataTableColumn<SourceRow>[] = [
+  {
+    id: "name",
+    header: ui.sources.name,
+    cell: (s) => (
+      <>
+        <span className="font-medium text-ink">{s.name}</span>
+        {!s.is_active && <span className="ml-2 text-caption text-ink-muted">{ui.common.inactive}</span>}
+      </>
+    ),
+  },
+  { id: "type", header: ui.sources.type, cell: (s) => sourceTypeLabels[s.type] },
+  { id: "status", header: ui.sources.status, cell: (s) => <SourceState status={s.last_status} /> },
+  { id: "checked", header: ui.sources.lastChecked, cell: (s) => <Waktu value={s.last_fetched_at} /> },
+  {
+    id: "error",
+    header: ui.sources.lastError,
+    cell: (s) => <span className="break-words text-sev-high">{s.last_error ?? ui.common.none}</span>,
+  },
+];
+
+const FAILURE_COLUMNS: DataTableColumn<FailureRow>[] = [
+  { id: "at", header: ui.audit.time, cell: (f) => <Waktu value={f.failed_at} /> },
+  { id: "job", header: ui.adminStatus.recentFailures, mono: true, cell: (f) => f.job ?? ui.common.none },
+  { id: "error", header: "", cell: (f) => <span className="break-words text-sev-high">{f.error}</span> },
+];
+
+/** Sebaran sentimen semua posting. Bila hanya netral, panel mencatatnya sebagai batasan kamus, bukan kondisi nyata. */
+function SentimentSection({ sentiment }: { sentiment: Status["sentiment"] }) {
+  const total = sentiment.positive + sentiment.negative + sentiment.neutral;
+  const onlyNeutral = total > 0 && sentiment.positive === 0 && sentiment.negative === 0;
+  const parts = [
+    { name: ui.adminStatus.sentimentPositive, value: sentiment.positive, tone: "bg-brand" },
+    { name: ui.adminStatus.sentimentNegative, value: sentiment.negative, tone: "bg-sev-high" },
+    { name: ui.adminStatus.sentimentNeutral, value: sentiment.neutral, tone: "bg-line-input" },
+  ];
+  return (
+    <Section title={ui.adminStatus.sentimentTitle}>
+      <div className="grid gap-4 sm:grid-cols-3">
+        {parts.map((part) => (
+          <Stat key={part.name} label={part.name} value={formatInteger(part.value)} hint={total > 0 ? `${Math.round((part.value / total) * 100)}%` : undefined} />
+        ))}
+      </div>
+      <div className="mt-4">
+        <StackedMeter parts={parts.map((p) => ({ name: p.name, value: p.value, tone: p.tone }))} label={ui.adminStatus.sentimentTitle} />
+      </div>
+      {onlyNeutral && <p className="mt-3 text-caption text-sev-medium">{ui.adminStatus.sentimentOnlyNeutral}</p>}
+    </Section>
+  );
+}
+
 export function StatusPanel() {
-  const { data, error } = useApiData<{ data: Status }>("system/status");
-  const status = data?.data ?? null;
+  const { data, error, reload } = useApiData<{ data: Status }>("system/status");
+  const status = error ? null : (data?.data ?? null);
 
   return (
-    <>
-      <PageTitle>{ui.adminStatus.title}</PageTitle>
-      <ErrorText>{error ? ui.common.loadError : null}</ErrorText>
-      {status === null ? (
-        !error && <p className="text-sm text-neutral-500">{ui.loading}</p>
+    <div className="space-y-6">
+      <PageHeader
+        title={ui.adminStatus.title}
+        meta={
+          status && (
+            <span className="inline-flex items-center gap-2 rounded-badge border border-line px-2.5 py-1 text-table text-ink">
+              {ui.adminStatus.offlineMode}: {status.offline_mode ? ui.common.active : ui.common.inactive}
+            </span>
+          )
+        }
+      />
+
+      {error ? (
+        <ErrorState onRetry={reload} />
+      ) : status === null ? (
+        <p className="text-table text-ink-muted">{ui.loading}</p>
       ) : (
         <>
-          <p className="mb-6 text-sm">
-            {ui.adminStatus.offlineMode}:{" "}
-            <StatusBadge tone={status.offline_mode ? "error" : "muted"}>
-              {status.offline_mode ? ui.common.active : ui.common.inactive}
-            </StatusBadge>
-          </p>
-
           <Section title={ui.adminStatus.counts}>
-            <dl className="grid max-w-xl grid-cols-2 gap-y-1 text-sm">
-              <dt className="text-neutral-500">{ui.adminStatus.rawItems}</dt>
-              <dd>{status.counts.raw_items}</dd>
-              <dt className="text-neutral-500">{ui.adminStatus.unprocessedRawItems}</dt>
-              <dd>{status.counts.unprocessed_raw_items}</dd>
-              <dt className="text-neutral-500">{ui.adminStatus.posts}</dt>
-              <dd>{status.counts.posts}</dd>
-              <dt className="text-neutral-500">{ui.adminStatus.openAlerts}</dt>
-              <dd>{status.counts.open_alerts}</dd>
-            </dl>
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              <Stat label={ui.adminStatus.rawItems} value={formatInteger(status.counts.raw_items)} />
+              <Stat label={ui.adminStatus.unprocessedRawItems} value={formatInteger(status.counts.unprocessed_raw_items)} />
+              <Stat label={ui.adminStatus.posts} value={formatInteger(status.counts.posts)} />
+              <Stat label={ui.adminStatus.openAlerts} value={formatInteger(status.counts.open_alerts)} />
+            </div>
           </Section>
 
-          <Section title={ui.adminStatus.sources}>
-            {status.sources.length === 0 ? (
-              <p className="text-sm text-neutral-500">{ui.common.empty}</p>
-            ) : (
-              <Table head={[ui.sources.name, ui.sources.type, ui.sources.status, ui.sources.lastChecked, ui.sources.lastError]}>
-                {status.sources.map((s) => (
-                  <tr key={s.id}>
-                    <Td>
-                      {s.name} {!s.is_active && <StatusBadge tone="muted">{ui.common.inactive}</StatusBadge>}
-                    </Td>
-                    <Td>{sourceTypeLabels[s.type]}</Td>
-                    <Td>
-                      <StatusBadge tone={s.last_status === "ok" ? "ok" : s.last_status === "error" ? "error" : "muted"}>
-                        {sourceStatusLabels[s.last_status]}
-                      </StatusBadge>
-                    </Td>
-                    <Td>{formatDateTime(s.last_fetched_at)}</Td>
-                    <Td className="max-w-md break-words text-red-700">{s.last_error ?? ui.common.none}</Td>
-                  </tr>
-                ))}
-              </Table>
-            )}
+          <SentimentSection sentiment={status.sentiment} />
+
+          <Section title={ui.adminStatus.sources} flush>
+            <DataTable
+              caption={ui.adminStatus.sources}
+              columns={SOURCE_COLUMNS}
+              rows={status.sources}
+              getRowKey={(s) => s.id}
+              framed={false}
+              empty={<EmptyState title={ui.common.empty} />}
+            />
           </Section>
 
-          <Section title={ui.adminStatus.queue}>
-            <p className="mb-2 text-sm">
-              {ui.adminStatus.pendingJobs}: {status.queue.pending_jobs} · {ui.adminStatus.failedJobs}:{" "}
-              {status.queue.failed_jobs}
-            </p>
+          <Section title={ui.adminStatus.queue} flush={status.queue.recent_failures.length > 0}>
+            <div className={status.queue.recent_failures.length > 0 ? "px-5 pb-4 pt-0" : undefined}>
+              <div className="grid max-w-xl gap-4 sm:grid-cols-2">
+                <Stat label={ui.adminStatus.pendingJobs} value={formatInteger(status.queue.pending_jobs)} />
+                <Stat label={ui.adminStatus.failedJobs} value={formatInteger(status.queue.failed_jobs)} />
+              </div>
+            </div>
             {status.queue.recent_failures.length > 0 && (
-              <Table head={[ui.audit.time, ui.adminStatus.recentFailures, ""]}>
-                {status.queue.recent_failures.map((f) => (
-                  <tr key={f.id}>
-                    <Td className="whitespace-nowrap">{formatDateTime(f.failed_at)}</Td>
-                    <Td className="font-mono text-xs">{f.job ?? ui.common.none}</Td>
-                    <Td className="break-words text-red-700">{f.error}</Td>
-                  </tr>
-                ))}
-              </Table>
+              <DataTable
+                caption={ui.adminStatus.recentFailures}
+                columns={FAILURE_COLUMNS}
+                rows={status.queue.recent_failures}
+                getRowKey={(f) => f.id}
+                framed={false}
+              />
             )}
           </Section>
         </>
       )}
-    </>
+    </div>
   );
 }

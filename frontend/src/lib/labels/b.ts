@@ -24,6 +24,10 @@ export const bUi = {
     allKind: "Semua Jenis",
     viewDetail: "Lihat Detail",
     backToList: "Kembali ke Daftar",
+    listSubtitle: "Diurutkan berdasarkan skor ancaman tertinggi.",
+    filterGroup: "Filter alert",
+    listEmpty: "Belum ada alert.",
+    listEmptyFiltered: "Tidak ada alert dengan filter ini.",
 
     // Breakdown
     scoreBreakdown: "Rincian Skor Ancaman",
@@ -43,6 +47,11 @@ export const bUi = {
     postSnippet: "Cuplikan Postingan",
     detail: "Detail Teknis",
     noEvidence: "Belum ada bukti terlampir.",
+    evidenceShowAll: "Tampilkan semua",
+    evidenceShowFewer: "Tampilkan sebagian",
+    evidenceAccounts: "Akun terlibat",
+    evidenceYoung: "Akun baru",
+    evidenceSynced: "Posting serentak",
 
     // Actions & Timeline
     timeline: "Riwayat Penanganan",

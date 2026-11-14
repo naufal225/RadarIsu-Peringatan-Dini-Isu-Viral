@@ -13,6 +13,7 @@ const EMPTY: TopicFormValues = { name: "", category: "general", sensitivity: "me
 const CLOSED: TopicFormState = { open: false, topicId: null, values: EMPTY, errors: {}, pending: false, failed: false };
 
 const LIST: TopicsViewProps = {
+  coverage: null,
   result: { data: TOPICS },
   loading: false,
   failed: false,

@@ -7,3 +7,10 @@ export type { SpikeBaselineResponse, SpikePoint, SpikeSnapshot, SpikeStatus } fr
 
 /** GET /topics returns all topics, templates included (`is_template`), without pagination. */
 export type TopicList = { data: import("@/lib/topics").Topic[] };
+
+/** GET /topics/coverage: posting yang cocok dengan topik, total dan per topik. */
+export type TopicCoverage = {
+  posts_total: number;
+  posts_matched: number;
+  topics: { id: number; name: string; is_active: boolean; matched_posts: number }[];
+};

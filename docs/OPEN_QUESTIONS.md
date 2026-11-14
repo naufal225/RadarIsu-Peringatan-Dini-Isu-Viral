@@ -2,6 +2,26 @@
 
 Dicatat sesuai CLAUDE.md: konflik tidak ditebak. Keputusan dicatat di sini dan di PRD (riwayat perubahan).
 
+## Diputuskan 2026-11-14 (waktu deteksi negatif, logout)
+
+1. **Waktu deteksi negatif (#37).** Keputusan: nilai dibiarkan apa adanya di data, dan halaman Evaluasi menampilkannya sebagai "N sebelum insiden" tanpa tanda minus. Alasan: alert memang terdeteksi sebelum awal insiden di data. Menyembunyikannya akan mengubah hasil evaluasi.
+2. **Logout.** Tombol Keluar sebelumnya menahan spinner karena state `pending` tidak pernah dilepas saat navigasi lewat router. Keputusan: navigasi penuh ke `/login` setelah request logout, sehingga seluruh state klien dibuang.
+3. **Sentimen selalu netral (F5, PRD §9.4).** Temuan: skor dihitung sebagai rata-rata polaritas **semua** kata kamus yang cocok, termasuk 1.404 kata bernilai 0. Akibatnya satu kata positif di antara sekitar delapan kata cocok hanya memberi skor 0,125, sedangkan ambang positif/negatif 0,2. Di data demo, satu-satunya kata bermuatan adalah "waspada" (+1, 840 posting kampanye), dan seluruh 4.394 posting tetap netral. PRD tidak menjelaskan apakah kata netral ikut dihitung; ini konflik definisi.
+   - **Revisi (2026-11-14):** keputusan sebelumnya ("rata-rata hanya dari kata bermuatan") dibuat tanpa memeriksa tes. `tests/Unit/Sentiment/SentimentAnalyzerTest.php` mengunci rata-rata atas semua kata cocok, termasuk nol (`test_respects_threshold_boundaries`: satu kata +1 dari lima kata menghasilkan 0,20). Jadi perilaku itu disengaja. Polaritas "waspada" (+1) tetap perlu diverifikasi, karena secara makna lebih dekat ke peringatan.
+   - **Status (2026-11-14):** dikerjakan pilihan (b). Rata-rata hanya dari kata bermuatan; tes diperbarui; "waspada" diubah ke 0; metrik dibangun ulang. Di data demo tetap netral karena tidak ada kata bermuatan lain. Detail dan pengambilalihan domain C ada di HANDOFF. Evaluasi belum dijalankan ulang.
+
+## Diputuskan 2026-11-14 (tema Cyber, amendemen aturan UI)
+
+Diputuskan oleh pemilik fondasi UI. Amendemen ini menyentuh file bersama, jadi perlu review semua pemilik sebelum merge (OWNERSHIP).
+
+1. **Tema "Cyber" menggantikan "Lembar Situasi".** Tema gelap, aksen cyan, glow hanya untuk fokus dan alert kritis. Diubah di `CLAUDE.md` (Pekerjaan UI), `AGENTS.md`, `docs/UI_DESIGN_SYSTEM.md` §1–2, dan PRD v2.4.
+2. **Tetap dilarang:** gradien, donut/gauge, avatar, kartu KPI solid, dan warna hijau. Keputusan hijau dan gradien bisa dibuka lagi bila pemilik menginginkannya.
+3. **Agent boleh commit untuk pekerjaan UI** (`ui:`, tanpa atribusi AI). Push, stash, reset, rebase, dan force tetap dilarang.
+4. **Konflik yang belum selesai:**
+   - `docs/UI_WORKPLAN.md` §4 masih menulis agent tidak boleh commit. Belum diubah pada amendemen ini.
+   - Branch `update_ui` ada di remote dan berisi `bf19a6e` (Kadavi, restyle "Able Pro", 20 berkas). Branch ini tidak tercantum di UI_WORKPLAN §4. Pekerjaan Cyber dikerjakan di `feat/ui-cyber` dari `main` sebagai cadangan sesuai UI_WORKPLAN §4. Nasib `update_ui` ada di tangan pemilik branch.
+   - Token tema Cyber sudah di `globals.css` dan UI_DESIGN_SYSTEM §3 (kontras dihitung 2026-11-14). Kelas palet lama di halaman sudah dipindah ke token. Belum diverifikasi di browser: frontend dan backend tidak berjalan saat perubahan ini dibuat.
+
 ## Terbuka
 
 1. **Halaman alert:** dipindah dari Fase 8 ke Fase 5? Ini diusulkan agar alur triase bisa diuji lewat UI, tetapi belum diputuskan.

@@ -2,128 +2,159 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Button, ErrorText, Field, inputClass, Section, StatusBadge, Table, Td } from "@/components/ui";
-import { formatDateTime, formatDecimal } from "@/lib/format";
-import { describeRules, lookalikesQuery, type LookalikesResponse } from "@/lib/impersonation";
+import { DataTable, type DataTableColumn } from "@/components/radar/data-table";
+import { controlClass, Field } from "@/components/radar/form";
+import { Pagination } from "@/components/radar/pagination";
+import { Section } from "@/components/radar/section";
+import { Tag } from "@/components/radar/tag";
+import { ErrorState } from "@/components/radar/states";
+import { Waktu } from "@/components/radar/waktu";
+import { formatDecimal } from "@/lib/format";
+import { describeRules, lookalikesQuery, type Lookalike, type LookalikesResponse } from "@/lib/impersonation";
 import { alertStatusLabels, ui } from "@/lib/labels";
 import { type OfficialAccount } from "@/lib/topics";
 import { useApiData } from "@/lib/use-api-data";
 
 const copy = ui.impersonation.panel;
 
-/** Accounts that look like an official account right now, with the closest one and the rules that fired. Analysts only. */
+function columns(): DataTableColumn<Lookalike>[] {
+  return [
+    {
+      id: "account",
+      header: copy.columns.account,
+      cell: (item) => (
+        <>
+          <span className="block font-mono text-caption text-ink">{item.account.handle}</span>
+          {item.account.display_name && <span className="block text-caption text-ink-muted">{item.account.display_name}</span>}
+          <span className="block text-caption text-ink-muted">
+            {copy.firstSeenPrefix} <Waktu value={item.account.first_seen_at} />
+          </span>
+        </>
+      ),
+    },
+    {
+      id: "imitates",
+      header: copy.columns.imitates,
+      cell: (item) => (
+        <>
+          <span className="block font-mono text-caption text-ink">{item.official.handle}</span>
+          <span className="block text-caption text-ink-muted">{item.official.display_name}</span>
+          {item.other_matches.length > 0 && (
+            <span className="block text-caption text-ink-muted">{copy.otherMatches(item.other_matches.map((m) => m.handle).join(", "))}</span>
+          )}
+        </>
+      ),
+    },
+    {
+      id: "similarity",
+      header: copy.columns.similarity,
+      cell: (item) => (
+        <>
+          <span className="block font-semibold tabular-nums text-ink">{formatDecimal(item.similarity, 2, 2)}</span>
+          <span className="block text-caption text-ink-muted">{copy.comparedField(copy.field[item.field])}</span>
+          {item.same_name && <Tag tone="danger">{copy.sameName}</Tag>}
+        </>
+      ),
+    },
+    {
+      id: "rules",
+      header: copy.columns.rules,
+      cell: (item) => {
+        const rules = describeRules(item.rules);
+        if (rules.length === 0) return <span className="text-ink-muted">{copy.noRules}</span>;
+        return (
+          <ul className="list-inside list-disc text-caption">
+            {rules.map((rule) => (
+              <li key={rule}>{rule}</li>
+            ))}
+          </ul>
+        );
+      },
+    },
+    {
+      id: "age",
+      header: copy.columns.age,
+      cell: (item) => (
+        <>
+          {item.young && <Tag tone="warn">{copy.young}</Tag>}
+          <span className="mt-1 block text-caption text-ink-muted">
+            {item.age_days === null ? copy.ageUnknown : copy.ageDays(item.age_days)}
+          </span>
+        </>
+      ),
+    },
+    {
+      id: "alert",
+      header: copy.columns.alert,
+      cell: (item) =>
+        item.alert === null ? (
+          <span className="text-caption text-ink-muted">{copy.noAlert}</span>
+        ) : (
+          <Link href={`/alerts/${item.alert.id}`} className="text-caption text-brand underline-offset-2 hover:underline">
+            {copy.viewAlert} · {alertStatusLabels[item.alert.status as keyof typeof alertStatusLabels] ?? item.alert.status}
+          </Link>
+        ),
+    },
+  ];
+}
+
+/** Akun yang tampak mirip akun resmi saat ini, dengan akun resmi terdekat dan aturan yang terpicu. Hanya analis. */
 export function LookalikesPanel() {
   const [page, setPage] = useState(1);
   const [officialId, setOfficialId] = useState<number | null>(null);
   const officials = useApiData<{ data: OfficialAccount[] }>("official-accounts");
-  const { data, error } = useApiData<LookalikesResponse>(`official-accounts/lookalikes?${lookalikesQuery(page, officialId)}`);
+  const { data, error, reload } = useApiData<LookalikesResponse>(`official-accounts/lookalikes?${lookalikesQuery(page, officialId)}`);
 
   return (
-    <Section title={copy.title}>
-      <p className="mb-3 max-w-3xl text-sm text-neutral-600">{copy.intro}</p>
-      <ErrorText>{error ? ui.common.loadError : null}</ErrorText>
-
-      <div className="mb-4 max-w-xs">
-        <Field label={copy.filterOfficial}>
-          <select
-            name="official_account_id"
-            value={officialId ?? ""}
-            onChange={(e) => {
-              setOfficialId(e.target.value === "" ? null : Number(e.target.value));
-              setPage(1);
-            }}
-            className={inputClass}
-          >
-            <option value="">{copy.allOfficials}</option>
-            {(officials.data?.data ?? []).map((official) => (
-              <option key={official.id} value={official.id}>
-                {official.handle}
-              </option>
-            ))}
-          </select>
-        </Field>
-      </div>
-
-      {data === null ? (
-        <p className="text-sm text-neutral-500">{ui.loading}</p>
+    <Section title={copy.title} description={copy.intro}>
+      {error ? (
+        <ErrorState onRetry={reload} />
+      ) : data === null ? (
+        <p className="text-table text-ink-muted">{ui.loading}</p>
       ) : data.meta.officials_count === 0 ? (
-        <p className="text-sm text-neutral-500">{copy.noOfficials}</p>
+        <p className="text-table text-ink-muted">{copy.noOfficials}</p>
       ) : (
-        <>
-          <p className="mb-3 text-xs text-neutral-500">
-            {copy.asOf(formatDateTime(data.meta.as_of))} · {copy.window(formatDateTime(data.meta.window.from), formatDateTime(data.meta.window.to))} ·{" "}
-            {copy.officialsCount(data.meta.officials_count)}
-          </p>
+        <div className="space-y-4">
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div className="w-full max-w-xs">
+              <Field label={copy.filterOfficial}>
+                <select
+                  name="official_account_id"
+                  value={officialId ?? ""}
+                  onChange={(e) => {
+                    setOfficialId(e.target.value === "" ? null : Number(e.target.value));
+                    setPage(1);
+                  }}
+                  className={controlClass}
+                >
+                  <option value="">{copy.allOfficials}</option>
+                  {(officials.data?.data ?? []).map((official) => (
+                    <option key={official.id} value={official.id}>
+                      {official.handle}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+            </div>
+            <p className="text-caption text-ink-muted">
+              {copy.asOfPrefix} <Waktu value={data.meta.as_of} /> · {copy.windowFrom} <Waktu value={data.meta.window.from} />{" "}
+              {copy.windowTo} <Waktu value={data.meta.window.to} /> · {copy.officialsCount(data.meta.officials_count)}
+            </p>
+          </div>
 
-          {data.data.length === 0 ? (
-            <p className="text-sm text-neutral-500">{copy.empty}</p>
-          ) : (
-            <>
-              <Table head={[copy.columns.account, copy.columns.imitates, copy.columns.similarity, copy.columns.rules, copy.columns.age, copy.columns.alert]}>
-                {data.data.map((item) => {
-                  const rules = describeRules(item.rules);
-                  return (
-                    <tr key={item.account.id}>
-                      <Td>
-                        <span className="font-mono text-xs">{item.account.handle}</span>
-                        {item.account.display_name && <div className="text-xs text-neutral-500">{item.account.display_name}</div>}
-                        <div className="text-xs text-neutral-400">{copy.firstSeen(formatDateTime(item.account.first_seen_at))}</div>
-                      </Td>
-                      <Td>
-                        <span className="font-mono text-xs">{item.official.handle}</span>
-                        <div className="text-xs text-neutral-500">{item.official.display_name}</div>
-                        {item.other_matches.length > 0 && (
-                          <div className="text-xs text-neutral-400">{copy.otherMatches(item.other_matches.map((m) => m.handle).join(", "))}</div>
-                        )}
-                      </Td>
-                      <Td>
-                        <strong>{formatDecimal(item.similarity, 2, 2)}</strong>
-                        <div className="text-xs text-neutral-500">{copy.comparedField(copy.field[item.field])}</div>
-                        {item.same_name && <StatusBadge tone="error">{copy.sameName}</StatusBadge>}
-                      </Td>
-                      <Td className="text-xs">
-                        {rules.length === 0 ? (
-                          <span className="text-neutral-500">{copy.noRules}</span>
-                        ) : (
-                          <ul className="list-inside list-disc">
-                            {rules.map((rule) => (
-                              <li key={rule}>{rule}</li>
-                            ))}
-                          </ul>
-                        )}
-                      </Td>
-                      <Td>
-                        {item.young && <StatusBadge tone="warn">{copy.young}</StatusBadge>}
-                        <div className="text-xs text-neutral-500">{item.age_days === null ? copy.ageUnknown : copy.ageDays(item.age_days)}</div>
-                      </Td>
-                      <Td>
-                        {item.alert === null ? (
-                          <span className="text-xs text-neutral-500">{copy.noAlert}</span>
-                        ) : (
-                          <Link href={`/alerts/${item.alert.id}`} className="text-xs underline">
-                            {copy.viewAlert} · {alertStatusLabels[item.alert.status as keyof typeof alertStatusLabels] ?? item.alert.status}
-                          </Link>
-                        )}
-                      </Td>
-                    </tr>
-                  );
-                })}
-              </Table>
+          <DataTable
+            caption={copy.title}
+            columns={columns()}
+            rows={data.data}
+            getRowKey={(item) => item.account.id}
+            framed={false}
+            empty={<p className="text-table text-ink-muted">{copy.empty}</p>}
+          />
 
-              <div className="mt-3 flex items-center gap-3 text-sm">
-                <Button disabled={data.meta.current_page <= 1} onClick={() => setPage((p) => p - 1)}>
-                  {ui.common.previous}
-                </Button>
-                <span>
-                  {ui.common.page} {data.meta.current_page} / {data.meta.last_page} · {data.meta.total}
-                </span>
-                <Button disabled={data.meta.current_page >= data.meta.last_page} onClick={() => setPage((p) => p + 1)}>
-                  {ui.common.next}
-                </Button>
-              </div>
-            </>
+          {data.meta.last_page > 1 && (
+            <Pagination page={data.meta.current_page} perPage={data.meta.per_page} total={data.meta.total} onPageChange={setPage} />
           )}
-        </>
+        </div>
       )}
     </Section>
   );

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { LabelingView } from "@/components/labeling/labeling-view";
 import { api } from "@/lib/api";
-import type { LabelingPost, LabelingResponse, LabelingStatusFilter, ManualLabel } from "@/lib/api-types/labeling";
+import type { LabelingDaily, LabelingPost, LabelingResponse, LabelingStatusFilter, ManualLabel } from "@/lib/api-types/labeling";
 import { labelingQuery } from "@/lib/labeling";
 import { ui } from "@/lib/labels";
 import { useApiData } from "@/lib/use-api-data";
@@ -16,6 +16,8 @@ export function LabelingData() {
   const { data, error, loading, reload } = useApiData<LabelingResponse>(labelingQuery({ status, simulatedOnly, page }));
   const [busyId, setBusyId] = useState<number | null>(null);
   const [rowError, setRowError] = useState<{ id: number; text: string } | null>(null);
+  // Sebaran harian hanya pelengkap: gagal diam-diam, antrean tetap jalan.
+  const daily = useApiData<{ data: LabelingDaily[] }>("labeling/daily").data?.data ?? null;
 
   async function label(post: LabelingPost, value: ManualLabel | null) {
     setBusyId(post.id);
@@ -50,6 +52,7 @@ export function LabelingData() {
       busyId={busyId}
       rowError={rowError}
       onLabel={label}
+      daily={daily}
     />
   );
 }

@@ -81,3 +81,12 @@ export function filterErrors(body: { errors?: Record<string, string[]> } | null)
   for (const key of ["user_id", "action", "from", "to"] as const) if (errors[key]?.length) out[key] = errors[key];
   return out;
 }
+
+/** Query ringkasan audit: hanya rentang tanggal, karena ringkasan tidak dipengaruhi filter pengguna atau aksi. */
+export function auditSummaryQuery(filters: { from: string; to: string }): string {
+  const params = new URLSearchParams();
+  if (filters.from) params.set("from", filters.from);
+  if (filters.to) params.set("to", filters.to);
+  const query = params.toString();
+  return query ? `audit-logs/summary?${query}` : "audit-logs/summary";
+}

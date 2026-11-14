@@ -26,6 +26,8 @@ const base: ReplayViewProps = {
   actionErrors: [],
   upload: EMPTY_UPLOAD,
   onUpload: noop,
+  composition: null,
+  trend: { series: null, failed: false, clockNow: null },
 };
 const render = (props: Partial<ReplayViewProps> = {}) => renderToString(createElement(ReplayView, { ...base, ...props }));
 
@@ -76,15 +78,30 @@ describe("ReplayView", () => {
     expect(render({ speed: "0" })).toContain(ui.replay.invalidSpeed);
     const upload = render({ upload: { ...EMPTY_UPLOAD, file: ["invalid_rows"], rows: [{ line: "2", code: "invalid_phase" }] } });
     expect(upload).toContain("Ada baris yang tidak valid");
-    expect(upload).toContain("phase harus baseline atau incident");
+    expect(upload).toContain("Kolom phase harus berisi baseline atau incident");
   });
 
   it("names a stop caused by a lost heartbeat as an error", () => {
-    expect(render({ selectedId: 3 })).toContain("Pekerja antrean replay berhenti");
+    expect(render({ selectedId: 3 })).toContain("Proses Replay berhenti memberi kabar");
   });
 
   it("states that there are no scenarios yet and marks every row as simulated", () => {
     expect(render({ result: REPLAY_LIST_EMPTY, selectedId: null })).toContain(ui.replay.empty);
     expect(render().match(/DATA SIMULASI/g)?.length).toBeGreaterThanOrEqual(3);
+  });
+
+  it("shows the per-minute bars with the total only while the data clock is running", () => {
+    const series = [
+      { t: "2026-10-28T09:00:00.000Z", count: 4 },
+      { t: "2026-10-28T09:01:00.000Z", count: 0 },
+      { t: "2026-10-28T09:02:00.000Z", count: 7 },
+    ];
+    const live = render({ trend: { series, failed: false, clockNow: "2026-10-28T09:02:30.000Z" } });
+    expect(live).toContain("Posting per menit data");
+    expect(live).toContain("Jam data");
+    expect(live).toContain("posting sejauh ini");
+
+    const idle = render();
+    expect(idle).not.toContain("Posting per menit data");
   });
 });

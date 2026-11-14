@@ -10,6 +10,7 @@ import { LabelingView, type LabelingViewProps } from "./labeling-view";
 
 const noop = () => undefined;
 const base: LabelingViewProps = {
+  daily: null,
   result: LABELING_PAGE,
   loading: false,
   failed: false,

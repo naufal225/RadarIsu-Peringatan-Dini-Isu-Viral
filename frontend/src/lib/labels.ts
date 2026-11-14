@@ -197,6 +197,11 @@ export const ui = {
 
   adminStatus: {
     title: "Status sistem",
+    sentimentTitle: "Sebaran sentimen posting",
+    sentimentPositive: "Positif",
+    sentimentNegative: "Negatif",
+    sentimentNeutral: "Netral",
+    sentimentOnlyNeutral: "Semua posting netral. Kamus sentimen belum menangkap sinyal pada data ini.",
     sources: "Kesehatan sumber",
     queue: "Antrean",
     pendingJobs: "Job menunggu",

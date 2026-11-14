@@ -13,7 +13,8 @@ import { SimBadge, SimulationBanner } from "@/components/radar/simulation";
 import { SkeletonCard } from "@/components/radar/skeleton";
 import { EmptyState } from "@/components/radar/states";
 import { Waktu } from "@/components/radar/waktu";
-import type { ReplayListResponse, ReplayScenario, ReplayStatus } from "@/lib/api-types/replay";
+import type { ReplayComposition, ReplayListResponse, ReplayScenario, ReplayStatus } from "@/lib/api-types/replay";
+import { StackedMeter } from "@/components/radar/meter";
 import { cn } from "@/lib/cn";
 import { formatInteger } from "@/lib/format";
 import { describeErrorCode, ui } from "@/lib/labels";
@@ -123,6 +124,14 @@ export type ReplayViewProps = {
   actionErrors: string[];
   upload: UploadState;
   onUpload: (form: FormData) => void;
+  /** Komposisi baris skenario yang terpilih; null saat memuat atau gagal. */
+  composition: ReplayComposition | null;
+  /** Posting per menit data selama Replay; null bila skenario tidak sedang berjalan. */
+  trend: {
+    series: { t: string; count: number }[] | null;
+    failed: boolean;
+    clockNow: string | null;
+  };
 };
 
 /**
@@ -177,7 +186,8 @@ export function ReplayView(props: ReplayViewProps) {
       <PageHeader title={copy.title} subtitle={copy.subtitle} meta={clock ? copy.dataClockNote : copy.clockIdle} />
 
       <div className={cn("grid items-start gap-x-6", showControls && "xl:grid-cols-12")}>
-        <Section title={copy.scenarios} flush className={cn(showControls && "xl:col-span-7")}>
+        <div className={cn("min-w-0", showControls && "xl:col-span-7")}>
+        <Section title={copy.scenarios} flush>
           <DataTable
             framed={false}
             columns={columns}
@@ -190,6 +200,8 @@ export function ReplayView(props: ReplayViewProps) {
             empty={<EmptyState title={copy.empty} />}
           />
         </Section>
+        <ReplayTrendPanel trend={props.trend} />
+        </div>
 
         {showControls && (
           <Section title={copy.controls} className="xl:sticky xl:top-6 xl:col-span-5">
@@ -212,10 +224,6 @@ export function ReplayView(props: ReplayViewProps) {
           <FormatGuide />
         </div>
       </Section>
-
-      <p className="text-caption text-ink-muted">
-        {copy.workers} <code className="rounded-badge bg-hover px-1.5 py-0.5 font-mono text-ink">{copy.workersCommand}</code>
-      </p>
     </>
   );
 }
@@ -232,6 +240,7 @@ function Controls({
   onConfirm,
   actionPending,
   actionErrors,
+  composition,
 }: ReplayViewProps & { scenario: ReplayScenario; running: ReplayScenario | null }) {
   const anotherRunning = !!running && running.id !== scenario.id;
   const action = availableAction(scenario, anotherRunning);
@@ -284,6 +293,8 @@ function Controls({
           </>
         )}
       </dl>
+
+      <CompositionPanel composition={composition} />
 
       {scenario.error && (
         <p className="flex items-start gap-1.5 text-table text-sev-high">
@@ -342,6 +353,115 @@ function Controls({
         onClose={onCancel}
       />
     </div>
+  );
+}
+
+/** Komposisi baris skenario: fase (baseline vs incident) dan label manual, dalam dua batang bertumpuk. */
+function CompositionPanel({ composition }: { composition: ReplayComposition | null }) {
+  if (composition === null || composition.total === 0) return null;
+  const phases = [
+    { name: copy.composition.baseline, value: composition.phases.baseline, tone: "bg-line-input" },
+    { name: copy.composition.incident, value: composition.phases.incident, tone: "bg-sev-medium" },
+  ];
+  const labels = [
+    { name: copy.composition.organic, value: composition.labels.organic, tone: "bg-brand" },
+    { name: copy.composition.anomalous, value: composition.labels.anomalous, tone: "bg-sev-high" },
+    { name: copy.composition.unlabeled, value: composition.labels.unlabeled, tone: "bg-line-input" },
+  ];
+  return (
+    <div className="space-y-3 border-t border-line pt-4">
+      <h3 className="text-table font-semibold text-ink">{copy.composition.title}</h3>
+      <div className="space-y-2">
+        <p className="text-caption text-ink-muted">{copy.composition.phases}</p>
+        <StackedMeter parts={phases} label={copy.composition.phases} />
+        <ul className="flex flex-wrap gap-x-4 text-caption text-ink">
+          {phases.map((p) => (
+            <li key={p.name}>
+              {p.name}: <span className="font-mono tabular-nums">{formatInteger(p.value)}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+      <div className="space-y-2">
+        <p className="text-caption text-ink-muted">{copy.composition.labels}</p>
+        <StackedMeter parts={labels} label={copy.composition.labels} />
+        <ul className="flex flex-wrap gap-x-4 text-caption text-ink">
+          {labels.map((l) => (
+            <li key={l.name}>
+              {l.name}: <span className="font-mono tabular-nums">{formatInteger(l.value)}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Grafik volume selama Replay. Jam data maju bersama polling; jam di luar yang sudah berlalu tidak digambar.
+ * Tanpa skenario yang berjalan, panel tidak tampil.
+ */
+/** Batang grafik dibatasi agar tidak melebar; bila menit lebih banyak, beberapa menit digabung dalam satu batang. */
+const TREND_BARS = 120;
+
+function binSizeFor(minutes: number): number {
+  return Math.max(1, Math.ceil(minutes / TREND_BARS));
+}
+
+/** Satu batang per menit (atau per beberapa menit bila data panjang). Total ditampilkan di atas. */
+function TrendBars({ series }: { series: { t: string; count: number }[] }) {
+  const size = binSizeFor(series.length);
+  const bins: { t: string; count: number }[] = [];
+  for (let i = 0; i < series.length; i += size) {
+    const slice = series.slice(i, i + size);
+    bins.push({ t: slice[0].t, count: slice.reduce((sum, p) => sum + p.count, 0) });
+  }
+  const total = series.reduce((sum, p) => sum + p.count, 0);
+  const peak = Math.max(1, ...bins.map((b) => b.count));
+  return (
+    <div className="space-y-2">
+      <p className="text-table text-ink">
+        <span className="font-mono tabular-nums">{formatInteger(total)}</span> <span className="text-ink-muted">{copy.trend.total}</span>
+      </p>
+      <div className="flex h-28 w-full items-end gap-px overflow-hidden" role="img" aria-label={`${copy.trend.title}: ${total}`}>
+        {bins.map((b, i) => (
+          // Kunci per posisi, bukan per waktu: batang yang sama berpindah tinggi (animasi), tidak dibuat ulang.
+          <span
+            key={i}
+            className="min-w-0 flex-1 rounded-t-sm bg-brand transition-[height] duration-300 ease-out"
+            style={{ height: `${(b.count / peak) * 100}%`, minHeight: b.count > 0 ? "2px" : "0" }}
+            title={`${b.t}: ${b.count}`}
+          />
+        ))}
+      </div>
+      <p className="text-caption text-ink-muted">{copy.trend.binNote(size)}</p>
+    </div>
+  );
+}
+
+function ReplayTrendPanel({ trend }: { trend: ReplayViewProps["trend"] }) {
+  if (trend.series === null && !trend.failed) return null;
+
+  return (
+    <Section
+      title={copy.trend.title}
+      actions={
+        <span className="text-caption text-ink-muted">
+          {trend.clockNow === null ? copy.trend.lastRun : <>{copy.trend.dataClock} <Waktu value={trend.clockNow} /></>}
+        </span>
+      }
+    >
+      {trend.failed ? (
+        <p className="text-table text-sev-high">{ui.common.loadError}</p>
+      ) : trend.series === null ? (
+        <SkeletonCard framed={false} />
+      ) : trend.series.every((p) => p.count === 0) ? (
+        <p className="text-table text-ink-muted">{copy.trend.empty}</p>
+      ) : (
+        <TrendBars series={trend.series} />
+      )}
+      <p className="text-caption text-ink-muted">{copy.trend.note}</p>
+    </Section>
   );
 }
 

@@ -10,6 +10,7 @@ import { ui } from "@/lib/labels";
 const noop = () => undefined;
 
 const BASE: LabelingViewProps = {
+  daily: null,
   result: LABELING_PAGE,
   loading: false,
   failed: false,

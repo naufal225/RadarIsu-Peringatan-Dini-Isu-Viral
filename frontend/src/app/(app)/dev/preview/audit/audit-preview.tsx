@@ -33,6 +33,7 @@ export function AuditPreview() {
           <h2 className="mb-4 text-section font-semibold text-ink-muted">{title}</h2>
           <AuditView
             result={null}
+            summary={null}
             loading={false}
             failed={false}
             onRetry={noop}

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { describeErrorCode, ui } from "./labels";
 import { replayErrorCodes, replayStatusLabels } from "./labels/replay";
-import { isRunning, isValidSpeed, progressPercent, statusTone } from "./replay";
+import { isRunning, isValidSpeed, progressPercent, speedInputValue, statusTone } from "./replay";
 
 describe("progressPercent", () => {
   it("is a whole percent of the delivered rows", () => {
@@ -53,7 +53,23 @@ describe("replay labels", () => {
 
   it("has no empty text", () => {
     const copy = ui.replay;
-    const strings = [copy.title, copy.intro, copy.workers, copy.clockIdle, copy.empty, ...Object.values(copy.columns), ...Object.values(replayErrorCodes), copy.upload.format];
+    const strings = [copy.title, copy.intro, copy.clockIdle, copy.empty, ...Object.values(copy.columns), ...Object.values(replayErrorCodes), copy.upload.format];
     for (const text of strings) expect(text.trim()).not.toBe("");
+  });
+});
+
+describe("speedInputValue", () => {
+  it("uses the scenario default until the user edits the field", () => {
+    expect(speedInputValue(null, 600)).toBe("600");
+    expect(speedInputValue(null, null)).toBe("");
+  });
+
+  it("keeps the field empty when the user clears it instead of reverting to the default", () => {
+    expect(speedInputValue("", 600)).toBe("");
+    expect(isValidSpeed(speedInputValue("", 600))).toBe(false);
+  });
+
+  it("shows what the user typed", () => {
+    expect(speedInputValue("1", 600)).toBe("1");
   });
 });

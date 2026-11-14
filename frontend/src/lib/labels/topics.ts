@@ -11,6 +11,14 @@ export const topicCategoryLabels = {
 export const sensitivityLabels = { low: "Rendah", medium: "Sedang", high: "Tinggi" } as const;
 
 export const topicsUi = {
+  coverage: {
+    title: "Cakupan topik",
+    matched: "Posting cocok dengan topik",
+    of: "dari",
+    note: "Posting yang tidak cocok dengan topik mana pun tidak masuk grafik topik.",
+    perTopic: "Per topik",
+    inactive: "nonaktif",
+  },
   title: "Topik pantauan",
   intro:
     "Topik adalah kumpulan kata kunci yang dicari di postingan. Postingan yang memuat salah satu kata kunci sebagai kata atau frasa utuh dihitung ke topik itu, dan jumlahnya tampil per jam di grafik.",
@@ -56,8 +64,13 @@ export const topicsUi = {
     totalPosts: "Total posting",
     peakHour: "Jam puncak",
     hoursWithData: "Jam dengan data",
+    sentimentTitle: "Komposisi sentimen",
+    sentimentPositive: "Positif",
+    sentimentNegative: "Negatif",
+    sentimentNeutral: "Netral",
+    sentimentOnlyNeutral: "Semua posting pada rentang ini netral. Kamus sentimen belum menangkap sinyal pada data ini, sehingga angka sentimen belum bisa dibaca sebagai kondisi sebenarnya.",
     empty:
-      "Belum ada data pada rentang ini. Pastikan data sudah diimpor dan worker antrean berjalan (php artisan queue:work).",
+      "Belum ada data pada rentang ini. Data muncul setelah sumber diimpor dan diproses.",
     hourAxis: "Jam (waktu setempat)",
     volume: "Posting",
   },
