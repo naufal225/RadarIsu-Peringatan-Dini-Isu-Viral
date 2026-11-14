@@ -27,7 +27,7 @@ const base: ReplayViewProps = {
   upload: EMPTY_UPLOAD,
   onUpload: noop,
   composition: null,
-  trend: { series: null, failed: false, window: null, clockNow: null },
+  trend: { series: null, failed: false, clockNow: null },
 };
 const render = (props: Partial<ReplayViewProps> = {}) => renderToString(createElement(ReplayView, { ...base, ...props }));
 
@@ -90,18 +90,18 @@ describe("ReplayView", () => {
     expect(render().match(/DATA SIMULASI/g)?.length).toBeGreaterThanOrEqual(3);
   });
 
-  it("shows the growing volume chart only while the data clock is running", () => {
+  it("shows the per-minute bars with the total only while the data clock is running", () => {
     const series = [
-      { hour: "2026-10-28T08:00:00.000Z", volume: 4 },
-      { hour: "2026-10-28T09:00:00.000Z", volume: 7 },
+      { t: "2026-10-28T09:00:00.000Z", count: 4 },
+      { t: "2026-10-28T09:01:00.000Z", count: 0 },
+      { t: "2026-10-28T09:02:00.000Z", count: 7 },
     ];
-    const live = render({
-      trend: { series, failed: false, window: { start: "2026-10-28T09:00:00.000Z", end: "2026-10-28T09:30:00.000Z" }, clockNow: "2026-10-28T09:30:00.000Z" },
-    });
-    expect(live).toContain("Volume posting selama Replay");
+    const live = render({ trend: { series, failed: false, clockNow: "2026-10-28T09:02:30.000Z" } });
+    expect(live).toContain("Posting per menit data");
     expect(live).toContain("Jam data");
+    expect(live).toContain("posting sejauh ini");
 
     const idle = render();
-    expect(idle).not.toContain("Volume posting selama Replay");
+    expect(idle).not.toContain("Posting per menit data");
   });
 });

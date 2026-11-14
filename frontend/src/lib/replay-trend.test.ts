@@ -1,70 +1,50 @@
 import { describe, expect, it } from "vitest";
-import { incidentWindow, replayTrend, utcDay } from "./replay-trend";
-import type { HourlyMetric } from "./topics";
+import { minuteTrend } from "./replay-trend";
 
-function metric(hour: string, volume: number): HourlyMetric {
-  return {
-    hour,
-    volume,
-    positive_count: 0,
-    negative_count: 0,
-    neutral_count: volume,
-    unique_accounts: 0,
-    anomalous_accounts: 0,
-    source_count: 0,
-  } as HourlyMetric;
-}
+describe("minuteTrend", () => {
+  it("fills minutes without posts with zero between the first post and the data clock", () => {
+    const series = minuteTrend(
+      [
+        { t: "2026-11-10T09:00:00.000Z", count: 2 },
+        { t: "2026-11-10T09:02:00.000Z", count: 1 },
+      ],
+      new Date("2026-11-10T09:03:30Z"),
+    );
 
-describe("replayTrend", () => {
-  const anchor = new Date("2026-10-28T08:00:00Z");
+    expect(series.map((p) => p.count)).toEqual([2, 0, 1, 0]);
+    expect(series[0].t).toBe("2026-11-10T09:00:00.000Z");
+    expect(series.at(-1)?.t).toBe("2026-11-10T09:03:00.000Z");
+  });
 
-  it("sums volume across topics for the same hour", () => {
-    const a = [metric("2026-10-28T08:00:00Z", 5), metric("2026-10-28T09:00:00Z", 2)];
-    const b = [metric("2026-10-28T08:00:00Z", 3)];
-    const series = replayTrend([a, b], anchor, new Date("2026-10-28T09:30:00Z"));
+  it("does not show posts later than the data clock", () => {
+    const series = minuteTrend(
+      [
+        { t: "2026-11-10T09:00:20Z", count: 3 },
+        { t: "2026-11-10T09:05:00Z", count: 9 },
+      ],
+      new Date("2026-11-10T09:01:10Z"),
+    );
 
     expect(series).toEqual([
-      { hour: "2026-10-28T08:00:00.000Z", volume: 8 },
-      { hour: "2026-10-28T09:00:00.000Z", volume: 2 },
+      { t: "2026-11-10T09:00:00.000Z", count: 3 },
+      { t: "2026-11-10T09:01:00.000Z", count: 0 },
     ]);
   });
 
-  it("fills hours without metric rows with zero", () => {
-    const series = replayTrend([[metric("2026-10-28T08:00:00Z", 4)]], anchor, new Date("2026-10-28T10:00:00Z"));
+  it("merges several rows in the same minute", () => {
+    const series = minuteTrend(
+      [
+        { t: "2026-11-10T09:00:05Z", count: 1 },
+        { t: "2026-11-10T09:00:40Z", count: 4 },
+      ],
+      new Date("2026-11-10T09:00:59Z"),
+    );
 
-    expect(series.map((p) => p.volume)).toEqual([4, 0, 0]);
+    expect(series).toEqual([{ t: "2026-11-10T09:00:00.000Z", count: 5 }]);
   });
 
-  it("stops at the current data hour, so later hours do not appear early", () => {
-    const rows = [metric("2026-10-28T08:00:00Z", 1), metric("2026-10-28T11:00:00Z", 99)];
-    const series = replayTrend([rows], anchor, new Date("2026-10-28T09:59:59Z"));
-
-    expect(series.at(-1)?.hour).toBe("2026-10-28T09:00:00.000Z");
-    expect(series.some((p) => p.volume === 99)).toBe(false);
-  });
-
-  it("returns an empty series before the anchor hour", () => {
-    expect(replayTrend([], anchor, new Date("2026-10-28T07:00:00Z"))).toEqual([]);
-  });
-});
-
-describe("incidentWindow", () => {
-  it("starts at anchor plus incident offset and ends at the current data time", () => {
-    expect(incidentWindow("2026-10-28T08:00:00Z", 3600, "2026-10-28T10:30:00Z")).toEqual({
-      start: "2026-10-28T09:00:00.000Z",
-      end: "2026-10-28T10:30:00.000Z",
-    });
-  });
-
-  it("is null while the incident has not started or inputs are missing", () => {
-    expect(incidentWindow("2026-10-28T08:00:00Z", 3600, "2026-10-28T08:30:00Z")).toBeNull();
-    expect(incidentWindow(null, 3600, "2026-10-28T10:00:00Z")).toBeNull();
-    expect(incidentWindow("2026-10-28T08:00:00Z", null, "2026-10-28T10:00:00Z")).toBeNull();
-  });
-});
-
-describe("utcDay", () => {
-  it("formats the UTC calendar day used by the metrics query", () => {
-    expect(utcDay(new Date("2026-10-28T23:30:00Z"))).toBe("2026-10-28");
+  it("is empty while nothing has arrived yet", () => {
+    expect(minuteTrend([], new Date("2026-11-10T09:00:00Z"))).toEqual([]);
+    expect(minuteTrend([{ t: "2026-11-10T10:00:00Z", count: 1 }], new Date("2026-11-10T09:00:00Z"))).toEqual([]);
   });
 });

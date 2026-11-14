@@ -12,11 +12,9 @@ import { Section } from "@/components/radar/section";
 import { SimBadge, SimulationBanner } from "@/components/radar/simulation";
 import { SkeletonCard } from "@/components/radar/skeleton";
 import { EmptyState } from "@/components/radar/states";
-import { SignalChart } from "@/components/charts/signal-chart";
 import { Waktu } from "@/components/radar/waktu";
 import type { ReplayComposition, ReplayListResponse, ReplayScenario, ReplayStatus } from "@/lib/api-types/replay";
 import { StackedMeter } from "@/components/radar/meter";
-import type { SignalPoint } from "@/lib/signal-chart";
 import { cn } from "@/lib/cn";
 import { formatInteger } from "@/lib/format";
 import { describeErrorCode, ui } from "@/lib/labels";
@@ -128,11 +126,10 @@ export type ReplayViewProps = {
   onUpload: (form: FormData) => void;
   /** Komposisi baris skenario yang terpilih; null saat memuat atau gagal. */
   composition: ReplayComposition | null;
-  /** Grafik volume yang tumbuh selama Replay; null bila skenario tidak sedang berjalan. */
+  /** Posting per menit data selama Replay; null bila skenario tidak sedang berjalan. */
   trend: {
-    series: SignalPoint[] | null;
+    series: { t: string; count: number }[] | null;
     failed: boolean;
-    window: { start: string; end: string } | null;
     clockNow: string | null;
   };
 };
@@ -404,6 +401,43 @@ function CompositionPanel({ composition }: { composition: ReplayComposition | nu
  * Grafik volume selama Replay. Jam data maju bersama polling; jam di luar yang sudah berlalu tidak digambar.
  * Tanpa skenario yang berjalan, panel tidak tampil.
  */
+/** Batang grafik dibatasi agar tidak melebar; bila menit lebih banyak, beberapa menit digabung dalam satu batang. */
+const TREND_BARS = 120;
+
+function binSizeFor(minutes: number): number {
+  return Math.max(1, Math.ceil(minutes / TREND_BARS));
+}
+
+/** Satu batang per menit (atau per beberapa menit bila data panjang). Total ditampilkan di atas. */
+function TrendBars({ series }: { series: { t: string; count: number }[] }) {
+  const size = binSizeFor(series.length);
+  const bins: { t: string; count: number }[] = [];
+  for (let i = 0; i < series.length; i += size) {
+    const slice = series.slice(i, i + size);
+    bins.push({ t: slice[0].t, count: slice.reduce((sum, p) => sum + p.count, 0) });
+  }
+  const total = series.reduce((sum, p) => sum + p.count, 0);
+  const peak = Math.max(1, ...bins.map((b) => b.count));
+  return (
+    <div className="space-y-2">
+      <p className="text-table text-ink">
+        <span className="font-mono tabular-nums">{formatInteger(total)}</span> <span className="text-ink-muted">{copy.trend.total}</span>
+      </p>
+      <div className="flex h-28 w-full items-end gap-px overflow-hidden" role="img" aria-label={`${copy.trend.title}: ${total}`}>
+        {bins.map((b) => (
+          <span
+            key={b.t}
+            className="min-w-0 flex-1 rounded-t-sm bg-brand"
+            style={{ height: `${(b.count / peak) * 100}%`, minHeight: b.count > 0 ? "2px" : "0" }}
+            title={`${b.t}: ${b.count}`}
+          />
+        ))}
+      </div>
+      <p className="text-caption text-ink-muted">{copy.trend.binNote(size)}</p>
+    </div>
+  );
+}
+
 function ReplayTrendPanel({ trend }: { trend: ReplayViewProps["trend"] }) {
   if (trend.clockNow === null) return null;
 
@@ -419,10 +453,10 @@ function ReplayTrendPanel({ trend }: { trend: ReplayViewProps["trend"] }) {
         <p className="text-table text-sev-high">{ui.common.loadError}</p>
       ) : trend.series === null ? (
         <SkeletonCard framed={false} />
-      ) : trend.series.every((p) => p.volume === 0) ? (
+      ) : trend.series.every((p) => p.count === 0) ? (
         <p className="text-table text-ink-muted">{copy.trend.empty}</p>
       ) : (
-        <SignalChart series={trend.series} window={trend.window ?? undefined} variant="compact" />
+        <TrendBars series={trend.series} />
       )}
       <p className="text-caption text-ink-muted">{copy.trend.note}</p>
     </div>

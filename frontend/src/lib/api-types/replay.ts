@@ -48,3 +48,9 @@ export type ReplayComposition = {
   phases: { baseline: number; incident: number };
   labels: { organic: number; anomalous: number; unlabeled: number };
 };
+
+/** GET /replay/scenarios/{id}/series?until=: posting run terakhir per menit posted_at (UTC). */
+export type ReplaySeries = {
+  run: number;
+  points: { t: string; count: number }[];
+};

@@ -87,9 +87,11 @@ export const replayUi = {
     unlabeled: "Belum berlabel",
   },
   trend: {
-    title: "Volume posting selama Replay",
+    title: "Posting per menit data",
     dataClock: "Jam data",
-    note: "Hanya jam yang sudah berlalu di jam data. Jam tanpa posting dihitung 0. Data simulasi.",
+    note: "Tumbuh mengikuti jam data selama Replay berjalan. Menit tanpa posting dihitung 0. Data simulasi.",
+    binNote: (minutes: number) => `Satu batang = ${minutes} menit jam data.`,
+    total: "posting sejauh ini",
     empty: "Belum ada posting yang masuk untuk skenario ini.",
   },
   percent: (n: number) => `${n}%`,
