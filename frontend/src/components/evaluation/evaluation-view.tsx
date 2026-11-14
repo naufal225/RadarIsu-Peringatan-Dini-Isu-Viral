@@ -12,6 +12,7 @@ import { EmptyState, ErrorState } from "@/components/radar/states";
 import { Waktu } from "@/components/radar/waktu";
 import { describeNote, f1Change, formatPercent, type EvaluationResponse, type EvaluationRun } from "@/lib/evaluation";
 import { ui } from "@/lib/labels";
+import { f1Trend } from "@/lib/insight";
 
 const copy = ui.evaluation;
 
@@ -45,6 +46,33 @@ const HISTORY_COLUMNS: DataTableColumn<HistoryRow>[] = [
   { id: "latency", header: copy.columns.latency, cell: (r) => latencyText(r.run) },
   { id: "by", header: copy.columns.by, cell: (r) => r.run.run_by ?? ui.common.none },
 ];
+
+/** Batang F1 per run, kronologis dari kiri. Lebar batang = F1 (0–100%); run tanpa F1 ditandai. */
+function F1Trend({ runs }: { runs: EvaluationRun[] }) {
+  const points = f1Trend(runs);
+  const measured = points.filter((p) => p.f1 !== null);
+  return (
+    <Section title={copy.trendTitle}>
+      {measured.length === 0 ? (
+        <p className="text-table text-ink-muted">{copy.trendNone}</p>
+      ) : (
+        <ol className="space-y-2">
+          {points.map((p, index) => (
+            <li key={p.id} className="grid grid-cols-[14rem_1fr_4rem] items-center gap-3 text-table">
+              <span className="whitespace-nowrap text-ink-muted">
+                <Waktu value={p.label} />
+              </span>
+              <span className="h-2 overflow-hidden rounded-badge bg-hover" role="img" aria-label={`Run ${index + 1}: ${formatPercent(p.f1)}`}>
+                {p.f1 !== null && <span className="block h-full bg-brand" style={{ width: `${Math.max(0, Math.min(1, p.f1)) * 100}%` }} />}
+              </span>
+              <span className="text-right font-mono tabular-nums text-ink">{formatPercent(p.f1)}</span>
+            </li>
+          ))}
+        </ol>
+      )}
+    </Section>
+  );
+}
 
 export type EvaluationViewProps = {
   data: EvaluationResponse | null;
@@ -135,6 +163,8 @@ export function EvaluationView({
               </ul>
             )}
           </Section>
+
+          <F1Trend runs={data.data} />
 
           <Section title={copy.history} flush>
             <DataTable

@@ -49,6 +49,9 @@ export const bUi = {
     noEvidence: "Belum ada bukti terlampir.",
     evidenceShowAll: "Tampilkan semua",
     evidenceShowFewer: "Tampilkan sebagian",
+    evidenceAccounts: "Akun terlibat",
+    evidenceYoung: "Akun baru",
+    evidenceSynced: "Posting serentak",
 
     // Actions & Timeline
     timeline: "Riwayat Penanganan",

@@ -56,6 +56,11 @@ export const topicsUi = {
     totalPosts: "Total posting",
     peakHour: "Jam puncak",
     hoursWithData: "Jam dengan data",
+    sentimentTitle: "Komposisi sentimen",
+    sentimentPositive: "Positif",
+    sentimentNegative: "Negatif",
+    sentimentNeutral: "Netral",
+    sentimentOnlyNeutral: "Semua posting pada rentang ini netral. Kamus sentimen belum menangkap sinyal pada data ini, sehingga angka sentimen belum bisa dibaca sebagai kondisi sebenarnya.",
     empty:
       "Belum ada data pada rentang ini. Data muncul setelah sumber diimpor dan diproses.",
     hourAxis: "Jam (waktu setempat)",

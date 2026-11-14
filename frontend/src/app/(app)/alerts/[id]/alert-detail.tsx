@@ -13,6 +13,7 @@ import { api, ApiError } from "@/lib/api";
 import { availableActions, type AlertActionKey } from "@/lib/alert-actions";
 import { summarizeEvidence } from "@/lib/coordination";
 import { cn } from "@/lib/cn";
+import { evidenceComposition } from "@/lib/insight";
 import { formatInteger } from "@/lib/format";
 import {
   alertActionLabels,
@@ -123,6 +124,27 @@ const EVIDENCE_COLUMNS: DataTableColumn<EvidenceItem>[] = [
     },
   },
 ];
+
+/** Ringkasan satu baris untuk bukti: berapa bukti, akun terlibat, akun baru, dan posting serentak. */
+function EvidenceSummary({ evidence }: { evidence: EvidenceItem[] }) {
+  const composition = evidenceComposition(evidence);
+  const items = [
+    { label: ui.alerts.evidence, value: composition.total },
+    { label: ui.alerts.evidenceAccounts, value: composition.accounts },
+    { label: ui.alerts.evidenceYoung, value: composition.youngAccounts },
+    { label: ui.alerts.evidenceSynced, value: composition.synchronizedAccounts },
+  ];
+  return (
+    <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      {items.map((item) => (
+        <div key={item.label} className="rounded-control border border-line bg-hover px-3 py-2">
+          <dt className="text-caption text-ink-muted">{item.label}</dt>
+          <dd className="font-mono text-section font-semibold tabular-nums text-ink">{formatInteger(item.value)}</dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
 
 function toneOf(severity: keyof typeof severityLabels): "danger" | "warn" | "muted" {
   if (severity === "high") return "danger";
@@ -288,6 +310,7 @@ export function AlertDetail({ id }: { id: number }) {
               <p className="text-table text-ink-muted">{ui.alerts.noEvidence}</p>
             ) : (
               <div className="space-y-3">
+                <EvidenceSummary evidence={alert.evidence} />
                 <DataTable
                   caption={ui.alerts.evidence}
                   columns={EVIDENCE_COLUMNS}
