@@ -4,6 +4,15 @@ Papan pengumuman untuk perubahan yang menyentuh domain lain, perubahan izin, dan
 
 ---
 
+## 2026-11-14: Sentimen (F5, domain C): rata-rata hanya dari kata bermuatan (branch `feat/ui-cyber`)
+
+- **Untuk Rekishi (C):** `SentimentAnalyzer::classify` kini menghitung skor sebagai rata-rata polaritas kata yang **bermuatan** (≠ 0). Kata netral tidak menurunkan skor. Sebelumnya satu kata positif di antara banyak kata netral tidak pernah mencapai ambang 0,2. Tes diperbarui (`SentimentAnalyzerTest`) dan ditambah satu tes untuk aturan baru.
+- Polaritas "waspada" di `resources/lexicon/id_sentiment.csv` diubah dari +1 ke 0. Kata itu peringatan, bukan pujian, dan sebelumnya membuat posting kampanye "Waspada!" berlabel positif. Ini keputusan yang perlu ditinjau pemilik kamus.
+- Data lokal dihitung ulang dan metrik dibangun ulang (`radarisu:aggregate --all`). Di data demo tidak ada perubahan label, karena satu-satunya kata bermuatan sudah 0. **Sentimen tetap netral di data demo.** Itu batasan data, bukan bug rumus.
+- **Pengambilalihan:** pekerjaan ini dilakukan oleh ketua kelompok atas nama tim. OWNERSHIP mensyaratkan perubahan kepemilikan lewat PR yang disetujui semua pemilik. Sampai itu, berkas domain C yang berubah tetap perlu direview Rekishi.
+
+---
+
 ## 2026-11-14: Tema Cyber (branch `feat/ui-cyber`, belum di-merge)
 
 - **Untuk semua pemilik:** nilai token di `globals.css` berganti ke tema gelap Cyber (tabel di `docs/UI_DESIGN_SYSTEM.md` §3). Tidak ada nama token yang berubah. Tambahan: `--glow-alert` dan kelas `shadow-glow-alert`, hanya untuk pin dan kartu alert severity tinggi.

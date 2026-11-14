@@ -98,10 +98,10 @@ class SentimentAnalyzerTest extends TestCase
             'e' => 0.0,
         ];
 
-        // 1/5 = 0.20 => threshold >= 0.2 => positive
+        // Kata netral tidak ikut dihitung: satu kata +1 di antara empat kata netral => skor 1.0.
         $result = SentimentAnalyzer::classify('a b c d e', $lexicon);
         $this->assertSame('positive', $result['label']);
-        $this->assertEquals(0.2, $result['score']);
+        $this->assertEquals(1.0, $result['score']);
 
         $lexiconNeg = [
             'a' => -1.0,
@@ -111,23 +111,37 @@ class SentimentAnalyzerTest extends TestCase
             'e' => 0.0,
         ];
 
-        // -1/5 = -0.20 => threshold <= -0.2 => negative
         $resultNeg = SentimentAnalyzer::classify('a b c d e', $lexiconNeg);
         $this->assertSame('negative', $resultNeg['label']);
-        $this->assertEquals(-0.2, $resultNeg['score']);
+        $this->assertEquals(-1.0, $resultNeg['score']);
 
-        // 0.19 => neutral
-        $lexiconMarginal = [
-            'pos' => 1.0,
-            'n1' => 0.0,
-            'n2' => 0.0,
-            'n3' => 0.0,
-            'n4' => 0.0,
-            'n5' => 0.0,
+        // Batas ambang pada bobot kata bermuatan tunggal.
+        $atThreshold = SentimentAnalyzer::classify('x', ['x' => 0.2]);
+        $this->assertSame('positive', $atThreshold['label']);
+        $this->assertEquals(0.2, $atThreshold['score']);
+
+        $belowThreshold = SentimentAnalyzer::classify('x', ['x' => 0.19]);
+        $this->assertSame('neutral', $belowThreshold['label']);
+    }
+
+    public function test_neutral_terms_do_not_dilute_the_score(): void
+    {
+        $lexicon = [
+            'bagus' => 1.0,
+            'warga' => 0.0,
+            'jadwal' => 0.0,
+            'institusi' => 0.0,
         ];
-        // 1 / 6 = 0.167 => neutral
-        $resultMarginal = SentimentAnalyzer::classify('pos n1 n2 n3 n4 n5', $lexiconMarginal);
-        $this->assertSame('neutral', $resultMarginal['label']);
+
+        $result = SentimentAnalyzer::classify('Warga menanyakan jadwal institusi, hasilnya bagus', $lexicon);
+        $this->assertSame('positive', $result['label']);
+        $this->assertEquals(1.0, $result['score']);
+
+        // Hanya kata netral yang cocok: label netral, tetapi kata yang cocok tetap tercatat.
+        $onlyNeutral = SentimentAnalyzer::classify('Warga menanyakan jadwal institusi', $lexicon);
+        $this->assertSame('neutral', $onlyNeutral['label']);
+        $this->assertEquals(0.0, $onlyNeutral['score']);
+        $this->assertArrayHasKey('warga', $onlyNeutral['matched_terms']);
     }
 
     public function test_handles_multi_word_terms_without_double_counting(): void

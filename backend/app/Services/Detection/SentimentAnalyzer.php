@@ -72,9 +72,19 @@ class SentimentAnalyzer
             ];
         }
 
-        $totalPolarity = array_sum($matchedTerms);
-        $count = count($matchedTerms);
-        $score = round($totalPolarity / $count, 3);
+        // Rata-rata hanya dari kata bermuatan (polaritas ≠ 0). Kata netral tidak menurunkan skor:
+        // tanpa ini satu kata positif di antara banyak kata netral tidak pernah mencapai ambang 0,2.
+        $polar = array_filter($matchedTerms, static fn (float $polarity): bool => $polarity !== 0.0);
+
+        if (empty($polar)) {
+            return [
+                'label' => 'neutral',
+                'score' => 0.0,
+                'matched_terms' => $matchedTerms,
+            ];
+        }
+
+        $score = round(array_sum($polar) / count($polar), 3);
 
         if ($score >= $posThreshold) {
             $label = 'positive';
