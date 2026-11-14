@@ -116,9 +116,9 @@ export function AlertList() {
       <ErrorText>{error ? ui.common.loadError : null}</ErrorText>
 
       {result === null ? (
-        <p className="text-sm text-neutral-500">{ui.loading}</p>
+        <p className="text-sm text-ink-muted">{ui.loading}</p>
       ) : result.data.length === 0 ? (
-        <p className="text-sm text-neutral-500">{ui.common.empty}</p>
+        <p className="text-sm text-ink-muted">{ui.common.empty}</p>
       ) : (
         <>
           <Table
@@ -134,7 +134,7 @@ export function AlertList() {
             ]}
           >
             {result.data.map((alert) => (
-              <tr key={alert.id} className="hover:bg-neutral-50">
+              <tr key={alert.id} className="hover:bg-hover">
                 <Td className="font-mono text-xs">#{alert.id}</Td>
                 <Td className="font-medium">
                   {alert.topic?.name ?? alert.subject_account?.handle ?? ui.common.none}
@@ -151,13 +151,13 @@ export function AlertList() {
                     {alertStatusLabels[alert.status] ?? alert.status}
                   </StatusBadge>
                 </Td>
-                <Td className="whitespace-nowrap text-xs text-neutral-500">
+                <Td className="whitespace-nowrap text-xs text-ink-muted">
                   {formatDateTime(alert.detected_at)}
                 </Td>
                 <Td className="text-right">
                   <Link
                     href={`/alerts/${alert.id}`}
-                    className="inline-block rounded border border-neutral-300 px-2.5 py-1 text-xs font-medium hover:bg-neutral-100"
+                    className="inline-block rounded border border-line px-2.5 py-1 text-xs font-medium hover:bg-hover"
                   >
                     {ui.alerts.viewDetail}
                   </Link>

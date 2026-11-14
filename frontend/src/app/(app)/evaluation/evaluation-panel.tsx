@@ -22,7 +22,7 @@ export function EvaluationPanel() {
   return (
     <>
       <PageTitle>{copy.title}</PageTitle>
-      <p className="mb-4 max-w-3xl text-sm text-neutral-600">{copy.intro}</p>
+      <p className="mb-4 max-w-3xl text-sm text-ink-muted">{copy.intro}</p>
       <ErrorText>{error ? ui.common.loadError : null}</ErrorText>
 
       <Can permission="evaluation.run">
@@ -30,9 +30,9 @@ export function EvaluationPanel() {
       </Can>
 
       {data === null ? (
-        <p className="text-sm text-neutral-500">{ui.loading}</p>
+        <p className="text-sm text-ink-muted">{ui.loading}</p>
       ) : !latest ? (
-        <p className="text-sm text-neutral-500">{copy.empty}</p>
+        <p className="text-sm text-ink-muted">{copy.empty}</p>
       ) : (
         <>
           <Section title={copy.latest}>
@@ -42,9 +42,9 @@ export function EvaluationPanel() {
               <Metric label={copy.metrics.f1} value={formatPercent(latest.f1)} />
               <Metric label={copy.metrics.latency} value={latencyText(latest)} />
             </div>
-            <p className="text-sm text-neutral-600">{copy.counts(latest.tp, latest.fp, latest.fn, latest.labeled_posts)}</p>
+            <p className="text-sm text-ink-muted">{copy.counts(latest.tp, latest.fp, latest.fn, latest.labeled_posts)}</p>
             {latest.notes.map((note) => (
-              <p key={note} className="mt-1 text-xs text-amber-700">
+              <p key={note} className="mt-1 text-xs text-sev-medium">
                 {describeNote(note)}
               </p>
             ))}
@@ -77,7 +77,7 @@ export function EvaluationPanel() {
 
       <Section title={copy.limitsTitle}>
         <StatusBadge tone="muted">{ui.simulatedData}</StatusBadge>
-        <ul className="mt-2 max-w-3xl list-disc space-y-1 pl-5 text-sm text-neutral-700">
+        <ul className="mt-2 max-w-3xl list-disc space-y-1 pl-5 text-sm text-ink">
           {copy.limits.map((text) => (
             <li key={text}>{text}</li>
           ))}
@@ -89,8 +89,8 @@ export function EvaluationPanel() {
 
 function Metric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-md border border-neutral-200 p-3">
-      <div className="text-xs text-neutral-500">{label}</div>
+    <div className="rounded-md border border-line p-3">
+      <div className="text-xs text-ink-muted">{label}</div>
       <div className="text-xl font-semibold">{value}</div>
     </div>
   );
@@ -119,7 +119,7 @@ function RunForm({ scenarios, onDone }: { scenarios: { id: number; name: string 
     <div className="mb-6 flex flex-wrap items-end gap-3 text-sm">
       <label className="block">
         {copy.scenario}
-        <select value={scenarioId} onChange={(e) => setScenarioId(e.target.value)} className="ml-2 rounded-md border border-neutral-300 px-2 py-1">
+        <select value={scenarioId} onChange={(e) => setScenarioId(e.target.value)} className="ml-2 rounded-md border border-line px-2 py-1">
           <option value="">{copy.allLabeled}</option>
           {scenarios.map((s) => (
             <option key={s.id} value={s.id}>

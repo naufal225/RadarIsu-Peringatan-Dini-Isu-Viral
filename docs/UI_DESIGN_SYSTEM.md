@@ -41,7 +41,7 @@ Pelanggaran aturan ini ditolak saat review.
 
 ## 3. Token
 
-Sumber nilai: tabel ini. `frontend/src/app/globals.css` harus mencerminkannya persis. **Status 2026-11-14:** tabel ini sudah berisi nilai tema Cyber, tetapi `globals.css` masih nilai Lembar Situasi. Keduanya dipindah bersama saat migrasi halaman, karena komponen lama (`components/ui.tsx`, 7 berkas) dan 8 berkas dengan warna hardcoded akan rusak di tema gelap. Perubahan nilai lewat PR yang disetujui pemilik fondasi dan diumumkan di `HANDOFF.md`.
+Sumber nilai: tabel ini. `frontend/src/app/globals.css` harus mencerminkannya persis. **Status 2026-11-14:** `globals.css` sudah memakai nilai tema Cyber dari tabel ini. `components/ui.tsx` dan halaman yang masih memakai kelas palet lama sudah dipindah ke token. Pemeriksaan hex dan palet lama bersih. Perubahan nilai lewat PR yang disetujui pemilik fondasi dan diumumkan di `HANDOFF.md`.
 
 ### 3.1 Warna
 

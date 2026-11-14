@@ -4,6 +4,19 @@ Papan pengumuman untuk perubahan yang menyentuh domain lain, perubahan izin, dan
 
 ---
 
+## 2026-11-14: Tema Cyber (branch `feat/ui-cyber`, belum di-merge)
+
+- **Untuk semua pemilik:** nilai token di `globals.css` berganti ke tema gelap Cyber (tabel di `docs/UI_DESIGN_SYSTEM.md` §3). Tidak ada nama token yang berubah. Tambahan: `--glow-alert` dan kelas `shadow-glow-alert`, hanya untuk pin dan kartu alert severity tinggi.
+- **Perubahan di berkas milik domain lain** (direview lewat PR, sesuai CODEOWNERS):
+  - `alerts/[id]/alert-detail.tsx` dan `alerts/alert-list.tsx` (Kadavi): tata letak detail dibuat dua kolom dengan panel keputusan sticky. Aksi ditampilkan lewat `lib/alert-actions.ts` (`availableActions`, dengan tes). Perilaku, endpoint, dan pesan galat tidak berubah.
+  - `briefings/briefing-list.tsx` (Kadavi): hanya kelas warna.
+  - `admin/status/status-panel.tsx` (Rekishi): hanya kelas warna.
+  - `topics/[id]/coordination-panel.tsx`, `topics/lookalikes-panel.tsx`, `evaluation/evaluation-panel.tsx` (Naufal): hanya kelas warna.
+- **Untuk Rekishi dan Kadavi:** `components/ui.tsx` (lapisan lama) memakai token sekarang. Tidak ada tanda tangan komponen yang berubah.
+- Verifikasi: lint, tsc, 268 tes, dan build lulus. Belum diuji di browser.
+
+---
+
 ## 2026-10-27: BFF menjawab 503 bila Laravel tidak bisa dihubungi (branch `feat/ui-admin-sources`)
 
 - **Untuk semua pemilik halaman:** sebelumnya, bila Laravel mati atau tidak terjangkau, `POST /api/auth/login` dan semua `/api/*` gagal dengan 500 tanpa isi ("Internal Server Error"). Sekarang BFF menjawab **503** `{"message":"backend_unavailable","errors":{"server":["backend_unavailable"]}}`. Kode `backend_unavailable` sudah punya label di `errorCodeLabels`, jadi `describeErrorCode` menampilkannya. Halaman login menampilkan "Server RadarIsu tidak dapat dihubungi…".

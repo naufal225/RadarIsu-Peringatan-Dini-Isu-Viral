@@ -33,7 +33,7 @@ export function StatusPanel() {
       <PageTitle>{ui.adminStatus.title}</PageTitle>
       <ErrorText>{error ? ui.common.loadError : null}</ErrorText>
       {status === null ? (
-        !error && <p className="text-sm text-neutral-500">{ui.loading}</p>
+        !error && <p className="text-sm text-ink-muted">{ui.loading}</p>
       ) : (
         <>
           <p className="mb-6 text-sm">
@@ -45,20 +45,20 @@ export function StatusPanel() {
 
           <Section title={ui.adminStatus.counts}>
             <dl className="grid max-w-xl grid-cols-2 gap-y-1 text-sm">
-              <dt className="text-neutral-500">{ui.adminStatus.rawItems}</dt>
+              <dt className="text-ink-muted">{ui.adminStatus.rawItems}</dt>
               <dd>{status.counts.raw_items}</dd>
-              <dt className="text-neutral-500">{ui.adminStatus.unprocessedRawItems}</dt>
+              <dt className="text-ink-muted">{ui.adminStatus.unprocessedRawItems}</dt>
               <dd>{status.counts.unprocessed_raw_items}</dd>
-              <dt className="text-neutral-500">{ui.adminStatus.posts}</dt>
+              <dt className="text-ink-muted">{ui.adminStatus.posts}</dt>
               <dd>{status.counts.posts}</dd>
-              <dt className="text-neutral-500">{ui.adminStatus.openAlerts}</dt>
+              <dt className="text-ink-muted">{ui.adminStatus.openAlerts}</dt>
               <dd>{status.counts.open_alerts}</dd>
             </dl>
           </Section>
 
           <Section title={ui.adminStatus.sources}>
             {status.sources.length === 0 ? (
-              <p className="text-sm text-neutral-500">{ui.common.empty}</p>
+              <p className="text-sm text-ink-muted">{ui.common.empty}</p>
             ) : (
               <Table head={[ui.sources.name, ui.sources.type, ui.sources.status, ui.sources.lastChecked, ui.sources.lastError]}>
                 {status.sources.map((s) => (
@@ -73,7 +73,7 @@ export function StatusPanel() {
                       </StatusBadge>
                     </Td>
                     <Td>{formatDateTime(s.last_fetched_at)}</Td>
-                    <Td className="max-w-md break-words text-red-700">{s.last_error ?? ui.common.none}</Td>
+                    <Td className="max-w-md break-words text-sev-high">{s.last_error ?? ui.common.none}</Td>
                   </tr>
                 ))}
               </Table>
@@ -91,7 +91,7 @@ export function StatusPanel() {
                   <tr key={f.id}>
                     <Td className="whitespace-nowrap">{formatDateTime(f.failed_at)}</Td>
                     <Td className="font-mono text-xs">{f.job ?? ui.common.none}</Td>
-                    <Td className="break-words text-red-700">{f.error}</Td>
+                    <Td className="break-words text-sev-high">{f.error}</Td>
                   </tr>
                 ))}
               </Table>

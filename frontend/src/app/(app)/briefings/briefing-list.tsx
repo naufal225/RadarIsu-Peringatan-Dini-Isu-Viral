@@ -47,9 +47,9 @@ export function BriefingList() {
       <ErrorText>{error ? ui.common.loadError : null}</ErrorText>
 
       {result === null ? (
-        <p className="text-sm text-neutral-500">{ui.loading}</p>
+        <p className="text-sm text-ink-muted">{ui.loading}</p>
       ) : result.data.length === 0 ? (
-        <p className="text-sm text-neutral-500">{ui.briefings.empty}</p>
+        <p className="text-sm text-ink-muted">{ui.briefings.empty}</p>
       ) : (
         <>
           <Table
@@ -63,23 +63,23 @@ export function BriefingList() {
             ]}
           >
             {result.data.map((b) => (
-              <tr key={b.id} className="hover:bg-neutral-50">
+              <tr key={b.id} className="hover:bg-hover">
                 <Td className="font-mono text-xs">#{b.id}</Td>
                 <Td>
-                  <p className="font-medium text-neutral-900">{b.title}</p>
-                  <p className="mt-0.5 line-clamp-1 text-xs text-neutral-500">{b.summary}</p>
+                  <p className="font-medium text-ink">{b.title}</p>
+                  <p className="mt-0.5 line-clamp-1 text-xs text-ink-muted">{b.summary}</p>
                 </Td>
                 <Td>
                   <Link
                     href={`/alerts/${b.alert_id}`}
-                    className="font-mono text-xs text-blue-600 hover:underline"
+                    className="font-mono text-xs text-brand hover:underline"
                   >
                     Alert #{b.alert_id} (
                     {b.alert?.topic?.name ?? b.alert?.subject_account?.handle ?? ui.common.none})
                   </Link>
                 </Td>
                 <Td>{b.creator?.name ?? ui.audit.system}</Td>
-                <Td className="whitespace-nowrap text-xs text-neutral-500">
+                <Td className="whitespace-nowrap text-xs text-ink-muted">
                   {formatDateTime(b.created_at)}
                 </Td>
                 <Td className="text-right">
@@ -87,7 +87,7 @@ export function BriefingList() {
                     href={`/api/briefings/${b.id}/download`}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-block rounded bg-neutral-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-neutral-700"
+                    className="inline-block rounded bg-brand px-3 py-1.5 text-xs font-medium text-brand-fg hover:opacity-90"
                   >
                     {ui.briefings.download}
                   </a>
