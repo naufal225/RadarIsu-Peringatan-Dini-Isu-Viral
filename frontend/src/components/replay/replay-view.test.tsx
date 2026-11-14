@@ -26,6 +26,7 @@ const base: ReplayViewProps = {
   actionErrors: [],
   upload: EMPTY_UPLOAD,
   onUpload: noop,
+  trend: { series: null, failed: false, window: null, clockNow: null },
 };
 const render = (props: Partial<ReplayViewProps> = {}) => renderToString(createElement(ReplayView, { ...base, ...props }));
 
@@ -86,5 +87,20 @@ describe("ReplayView", () => {
   it("states that there are no scenarios yet and marks every row as simulated", () => {
     expect(render({ result: REPLAY_LIST_EMPTY, selectedId: null })).toContain(ui.replay.empty);
     expect(render().match(/DATA SIMULASI/g)?.length).toBeGreaterThanOrEqual(3);
+  });
+
+  it("shows the growing volume chart only while the data clock is running", () => {
+    const series = [
+      { hour: "2026-10-28T08:00:00.000Z", volume: 4 },
+      { hour: "2026-10-28T09:00:00.000Z", volume: 7 },
+    ];
+    const live = render({
+      trend: { series, failed: false, window: { start: "2026-10-28T09:00:00.000Z", end: "2026-10-28T09:30:00.000Z" }, clockNow: "2026-10-28T09:30:00.000Z" },
+    });
+    expect(live).toContain("Volume posting selama Replay");
+    expect(live).toContain("Jam data");
+
+    const idle = render();
+    expect(idle).not.toContain("Volume posting selama Replay");
   });
 });

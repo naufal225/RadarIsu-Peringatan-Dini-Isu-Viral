@@ -26,6 +26,7 @@ const BASE: ReplayViewProps = {
   actionErrors: [],
   upload: EMPTY_UPLOAD,
   onUpload: noop,
+  trend: { series: null, failed: false, window: null, clockNow: null },
 };
 
 const CASES: { title: string; props: Partial<ReplayViewProps> }[] = [

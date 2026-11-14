@@ -76,6 +76,12 @@ export const replayUi = {
   confirmStart: "Mulai Replay",
   confirmStop: "Hentikan Replay",
   times2: { anchor: "Jangkar virtual", started: "Mulai", finished: "Berhenti", heartbeat: "Detak pekerja terakhir" },
+  trend: {
+    title: "Volume posting selama Replay",
+    dataClock: "Jam data",
+    note: "Hanya jam yang sudah berlalu di jam data. Jam tanpa posting dihitung 0. Data simulasi.",
+    empty: "Belum ada posting yang masuk untuk skenario ini.",
+  },
   percent: (n: number) => `${n}%`,
   incident: "Awal incident",
   incidentAt: (seconds: string) => `Detik ke-${seconds}`,

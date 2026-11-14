@@ -4,7 +4,10 @@ import { useEffect, useState } from "react";
 import { EMPTY_UPLOAD, ReplayView, type UploadState } from "@/components/replay/replay-view";
 import { api, ApiError } from "@/lib/api";
 import type { ReplayListResponse, ReplayScenario } from "@/lib/api-types/replay";
+import type { SignalPoint } from "@/lib/signal-chart";
 import { errorCodes, isRunning, POLL_MS, uploadErrors } from "@/lib/replay";
+import { incidentWindow, replayTrend, utcDay } from "@/lib/replay-trend";
+import { type MetricsResponse, type Topic } from "@/lib/topics";
 import { useApiData } from "@/lib/use-api-data";
 
 /** Pengambil data /admin/replay. Polling hanya selama ada skenario berstatus running. */
@@ -22,6 +25,37 @@ export function ReplayData() {
   // Tanpa pilihan, skenario yang berjalan (atau yang pertama) ditampilkan di panel kontrol.
   const effectiveId = selectedId ?? scenarios.find(isRunning)?.id ?? scenarios[0]?.id ?? null;
   const effective = scenarios.find((s) => s.id === effectiveId) ?? null;
+
+  // Grafik volume tumbuh mengikuti jam data. Hanya selama skenario berjalan; setiap polling membawa clock_now baru.
+  const clockNow = data?.meta.clock_now ?? null;
+  const anchor = effective?.virtual_anchor_at ?? null;
+  const trendLive = effective?.status === "running" && anchor !== null && clockNow !== null;
+  const [trend, setTrend] = useState<{ series: SignalPoint[] | null; failed: boolean }>({ series: null, failed: false });
+
+  useEffect(() => {
+    // Di luar kondisi live, data lama disembunyikan oleh trendLive di render; tidak perlu reset di sini.
+    if (!trendLive || anchor === null || clockNow === null) return;
+    let cancelled = false;
+    const anchorDate = new Date(anchor);
+    const clockDate = new Date(clockNow);
+    const range = `from=${utcDay(anchorDate)}&to=${utcDay(clockDate)}`;
+
+    (async () => {
+      try {
+        const topics = await api<{ data: Topic[] }>("topics");
+        const rows = await Promise.all(
+          topics.data.filter((t) => t.is_active).map((t) => api<MetricsResponse>(`topics/${t.id}/metrics?${range}`).then((r) => r.data)),
+        );
+        if (!cancelled) setTrend({ series: replayTrend(rows, anchorDate, clockDate), failed: false });
+      } catch {
+        if (!cancelled) setTrend({ series: null, failed: true });
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [trendLive, anchor, clockNow]);
 
   useEffect(() => {
     if (!anyRunning) return;
@@ -90,6 +124,12 @@ export function ReplayData() {
       actionErrors={actionErrors}
       upload={upload}
       onUpload={submitUpload}
+      trend={{
+        series: trendLive ? trend.series : null,
+        failed: trend.failed,
+        window: trendLive ? incidentWindow(anchor, effective?.incident_start_offset_seconds ?? null, clockNow) : null,
+        clockNow: trendLive ? clockNow : null,
+      }}
     />
   );
 }

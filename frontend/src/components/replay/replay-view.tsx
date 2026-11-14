@@ -12,8 +12,10 @@ import { Section } from "@/components/radar/section";
 import { SimBadge, SimulationBanner } from "@/components/radar/simulation";
 import { SkeletonCard } from "@/components/radar/skeleton";
 import { EmptyState } from "@/components/radar/states";
+import { SignalChart } from "@/components/charts/signal-chart";
 import { Waktu } from "@/components/radar/waktu";
 import type { ReplayListResponse, ReplayScenario, ReplayStatus } from "@/lib/api-types/replay";
+import type { SignalPoint } from "@/lib/signal-chart";
 import { cn } from "@/lib/cn";
 import { formatInteger } from "@/lib/format";
 import { describeErrorCode, ui } from "@/lib/labels";
@@ -123,6 +125,13 @@ export type ReplayViewProps = {
   actionErrors: string[];
   upload: UploadState;
   onUpload: (form: FormData) => void;
+  /** Grafik volume yang tumbuh selama Replay; null bila skenario tidak sedang berjalan. */
+  trend: {
+    series: SignalPoint[] | null;
+    failed: boolean;
+    window: { start: string; end: string } | null;
+    clockNow: string | null;
+  };
 };
 
 /**
@@ -228,6 +237,7 @@ function Controls({
   onConfirm,
   actionPending,
   actionErrors,
+  trend,
 }: ReplayViewProps & { scenario: ReplayScenario; running: ReplayScenario | null }) {
   const anotherRunning = !!running && running.id !== scenario.id;
   const action = availableAction(scenario, anotherRunning);
@@ -280,6 +290,8 @@ function Controls({
           </>
         )}
       </dl>
+
+      <ReplayTrendPanel trend={trend} />
 
       {scenario.error && (
         <p className="flex items-start gap-1.5 text-table text-sev-high">
@@ -337,6 +349,35 @@ function Controls({
         onConfirm={onConfirm}
         onClose={onCancel}
       />
+    </div>
+  );
+}
+
+/**
+ * Grafik volume selama Replay. Jam data maju bersama polling; jam di luar yang sudah berlalu tidak digambar.
+ * Tanpa skenario yang berjalan, panel tidak tampil.
+ */
+function ReplayTrendPanel({ trend }: { trend: ReplayViewProps["trend"] }) {
+  if (trend.clockNow === null) return null;
+
+  return (
+    <div className="space-y-2 border-t border-line pt-4">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <h3 className="text-table font-semibold text-ink">{copy.trend.title}</h3>
+        <span className="text-caption text-ink-muted">
+          {copy.trend.dataClock} <Waktu value={trend.clockNow} />
+        </span>
+      </div>
+      {trend.failed ? (
+        <p className="text-table text-sev-high">{ui.common.loadError}</p>
+      ) : trend.series === null ? (
+        <SkeletonCard framed={false} />
+      ) : trend.series.every((p) => p.volume === 0) ? (
+        <p className="text-table text-ink-muted">{copy.trend.empty}</p>
+      ) : (
+        <SignalChart series={trend.series} window={trend.window ?? undefined} variant="compact" />
+      )}
+      <p className="text-caption text-ink-muted">{copy.trend.note}</p>
     </div>
   );
 }

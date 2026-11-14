@@ -45,7 +45,7 @@ Aturan yang dipegang: insight hanya dari data yang sudah ada dan endpoint yang s
 
 ## 4. Usulan urutan
 
-1. **A (replay dinamis).** Ini yang Anda sebut sebagai contoh, dan dampaknya paling besar untuk demo.
+1. **A (replay dinamis).** Sudah dibangun (2026-11-14): grafik volume per jam di panel kontrol skenario yang berjalan, maju mengikuti `clock_now` lewat polling. Logika di `lib/replay-trend.ts` dengan tes. Belum diuji dengan Replay berjalan sungguhan; perlu worker antrean `replay`.
 2. **B dan E.** Sumbernya sudah ada dan cepat dibuat.
 3. **H dan catatan kualitas sentimen.** Penting agar tidak ada angka sentimen yang menyesatkan.
 4. **C, D, F, G, I, J** sesuai waktu.
