@@ -112,6 +112,49 @@ class InsightEndpointsTest extends TestCase
         $this->getJson('/api/v1/labeling/daily')->assertForbidden();
     }
 
+    public function test_replay_series_counts_the_current_run_per_minute_up_to_until(): void
+    {
+        $this->actingAsRole('admin');
+        $scenario = ReplayScenario::factory()->create(['run_number' => 3]);
+        $sourceId = DB::table('sources')->value('id') ?? \App\Models\Source::factory()->create()->id;
+        $accountId = DB::table('accounts')->insertGetId([
+            'source_type' => 'csv',
+            'handle' => 'akun-replay',
+            'first_seen_at' => '2026-11-10 09:00:00',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $posts = [
+            ['2026-11-10 09:00:10', "replay:{$scenario->id}:3:1"],
+            ['2026-11-10 09:00:50', "replay:{$scenario->id}:3:2"],
+            ['2026-11-10 09:02:00', "replay:{$scenario->id}:3:3"],
+            ['2026-11-10 09:02:30', "replay:{$scenario->id}:2:4"], // run sebelumnya: tidak ikut
+        ];
+        foreach ($posts as [$postedAt, $externalId]) {
+            DB::table('posts')->insert([
+                'source_id' => $sourceId,
+                'account_id' => $accountId,
+                'external_id' => $externalId,
+                'text' => 'teks replay',
+                'text_norm' => 'teks replay',
+                'posted_at' => $postedAt,
+                'sentiment' => 'neutral',
+                'sentiment_score' => 0,
+                'is_simulated' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        $all = $this->getJson("/api/v1/replay/scenarios/{$scenario->id}/series")->assertOk()->json('data');
+        $this->assertSame(3, $all['run']);
+        $this->assertSame([2, 1], array_column($all['points'], 'count'));
+
+        $partial = $this->getJson("/api/v1/replay/scenarios/{$scenario->id}/series?until=2026-11-10T09:01:00Z")->assertOk()->json('data');
+        $this->assertSame([2], array_column($partial['points'], 'count'));
+    }
+
     private function insertAudit(string $action, string $createdAt): void
     {
         DB::table('audit_logs')->insert([

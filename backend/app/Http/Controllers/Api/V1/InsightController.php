@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\ReplayScenario;
+use Carbon\CarbonImmutable;
 use App\Models\Topic;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -100,6 +101,31 @@ class InsightController extends Controller
             'posts_total' => $postsTotal,
             'posts_matched' => $postsMatched,
             'topics' => $topics,
+        ]]);
+    }
+
+    /**
+     * `GET /replay/scenarios/{scenario}/series?until=`: jumlah posting run terakhir per menit data (posted_at),
+     * sampai `until` (jam data). Dipakai grafik replay yang tumbuh selama Replay berjalan.
+     */
+    public function replaySeries(Request $request, ReplayScenario $scenario): JsonResponse
+    {
+        $filters = $request->validate(['until' => 'nullable|date']);
+
+        $rows = DB::table('posts')
+            ->where('external_id', 'like', "replay:{$scenario->id}:{$scenario->run_number}:%")
+            ->when($filters['until'] ?? null, fn ($q, $until) => $q->where('posted_at', '<=', $until))
+            ->selectRaw("date_trunc('minute', posted_at) as t, count(*) as total")
+            ->groupBy('t')
+            ->orderBy('t')
+            ->get();
+
+        return response()->json(['data' => [
+            'run' => $scenario->run_number,
+            'points' => $rows->map(fn ($row) => [
+                't' => CarbonImmutable::parse($row->t)->utc()->toIso8601String(),
+                'count' => (int) $row->total,
+            ]),
         ]]);
     }
 }
