@@ -93,6 +93,7 @@ export const replayUi = {
     binNote: (minutes: number) => `Satu batang = ${minutes} menit jam data.`,
     total: "posting sejauh ini",
     empty: "Belum ada posting yang masuk untuk skenario ini.",
+    lastRun: "Run terakhir",
   },
   percent: (n: number) => `${n}%`,
   incident: "Awal incident",

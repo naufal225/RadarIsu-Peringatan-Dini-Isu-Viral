@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { EMPTY_UPLOAD, ReplayView, type UploadState } from "@/components/replay/replay-view";
 import { api, ApiError } from "@/lib/api";
 import type { ReplayComposition, ReplayListResponse, ReplayScenario, ReplaySeries } from "@/lib/api-types/replay";
-import { errorCodes, isRunning, POLL_MS, uploadErrors } from "@/lib/replay";
+import { errorCodes, isRunning, POLL_MS, speedInputValue, uploadErrors } from "@/lib/replay";
 import { minuteTrend } from "@/lib/replay-trend";
 import { useApiData } from "@/lib/use-api-data";
 
@@ -12,7 +12,8 @@ import { useApiData } from "@/lib/use-api-data";
 export function ReplayData() {
   const { data, error, loading, reload } = useApiData<ReplayListResponse>("replay/scenarios");
   const [selectedId, setSelectedId] = useState<number | null>(null);
-  const [speed, setSpeed] = useState("");
+  // null: belum diubah, pakai kecepatan bawaan skenario. "": pengguna mengosongkan kolom (tombol Mulai nonaktif).
+  const [speed, setSpeed] = useState<string | null>(null);
   const [confirming, setConfirming] = useState<"start" | "stop" | null>(null);
   const [actionPending, setActionPending] = useState(false);
   const [actionErrors, setActionErrors] = useState<string[]>([]);
@@ -28,13 +29,26 @@ export function ReplayData() {
 
   // Grafik posting per menit data. Hanya selama skenario berjalan; setiap polling membawa clock_now baru,
   // dan `until` memastikan server tidak mengirim posting yang belum sampai di jam data.
+  // Setelah run selesai atau dihentikan, grafik menampilkan seluruh posting run terakhir (tanpa `until`).
   const clockNow = data?.meta.clock_now ?? null;
   const trendLive = effective?.status === "running" && clockNow !== null;
-  const seriesState = useApiData<{ data: ReplaySeries }>(
-    trendLive && effective ? `replay/scenarios/${effective.id}/series?until=${encodeURIComponent(clockNow)}` : null,
-  );
+  const trendDone = effective !== null && (effective.status === "finished" || effective.status === "stopped") && effective.run_number > 0;
+  const seriesPath =
+    trendLive && effective
+      ? `replay/scenarios/${effective.id}/series?until=${encodeURIComponent(clockNow)}`
+      : trendDone && effective
+        ? `replay/scenarios/${effective.id}/series`
+        : null;
+  const seriesState = useApiData<{ data: ReplaySeries }>(seriesPath);
+  const points = seriesState.data?.data.points ?? null;
+  const endOfData =
+    trendLive && clockNow !== null
+      ? new Date(clockNow)
+      : points !== null && points.length > 0
+        ? new Date(points[points.length - 1].t)
+        : null;
   const trend = {
-    series: trendLive && seriesState.data ? minuteTrend(seriesState.data.data.points, new Date(clockNow)) : null,
+    series: points !== null && endOfData !== null ? minuteTrend(points, endOfData) : null,
     failed: seriesState.error,
     clockNow: trendLive ? clockNow : null,
   };
@@ -47,11 +61,11 @@ export function ReplayData() {
 
   function select(id: number) {
     setSelectedId(id);
-    setSpeed("");
+    setSpeed(null);
     setActionErrors([]);
   }
 
-  const speedFor = (s: ReplayScenario | null) => (speed === "" && s ? String(s.default_speed_factor) : speed);
+  const speedFor = (s: ReplayScenario | null): string => speedInputValue(speed, s?.default_speed_factor ?? null);
 
   async function confirm() {
     if (!effective || !confirming) return;

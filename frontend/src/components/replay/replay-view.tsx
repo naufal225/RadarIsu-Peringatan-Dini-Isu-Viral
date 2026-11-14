@@ -186,7 +186,8 @@ export function ReplayView(props: ReplayViewProps) {
       <PageHeader title={copy.title} subtitle={copy.subtitle} meta={clock ? copy.dataClockNote : copy.clockIdle} />
 
       <div className={cn("grid items-start gap-x-6", showControls && "xl:grid-cols-12")}>
-        <Section title={copy.scenarios} flush className={cn(showControls && "xl:col-span-7")}>
+        <div className={cn("min-w-0", showControls && "xl:col-span-7")}>
+        <Section title={copy.scenarios} flush>
           <DataTable
             framed={false}
             columns={columns}
@@ -199,6 +200,8 @@ export function ReplayView(props: ReplayViewProps) {
             empty={<EmptyState title={copy.empty} />}
           />
         </Section>
+        <ReplayTrendPanel trend={props.trend} />
+        </div>
 
         {showControls && (
           <Section title={copy.controls} className="xl:sticky xl:top-6 xl:col-span-5">
@@ -237,7 +240,6 @@ function Controls({
   onConfirm,
   actionPending,
   actionErrors,
-  trend,
   composition,
 }: ReplayViewProps & { scenario: ReplayScenario; running: ReplayScenario | null }) {
   const anotherRunning = !!running && running.id !== scenario.id;
@@ -293,8 +295,6 @@ function Controls({
       </dl>
 
       <CompositionPanel composition={composition} />
-
-      <ReplayTrendPanel trend={trend} />
 
       {scenario.error && (
         <p className="flex items-start gap-1.5 text-table text-sev-high">
@@ -424,10 +424,11 @@ function TrendBars({ series }: { series: { t: string; count: number }[] }) {
         <span className="font-mono tabular-nums">{formatInteger(total)}</span> <span className="text-ink-muted">{copy.trend.total}</span>
       </p>
       <div className="flex h-28 w-full items-end gap-px overflow-hidden" role="img" aria-label={`${copy.trend.title}: ${total}`}>
-        {bins.map((b) => (
+        {bins.map((b, i) => (
+          // Kunci per posisi, bukan per waktu: batang yang sama berpindah tinggi (animasi), tidak dibuat ulang.
           <span
-            key={b.t}
-            className="min-w-0 flex-1 rounded-t-sm bg-brand"
+            key={i}
+            className="min-w-0 flex-1 rounded-t-sm bg-brand transition-[height] duration-300 ease-out"
             style={{ height: `${(b.count / peak) * 100}%`, minHeight: b.count > 0 ? "2px" : "0" }}
             title={`${b.t}: ${b.count}`}
           />
@@ -439,16 +440,17 @@ function TrendBars({ series }: { series: { t: string; count: number }[] }) {
 }
 
 function ReplayTrendPanel({ trend }: { trend: ReplayViewProps["trend"] }) {
-  if (trend.clockNow === null) return null;
+  if (trend.series === null && !trend.failed) return null;
 
   return (
-    <div className="space-y-2 border-t border-line pt-4">
-      <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h3 className="text-table font-semibold text-ink">{copy.trend.title}</h3>
+    <Section
+      title={copy.trend.title}
+      actions={
         <span className="text-caption text-ink-muted">
-          {copy.trend.dataClock} <Waktu value={trend.clockNow} />
+          {trend.clockNow === null ? copy.trend.lastRun : <>{copy.trend.dataClock} <Waktu value={trend.clockNow} /></>}
         </span>
-      </div>
+      }
+    >
       {trend.failed ? (
         <p className="text-table text-sev-high">{ui.common.loadError}</p>
       ) : trend.series === null ? (
@@ -459,7 +461,7 @@ function ReplayTrendPanel({ trend }: { trend: ReplayViewProps["trend"] }) {
         <TrendBars series={trend.series} />
       )}
       <p className="text-caption text-ink-muted">{copy.trend.note}</p>
-    </div>
+    </Section>
   );
 }
 
