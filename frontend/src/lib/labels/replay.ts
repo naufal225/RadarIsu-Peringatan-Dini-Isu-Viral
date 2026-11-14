@@ -14,14 +14,14 @@ export const replayErrorCodes = {
   no_incident_rows: "Skenario harus punya minimal satu baris fase incident",
   baseline_after_incident: "Baris baseline harus berakhir sebelum baris incident pertama",
   invalid_offset_seconds: "offset_seconds harus bilangan bulat 0 sampai 2.592.000",
-  invalid_phase: "phase harus baseline atau incident",
+  invalid_phase: "Kolom phase harus berisi baseline atau incident",
   invalid_label_manual: "label_manual harus organic atau anomalous",
   invalid_account_age_days: "account_age_days harus bilangan bulat 0 sampai 36.500",
   already_running: "Skenario ini sedang berjalan",
   another_running: "Skenario lain sedang berjalan; hentikan dulu",
   empty_scenario: "Skenario tidak punya baris",
   not_running: "Skenario tidak sedang berjalan",
-  heartbeat_lost: "Pekerja antrean replay berhenti mengirim detak; putaran ditutup otomatis",
+  heartbeat_lost: "Proses Replay berhenti memberi kabar; putaran ditutup otomatis",
   action_failed: "Aksi gagal. Coba lagi.",
 } as const;
 
@@ -29,8 +29,6 @@ export const replayUi = {
   title: "Mode Replay",
   intro:
     "Memutar ulang skenario melalui jalur data yang sama dengan sumber langsung: baris baseline masuk sekaligus, baris incident dialirkan sesuai kecepatan. Semua data ditandai simulasi.",
-  workers: "Replay berjalan sebagai job di antrean replay. Jalankan pekerja khusus di samping pekerja antrean utama:",
-  workersCommand: "php artisan queue:work --queue=replay",
   clockActive: (virtual: string) => `Jam data virtual: ${virtual}`,
   clockIdle: "Detektor memakai jam sebenarnya (tidak ada Replay berjalan).",
   scenarios: "Skenario",

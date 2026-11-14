@@ -53,7 +53,7 @@ describe("replay labels", () => {
 
   it("has no empty text", () => {
     const copy = ui.replay;
-    const strings = [copy.title, copy.intro, copy.workers, copy.clockIdle, copy.empty, ...Object.values(copy.columns), ...Object.values(replayErrorCodes), copy.upload.format];
+    const strings = [copy.title, copy.intro, copy.clockIdle, copy.empty, ...Object.values(copy.columns), ...Object.values(replayErrorCodes), copy.upload.format];
     for (const text of strings) expect(text.trim()).not.toBe("");
   });
 });

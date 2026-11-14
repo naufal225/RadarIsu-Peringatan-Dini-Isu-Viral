@@ -57,7 +57,7 @@ export const topicsUi = {
     peakHour: "Jam puncak",
     hoursWithData: "Jam dengan data",
     empty:
-      "Belum ada data pada rentang ini. Pastikan data sudah diimpor dan worker antrean berjalan (php artisan queue:work).",
+      "Belum ada data pada rentang ini. Data muncul setelah sumber diimpor dan diproses.",
     hourAxis: "Jam (waktu setempat)",
     volume: "Posting",
   },

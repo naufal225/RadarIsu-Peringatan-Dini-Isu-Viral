@@ -212,10 +212,6 @@ export function ReplayView(props: ReplayViewProps) {
           <FormatGuide />
         </div>
       </Section>
-
-      <p className="text-caption text-ink-muted">
-        {copy.workers} <code className="rounded-badge bg-hover px-1.5 py-0.5 font-mono text-ink">{copy.workersCommand}</code>
-      </p>
     </>
   );
 }

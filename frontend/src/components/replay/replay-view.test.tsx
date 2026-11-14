@@ -76,11 +76,11 @@ describe("ReplayView", () => {
     expect(render({ speed: "0" })).toContain(ui.replay.invalidSpeed);
     const upload = render({ upload: { ...EMPTY_UPLOAD, file: ["invalid_rows"], rows: [{ line: "2", code: "invalid_phase" }] } });
     expect(upload).toContain("Ada baris yang tidak valid");
-    expect(upload).toContain("phase harus baseline atau incident");
+    expect(upload).toContain("Kolom phase harus berisi baseline atau incident");
   });
 
   it("names a stop caused by a lost heartbeat as an error", () => {
-    expect(render({ selectedId: 3 })).toContain("Pekerja antrean replay berhenti");
+    expect(render({ selectedId: 3 })).toContain("Proses Replay berhenti memberi kabar");
   });
 
   it("states that there are no scenarios yet and marks every row as simulated", () => {
