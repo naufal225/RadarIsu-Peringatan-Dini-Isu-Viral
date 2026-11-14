@@ -11,9 +11,9 @@ Jika dokumen ini bertentangan dengan `docs/PRD.md` soal **perilaku produk**, PRD
 
 | Hal | Keputusan |
 |---|---|
-| Arah | **"Lembar Situasi"**: tema terang, berpusat pada kasus (alert), bahasa laporan institusional |
+| Arah | **"Cyber"** (revisi 2026-11-14, menggantikan "Lembar Situasi"): tema gelap, berpusat pada kasus (alert), bahasa laporan tetap formal. Nilai token tema Cyber ditetapkan di tahap desain; sampai itu, nilai token di §3 masih berlaku |
 | Grafik | Gaya **"Denyut Isu"**: satu grafik volume yang bermakna, hanya di detail alert, detail topik, dan dasbor |
-| Tema | Terang saja. Tidak ada kelas `dark:`. Token dibuat dari variabel CSS agar varian gelap bisa menyusul, tetapi **tidak dikerjakan** |
+| Tema | Gelap sebagai tema utama (revisi 2026-11-14). Semua warna dari variabel CSS di `globals.css`, tanpa hex di komponen |
 | Identitas | Institusional tingkat 2: zaitun tua sebagai warna merek, bahasa formal, footer purwarupa. **Lambang resmi TNI AD tidak dipakai** kecuali panitia memberi aset atau izin tertulis |
 | Bahasa | UI berbahasa Indonesia, kode berbahasa Inggris (PRD §0) |
 | Waktu | WIB di UI, UTC di database, UTC terlihat saat hover/fokus |
@@ -25,7 +25,7 @@ Jika dokumen ini bertentangan dengan `docs/PRD.md` soal **perilaku produk**, PRD
 Pelanggaran aturan ini ditolak saat review.
 
 1. **Warna hanya dari token.** Dilarang hex/rgb/hsl di komponen, nilai arbitrer Tailwind (`bg-[#...]`), dan style inline. Pengecualian: `globals.css` dan template PDF.
-2. **Dilarang:** gradien, glow, bayangan dekoratif, blur/kaca, donut/pie, gauge, avatar atau foto orang, kartu KPI berwarna solid, animasi masuk, emoji sebagai ikon.
+2. **Dilarang:** gradien, bayangan dekoratif, blur/kaca, donut/pie, gauge, avatar atau foto orang, kartu KPI berwarna solid, animasi masuk, emoji sebagai ikon. **Glow hanya untuk status fokus dan alert kritis** (revisi 2026-11-14).
 3. **Tidak ada warna hijau** di sistem. Zaitun adalah merek, bukan status "aman".
 4. **Satu warna, satu makna:** merah/amber/abu-biru hanya untuk severity (merah juga untuk galat); zaitun hanya untuk merek dan interaksi; biru `--sim` hanya untuk simulasi.
 5. Severity dan status **tidak pernah hanya warna**: selalu ikon + teks.

@@ -2,6 +2,18 @@
 
 Dicatat sesuai CLAUDE.md: konflik tidak ditebak. Keputusan dicatat di sini dan di PRD (riwayat perubahan).
 
+## Diputuskan 2026-11-14 (tema Cyber, amendemen aturan UI)
+
+Diputuskan oleh pemilik fondasi UI. Amendemen ini menyentuh file bersama, jadi perlu review semua pemilik sebelum merge (OWNERSHIP).
+
+1. **Tema "Cyber" menggantikan "Lembar Situasi".** Tema gelap, aksen cyan, glow hanya untuk fokus dan alert kritis. Diubah di `CLAUDE.md` (Pekerjaan UI), `AGENTS.md`, `docs/UI_DESIGN_SYSTEM.md` §1–2, dan PRD v2.4.
+2. **Tetap dilarang:** gradien, donut/gauge, avatar, kartu KPI solid, dan warna hijau. Keputusan hijau dan gradien bisa dibuka lagi bila pemilik menginginkannya.
+3. **Agent boleh commit untuk pekerjaan UI** (`ui:`, tanpa atribusi AI). Push, stash, reset, rebase, dan force tetap dilarang.
+4. **Konflik yang belum selesai:**
+   - `docs/UI_WORKPLAN.md` §4 masih menulis agent tidak boleh commit. Belum diubah pada amendemen ini.
+   - Branch `update_ui` ada di remote dan berisi `bf19a6e` (Kadavi, restyle "Able Pro", 20 berkas). Branch ini tidak tercantum di UI_WORKPLAN §4. Pekerjaan Cyber dikerjakan di `feat/ui-cyber` dari `main` sebagai cadangan sesuai UI_WORKPLAN §4. Nasib `update_ui` ada di tangan pemilik branch.
+   - Token tema Cyber belum ditetapkan. Sampai itu, nilai token di UI_DESIGN_SYSTEM §3 masih nilai Lembar Situasi.
+
 ## Terbuka
 
 1. **Halaman alert:** dipindah dari Fase 8 ke Fase 5? Ini diusulkan agar alur triase bisa diuji lewat UI, tetapi belum diputuskan.
